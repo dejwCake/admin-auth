@@ -32,13 +32,13 @@ class ResetPasswordTest extends StandardTestCase
         ]);
 
         //create also password reset
-        $this->app['db']->connection()->table('password_resets')->insert([
+        $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user->email,
             'token' => bcrypt($this->token),
             'created_at' => Carbon::now()
         ]);
 
-        $this->assertDatabaseHas('password_resets', [
+        $this->assertDatabaseHas('password_reset_tokens', [
             'email' => 'john@example.com',
         ]);
 
@@ -131,14 +131,13 @@ class ResetPasswordTest extends StandardTestCase
             'email' => 'john2@example.com',
         ]);
 
-        //TODO create also password reset
-        $this->app['db']->connection()->table('password_resets')->insert([
+        $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user2->email,
             'token' => bcrypt($this->token . '2'),
             'created_at' => Carbon::now()
         ]);
 
-        $this->assertDatabaseHas('password_resets', [
+        $this->assertDatabaseHas('password_reset_tokens', [
             'email' => 'john2@example.com',
         ]);
 

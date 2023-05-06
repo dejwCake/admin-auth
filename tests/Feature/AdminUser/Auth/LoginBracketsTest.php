@@ -2,11 +2,13 @@
 
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Auth;
 
+use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Tests\BracketsTestCase;
 use Brackets\AdminAuth\Tests\Models\TestBracketsUserModel;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Notification;
 
 class LoginBracketsTest extends BracketsTestCase
 {
@@ -14,12 +16,19 @@ class LoginBracketsTest extends BracketsTestCase
 
     protected function createTestUser(bool $activated = true, bool $forbidden = false): TestBracketsUserModel
     {
+        Notification::fake();
         $user = TestBracketsUserModel::create([
             'email' => 'john@example.com',
             'password' => bcrypt('testpass123'),
             'activated' => $activated,
             'forbidden' => $forbidden,
         ]);
+        if ($activated === false) {
+            Notification::assertSentTo(
+                $user,
+                ActivationNotification::class
+            );
+        }
 
         $this->assertDatabaseHas('test_brackets_user_models', [
             'email' => 'john@example.com',
@@ -68,6 +77,7 @@ class LoginBracketsTest extends BracketsTestCase
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
+
 
         $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
     }

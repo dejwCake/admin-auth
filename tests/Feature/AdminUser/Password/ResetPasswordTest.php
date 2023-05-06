@@ -2,11 +2,13 @@
 
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Password;
 
+use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Tests\BracketsTestCase;
 use Brackets\AdminAuth\Tests\Models\TestBracketsUserModel;
 use Carbon\Carbon;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Notification;
 
 class ResetPasswordTest extends BracketsTestCase
 {
@@ -22,10 +24,15 @@ class ResetPasswordTest extends BracketsTestCase
 
     protected function createTestUser(): TestBracketsUserModel
     {
+        Notification::fake();
         $user = TestBracketsUserModel::create([
             'email' => 'john@example.com',
             'password' => bcrypt('testpass123'),
         ]);
+        Notification::assertSentTo(
+            $user,
+            ActivationNotification::class
+        );
 
         $this->assertDatabaseHas('test_brackets_user_models', [
             'email' => 'john@example.com',
@@ -55,6 +62,7 @@ class ResetPasswordTest extends BracketsTestCase
     /** @test */
     public function reset_password_after_form_filled(): void
     {
+        Notification::fake();
         $user = $this->createTestUser();
 
         $response = $this->post(
@@ -67,6 +75,11 @@ class ResetPasswordTest extends BracketsTestCase
             ]
         );
         $response->assertStatus(302);
+
+        Notification::assertSentTo(
+            $user,
+            ActivationNotification::class
+        );
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
 
@@ -132,13 +145,13 @@ class ResetPasswordTest extends BracketsTestCase
         ]);
 
         //TODO create also password reset
-        $this->app['db']->connection()->table('password_resets')->insert([
+        $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user2->email,
             'token' => bcrypt($this->token . '2'),
             'created_at' => Carbon::now()
         ]);
 
-        $this->assertDatabaseHas('password_resets', [
+        $this->assertDatabaseHas('password_reset_tokens', [
             'email' => 'john2@example.com',
         ]);
 

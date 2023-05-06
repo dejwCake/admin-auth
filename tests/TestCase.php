@@ -16,7 +16,7 @@ abstract class TestCase extends Orchestra
 {
     use RefreshDatabase;
 
-    protected $adminAuthGuard;
+    protected string $adminAuthGuard;
 
     public function setUp(): void
     {
@@ -32,7 +32,7 @@ abstract class TestCase extends Orchestra
      *
      * @return array
      */
-    protected function getPackageProviders($app)
+    protected function getPackageProviders($app): array
     {
         return [
             AdminAuthServiceProvider::class,
@@ -43,14 +43,28 @@ abstract class TestCase extends Orchestra
     /**
      * @param Application $app
      */
-    protected function getEnvironmentSetUp($app)
+    protected function getEnvironmentSetUp($app): void
     {
         if (env('DB_CONNECTION') === 'pgsql') {
             $app['config']->set('database.default', 'pgsql');
             $app['config']->set('database.connections.pgsql', [
                 'driver' => 'pgsql',
-                'host' => 'testing',
+                'host' => 'pgsql',
                 'port' => '5432',
+                'database' => env('DB_DATABASE', 'laravel'),
+                'username' => env('DB_USERNAME', 'root'),
+                'password' => env('DB_PASSWORD', 'bestsecret'),
+                'charset' => 'utf8',
+                'prefix' => '',
+                'schema' => 'public',
+                'sslmode' => 'prefer',
+            ]);
+        } else if (env('DB_CONNECTION') === 'mysql') {
+            $app['config']->set('database.default', 'mysql');
+            $app['config']->set('database.connections.mysql', [
+                'driver' => 'mysql',
+                'host' => 'mysql',
+                'port' => '3306',
                 'database' => env('DB_DATABASE', 'laravel'),
                 'username' => env('DB_USERNAME', 'root'),
                 'password' => env('DB_PASSWORD', 'bestsecret'),
@@ -102,7 +116,7 @@ abstract class TestCase extends Orchestra
     /**
      * @param Application $app
      */
-    protected function setUpDatabase($app)
+    protected function setUpDatabase(Application $app): void
     {
         $app['db']->connection()->getSchemaBuilder()->create('test_standard_user_models',
             static function (Blueprint $table) {
@@ -132,7 +146,7 @@ abstract class TestCase extends Orchestra
                 $table->dateTime('updated_at');
             });
 
-        $app['db']->connection()->getSchemaBuilder()->create('password_resets', static function (Blueprint $table) {
+        $app['db']->connection()->getSchemaBuilder()->create('password_reset_tokens', static function (Blueprint $table) {
             $table->string('email')->index();
             $table->string('token');
             $table->timestamp('created_at')->nullable();

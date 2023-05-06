@@ -17,14 +17,14 @@ class ActivationBroker implements ActivationBrokerContract
      *
      * @var TokenRepositoryInterface
      */
-    protected $tokens;
+    protected TokenRepositoryInterface $tokens;
 
     /**
      * The user provider implementation.
      *
      * @var UserProvider
      */
-    protected $users;
+    protected UserProvider $users;
 
     /**
      * Create a new password broker instance.
@@ -118,8 +118,7 @@ class ActivationBroker implements ActivationBrokerContract
      * Get the user for the given credentials.
      *
      * @param array $credentials
-     * @throws UnexpectedValueException
-     * @return CanActivateContract
+     * @return CanActivateContract|null
      */
     public function getUser(array $credentials): ?CanActivateContract
     {

@@ -65,7 +65,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
      *
      * @return UrlGenerator|string
      */
-    public function getResourceUrlAttribute()
+    public function getResourceUrlAttribute(): string|UrlGenerator
     {
         return url('/admin/admin-users/' . $this->getKey());
     }

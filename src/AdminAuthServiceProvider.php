@@ -21,7 +21,7 @@ class AdminAuthServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function boot()
+    public function boot(): void
     {
         $this->commands([
             AdminAuthInstall::class,
@@ -78,7 +78,7 @@ class AdminAuthServiceProvider extends ServiceProvider
      *
      * @return void
      */
-    public function register()
+    public function register(): void
     {
         $this->mergeConfigFrom(
             __DIR__ . '/../install-stubs/config/admin-auth.php',

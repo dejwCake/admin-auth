@@ -164,9 +164,7 @@ class ResetPasswordController extends Controller
             if ($response === Password::INVALID_USER) {
                 $message = trans('brackets/admin-auth::admin.passwords.invalid_user');
             } else {
-                if ($response === Password::INVALID_PASSWORD) {
-                    $message = trans('brackets/admin-auth::admin.passwords.invalid_password');
-                }
+                $message = trans('brackets/admin-auth::admin.passwords.invalid_user');
             }
         }
         return redirect()->back()

@@ -1,5 +1,5 @@
 {
-    "name": "brackets/admin-auth",
+    "name": "dejwcake/admin-auth",
     "description": "Authentication interface for brackets/admin-ui",
     "keywords": [
         "auth",

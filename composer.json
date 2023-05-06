@@ -65,5 +65,8 @@
                 "Brackets\\AdminAuth\\AdminAuthServiceProvider"
             ]
         }
+    },
+    "branch-alias": {
+        "dev-master": "1.0"
     }
 }

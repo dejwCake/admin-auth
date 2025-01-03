@@ -45,15 +45,13 @@ class ResetPasswordTest extends StandardTestCase
         return $user;
     }
 
-    /** @test */
-    public function can_see_reset_password_form(): void
+    public function testCanSeeResetPasswordForm(): void
     {
         $response = $this->get(route('brackets/admin-auth::admin/password/showResetForm', ['token' => $this->token]));
         $response->assertStatus(200);
     }
 
-    /** @test */
-    public function reset_password_after_form_filled(): void
+    public function testResetPasswordAfterFormFilled(): void
     {
         $user = $this->createTestUser();
 
@@ -70,11 +68,10 @@ class ResetPasswordTest extends StandardTestCase
 
         $userNew = TestStandardUserModel::where('email', 'john@example.com')->first();
 
-        $this->assertEquals(true, Hash::check('testpass123new', $userNew->password));
+        self::assertEquals(true, Hash::check('testpass123new', $userNew->password));
     }
 
-    /** @test */
-    public function do_not_reset_password_if_email_not_found(): void
+    public function testDoNotResetPasswordIfEmailNotFound(): void
     {
         $user = $this->createTestUser();
 
@@ -91,12 +88,11 @@ class ResetPasswordTest extends StandardTestCase
 
         $userNew = TestStandardUserModel::where('email', 'john@example.com')->first();
 
-        $this->assertNotEquals(true, Hash::check('testpass123new', $userNew->password));
-        $this->assertEquals(true, Hash::check('testpass123', $userNew->password));
+        self::assertNotEquals(true, Hash::check('testpass123new', $userNew->password));
+        self::assertEquals(true, Hash::check('testpass123', $userNew->password));
     }
 
-    /** @test */
-    public function do_not_reset_password_if_token_failed(): void
+    public function testDoNotResetPasswordIfTokenFailed(): void
     {
         $user = $this->createTestUser();
 
@@ -113,12 +109,11 @@ class ResetPasswordTest extends StandardTestCase
 
         $userNew = TestStandardUserModel::where('email', 'john@example.com')->first();
 
-        $this->assertNotEquals(true, Hash::check('testpass123new', $userNew->password));
-        $this->assertEquals(true, Hash::check('testpass123', $userNew->password));
+        self::assertNotEquals(true, Hash::check('testpass123new', $userNew->password));
+        self::assertEquals(true, Hash::check('testpass123', $userNew->password));
     }
 
-    /** @test */
-    public function do_not_reset_password_if_email_and_token_does_not_match(): void
+    public function testDoNotResetPasswordIfEmailAndTokenDoesNotMatch(): void
     {
         $user1 = $this->createTestUser();
 
@@ -154,8 +149,8 @@ class ResetPasswordTest extends StandardTestCase
 
         $userNew2 = TestStandardUserModel::where('email', 'john2@example.com')->first();
 
-        $this->assertNotEquals(true, Hash::check('testpass123new', $userNew2->password));
-        $this->assertEquals(true, Hash::check('testpass123', $userNew2->password));
+        self::assertNotEquals(true, Hash::check('testpass123new', $userNew2->password));
+        self::assertEquals(true, Hash::check('testpass123', $userNew2->password));
 
         $response = $this->post(
             url('/admin/password-reset/reset'),
@@ -170,12 +165,11 @@ class ResetPasswordTest extends StandardTestCase
 
         $userNew1 = TestStandardUserModel::where('email', 'john@example.com')->first();
 
-        $this->assertNotEquals(true, Hash::check('testpass123new', $userNew1->password));
-        $this->assertEquals(true, Hash::check('testpass123', $userNew1->password));
+        self::assertNotEquals(true, Hash::check('testpass123new', $userNew1->password));
+        self::assertEquals(true, Hash::check('testpass123', $userNew1->password));
     }
 
-    /** @test */
-    public function do_not_reset_password_if_password_validation_failed(): void
+    public function testDoNotResetPasswordIfPasswordValidationFailed(): void
     {
         $user = $this->createTestUser();
 
@@ -193,8 +187,8 @@ class ResetPasswordTest extends StandardTestCase
 
         $userNew = TestStandardUserModel::where('email', 'john@example.com')->first();
 
-        $this->assertNotEquals(true, Hash::check('testpass', $userNew->password));
-        $this->assertEquals(true, Hash::check('testpass123', $userNew->password));
+        self::assertNotEquals(true, Hash::check('testpass', $userNew->password));
+        self::assertEquals(true, Hash::check('testpass123', $userNew->password));
 
         //Fixme not working getting error instead of exception
         // validation for changed password length
@@ -211,7 +205,7 @@ class ResetPasswordTest extends StandardTestCase
 
         $userNew = TestStandardUserModel::where('email', 'john@example.com')->first();
 
-        $this->assertNotEquals(true, Hash::check('test777', $userNew->password));
-        $this->assertEquals(true, Hash::check('testpass123', $userNew->password));
+        self::assertNotEquals(true, Hash::check('test777', $userNew->password));
+        self::assertEquals(true, Hash::check('testpass123', $userNew->password));
     }
 }

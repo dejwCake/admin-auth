@@ -65,8 +65,7 @@ class ActivationTest extends BracketsTestCase
         return $user;
     }
 
-    /** @test */
-    public function activate_user_if_token_is_ok(): void
+    public function testActivateUserIfTokenIsOk(): void
     {
         $user = $this->createTestUser(false);
 
@@ -76,7 +75,7 @@ class ActivationTest extends BracketsTestCase
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
 
-        $this->assertEquals(true, $userNew->activated);
+        self::assertTrue($userNew->activated);
 
         $this->assertDatabaseHas('admin_activations', [
             'email' => 'john@example.com',
@@ -85,8 +84,7 @@ class ActivationTest extends BracketsTestCase
         ]);
     }
 
-    /** @test */
-    public function do_not_activate_user_if_token_does_not_exists(): void
+    public function testDoNotActivateUserIfTokenDoesNotExists(): void
     {
         $user = $this->createTestUser(false);
 
@@ -98,7 +96,7 @@ class ActivationTest extends BracketsTestCase
 
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
-        $this->assertEquals(0, $userNew->activated);
+        self::assertEquals(0, $userNew->activated);
 
         $this->assertDatabaseHas('admin_activations', [
             'email' => 'john@example.com',
@@ -107,8 +105,7 @@ class ActivationTest extends BracketsTestCase
         ]);
     }
 
-    /** @test */
-    public function do_not_activate_user_if_token_used(): void
+    public function testDoNotActivateUserIfTokenUsed(): void
     {
         $user = $this->createTestUser(false, false, true);
 
@@ -117,7 +114,7 @@ class ActivationTest extends BracketsTestCase
 
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
-        $this->assertEquals(0, $userNew->activated);
+        self::assertEquals(0, $userNew->activated);
 
         $this->assertDatabaseHas('admin_activations', [
             'email' => 'john@example.com',
@@ -126,8 +123,7 @@ class ActivationTest extends BracketsTestCase
         ]);
     }
 
-    /** @test */
-    public function do_not_activate_user_if_token_expired(): void
+    public function testDoNotActivateUserIfTokenExpired(): void
     {
         $user = $this->createTestUser(false, false, false, Carbon::now()->subDays(10));
 
@@ -136,7 +132,7 @@ class ActivationTest extends BracketsTestCase
 
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
-        $this->assertEquals(0, $userNew->activated);
+        self::assertEquals(0, $userNew->activated);
 
         $this->assertDatabaseHas('admin_activations', [
             'email' => 'john@example.com',

@@ -30,15 +30,13 @@ class ActivationEmailTest extends BracketsTestCase
         return $user;
     }
 
-    /** @test */
-    public function can_see_activation_form(): void
+    public function testCanSeeActivationForm(): void
     {
         $response = $this->get(url('/admin/activation'));
         $response->assertStatus(200);
     }
 
-    /** @test */
-    public function send_activation_email_after_user_created(): void
+    public function testSendActivationEmailAfterUserCreated(): void
     {
         Notification::fake();
 
@@ -50,8 +48,7 @@ class ActivationEmailTest extends BracketsTestCase
         );
     }
 
-    /** @test */
-    public function send_activation_email_after_user_not_activated_and_form_filled(): void
+    public function testSendActivationEmailAfterUserNotActivatedAndFormFilled(): void
     {
         Notification::fake();
 
@@ -66,8 +63,7 @@ class ActivationEmailTest extends BracketsTestCase
         );
     }
 
-    /** @test */
-    public function do_not_send_activation_email_if_email_not_found(): void
+    public function testDoNotSendActivationEmailIfEmailNotFound(): void
     {
         Notification::fake();
 
@@ -87,8 +83,7 @@ class ActivationEmailTest extends BracketsTestCase
         );
     }
 
-    /** @test */
-    public function do_not_send_activation_email_if_user_already_activated(): void
+    public function testDoNotSendActivationEmailIfUserAlreadyActivated(): void
     {
         Notification::fake();
 

@@ -39,39 +39,35 @@ class LoginBracketsTest extends BracketsTestCase
         return $user;
     }
 
-    /** @test */
-    public function login_page_is_accessible(): void
+    public function testLoginPageIsAccessible(): void
     {
         $response = $this->get('/admin/login');
         $response->assertStatus(200);
     }
 
-    /** @test */
-    public function user_can_log_in(): void
+    public function testUserCanLogIn(): void
     {
         $user = $this->createTestUser();
-        $this->assertNull($user->last_login_at);
+        self::assertNull($user->last_login_at);
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
 
-        $this->assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
-        $this->assertNotNull(Auth::guard($this->adminAuthGuard)->user()->last_login_at);
+        self::assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertNotNull(Auth::guard($this->adminAuthGuard)->user()->last_login_at);
     }
 
-    /** @test */
-    public function user_with_wrong_credentials_cannot_log_in(): void
+    public function testUserWithWrongCredentialsCannotLogIn(): void
     {
         $user = $this->createTestUser();
 
         $response = $this->json('post', '/admin/login', ['email' => 'john@example.com', 'password' => 'testpass1231']);
         $response->assertStatus(422);
 
-        $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 
-    /** @test */
-    public function not_activated_user_cannot_log_in(): void
+    public function testNotActivatedUserCannotLogIn(): void
     {
         $user = $this->createTestUser(false);
 
@@ -79,11 +75,10 @@ class LoginBracketsTest extends BracketsTestCase
         $response->assertStatus(302);
 
 
-        $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 
-    /** @test */
-    public function not_activated_user_can_log_in_if_activation_disabled(): void
+    public function testNotActivatedUserCanLogInIfActivationDisabled(): void
     {
         $user = $this->createTestUser(false);
 
@@ -92,22 +87,20 @@ class LoginBracketsTest extends BracketsTestCase
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
 
-        $this->assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 
-    /** @test */
-    public function forbidden_user_cannot_log_in(): void
+    public function testForbiddenUserCannotLogIn(): void
     {
         $user = $this->createTestUser(true, true);
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
 
-        $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 
-    /** @test */
-    public function deleted_user_cannot_log_in(): void
+    public function testDeletedUserCannotLogIn(): void
     {
         $time = Carbon::now();
         //Delted at is not fillable, therefore we need to unguard to force fill
@@ -131,11 +124,10 @@ class LoginBracketsTest extends BracketsTestCase
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
 
-        $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 
-    /** @test */
-    public function already_auth_user_is_redirected_from_login(): void
+    public function testAlreadyAuthUserIsRedirectedFromLogin(): void
     {
         $user = $this->createTestUser();
 
@@ -143,7 +135,7 @@ class LoginBracketsTest extends BracketsTestCase
         $response->assertStatus(302);
         $response->assertRedirect('/admin');
 
-        $this->assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);

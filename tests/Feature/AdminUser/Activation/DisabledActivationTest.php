@@ -58,8 +58,7 @@ class DisabledActivationTest extends BracketsTestCase
         return $user;
     }
 
-    /** @test */
-    public function do_not_send_activation_mail_after_user_created(): void
+    public function testDoNotSendActivationMailAfterUserCreated(): void
     {
         Notification::fake();
 
@@ -71,8 +70,7 @@ class DisabledActivationTest extends BracketsTestCase
         );
     }
 
-    /** @test */
-    public function do_not_send_activation_mail_form_filled(): void
+    public function testDoNotSendActivationMailFormFilled(): void
     {
         Notification::fake();
 
@@ -87,8 +85,7 @@ class DisabledActivationTest extends BracketsTestCase
         );
     }
 
-    /** @test */
-    public function do_not_activate_user_if_activation_disabled(): void
+    public function testDoNotActivateUserIfActivationDisabled(): void
     {
         $user = $this->createTestUser(false);
 
@@ -96,7 +93,7 @@ class DisabledActivationTest extends BracketsTestCase
         $response->assertStatus(302);
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
-        $this->assertEquals(0, $userNew->activated);
+        self::assertEquals(0, $userNew->activated);
 
         $this->assertDatabaseHas('admin_activations', [
             'email' => 'john@example.com',

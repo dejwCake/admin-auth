@@ -26,15 +26,13 @@ class ForgotPasswordTest extends StandardTestCase
         return $user;
     }
 
-    /** @test */
-    public function can_see_forgot_password_form(): void
+    public function testCanSeeForgotPasswordForm(): void
     {
         $response = $this->get(url('/admin/password-reset'));
         $response->assertStatus(200);
     }
 
-    /** @test */
-    public function send_forgot_password_email_after_form_filled(): void
+    public function testSendForgotPasswordEmailAfterFormFilled(): void
     {
         Notification::fake();
 
@@ -49,8 +47,7 @@ class ForgotPasswordTest extends StandardTestCase
         );
     }
 
-    /** @test */
-    public function do_not_send_password_email_if_email_not_found(): void
+    public function testDoNotSendPasswordEmailIfEmailNotFound(): void
     {
         Notification::fake();
 

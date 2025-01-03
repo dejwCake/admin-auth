@@ -25,37 +25,33 @@ class LoginStandardTest extends StandardTestCase
         return $user;
     }
 
-    /** @test */
-    public function login_page_is_accessible(): void
+    public function testLoginPageIsAccessible(): void
     {
         $response = $this->get('/admin/login');
         $response->assertStatus(200);
     }
 
-    /** @test */
-    public function user_can_log_in(): void
+    public function testUserCanLogIn(): void
     {
         $user = $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
 
-        $this->assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 
-    /** @test */
-    public function user_with_wrong_credentials_cannot_log_in(): void
+    public function testUserWithWrongCredentialsCannotLogIn(): void
     {
         $user = $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'incorrect password']);
         $response->assertStatus(302);
 
-        $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 
-    /** @test */
-    public function already_auth_user_is_redirected_from_login(): void
+    public function testAlreadyAuthUserIsRedirectedFromLogin(): void
     {
         $user = $this->createTestUser();
 
@@ -63,7 +59,7 @@ class LoginStandardTest extends StandardTestCase
         $response->assertStatus(302);
         $response->assertRedirect('/admin');
 
-        $this->assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);

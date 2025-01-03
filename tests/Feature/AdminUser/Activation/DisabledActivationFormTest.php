@@ -15,8 +15,7 @@ class DisabledActivationFormTest extends BracketsTestCase
         $this->app['config']->set('admin-auth.self_activation_form_enabled', false);
     }
 
-    /** @test */
-    public function can_not_see_activation_form_if_disabled(): void
+    public function testCanNotSeeActivationFormIfDisabled(): void
     {
         $response = $this->get(url('/admin/activation'));
         $response->assertStatus(404);

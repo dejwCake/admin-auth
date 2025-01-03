@@ -25,32 +25,30 @@ class LogoutTest extends StandardTestCase
         return $user;
     }
 
-    /** @test */
-    public function auth_user_can_logout(): void
+    public function testAuthUserCanLogout(): void
     {
         $user = $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
 
-        $this->assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
 
         $response = $this->get('/admin/logout');
         $response->assertStatus(302);
         $response->assertRedirect('/admin/login');
 
-        $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 
-    /** @test */
-    public function not_auth_user_cannot_logout(): void
+    public function testNotAuthUserCannotLogout(): void
     {
-        $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertEmpty(Auth::guard($this->adminAuthGuard)->user());
 
         $response = $this->get('/admin/logout');
         $response->assertStatus(302);
         $response->assertRedirect('/admin/login');
 
-        $this->assertEmpty(Auth::guard($this->adminAuthGuard)->user());
+        self::assertEmpty(Auth::guard($this->adminAuthGuard)->user());
     }
 }

@@ -27,16 +27,16 @@
         }
     ],
     "require": {
-        "php": "^8.1",
-        "dejwcake/admin-ui": "dev-main",
-        "dejwcake/craftable-media": "dev-main",
-        "illuminate/support": "^10.0",
-        "spatie/laravel-permission": "^5.0"
+        "php": "^8.2",
+        "dejwcake/admin-ui": "1.x-dev",
+        "dejwcake/craftable-media": "1.x-dev",
+        "illuminate/support": "^11.37",
+        "spatie/laravel-permission": "^6.10"
     },
     "require-dev": {
-        "mockery/mockery": "^1.0",
-        "orchestra/testbench": "~8.5",
-        "phpunit/phpunit": "^10.1"
+        "mockery/mockery": "^1.6",
+        "orchestra/testbench": "^9.9",
+        "phpunit/phpunit": "^11.5"
     },
     "autoload": {
         "psr-4": {
@@ -57,6 +57,6 @@
         }
     },
     "branch-alias": {
-        "dev-main": "0.9-dev"
+        "dev-main": "1.0-dev"
     }
 }

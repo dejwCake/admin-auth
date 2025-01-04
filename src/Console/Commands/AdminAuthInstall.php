@@ -45,10 +45,10 @@ class AdminAuthInstall extends Command
 
         $this->strReplaceInFile(
             resource_path('views/admin/layout/profile-dropdown.blade.php'),
-            '|url\(\'admin\/logout\'\)|',
             '{{-- Do not delete me :) I\'m used for auto-generation menu items --}}',
             '{{-- Do not delete me :) I\'m used for auto-generation menu items --}}
-    <a href="{{ url(\'admin/logout\') }}" class="dropdown-item"><i class="fa fa-lock"></i> {{ trans(\'brackets/admin-auth::admin.profile_dropdown.logout\') }}</a>'
+    <a href="{{ url(\'admin/logout\') }}" class="dropdown-item"><i class="fa fa-lock"></i> {{ trans(\'brackets/admin-auth::admin.profile_dropdown.logout\') }}</a>',
+            '|url\(\'admin\/logout\'\)|',
         );
 
         $this->appendAdminAuthToAuthConfig();
@@ -58,23 +58,18 @@ class AdminAuthInstall extends Command
         $this->info('Package brackets/admin-auth installed');
     }
 
-    /**
-     * Replace string in file
-     *
-     * @param string $fileName
-     * @param string $ifExistsRegex
-     * @param string $find
-     * @param string $replaceWith
-     * @return int|bool
-     */
-    private function strReplaceInFile($fileName, $ifExistsRegex, $find, $replaceWith)
-    {
-        $content = File::get($fileName);
-        if ($ifExistsRegex !== null && preg_match($ifExistsRegex, $content)) {
-            return;
+    private function strReplaceInFile(
+        string $filePath,
+        string $find,
+        string $replaceWith,
+        ?string $ifRegexNotExists = null
+    ): bool|int {
+        $content = File::get($filePath);
+        if ($ifRegexNotExists !== null && preg_match($ifRegexNotExists, $content)) {
+            return false;
         }
 
-        return File::put($fileName, str_replace($find, $replaceWith, $content));
+        return File::put($filePath, str_replace($find, $replaceWith, $content));
     }
 
     /**
@@ -88,14 +83,14 @@ class AdminAuthInstall extends Command
 
         $this->strReplaceInFile(
             config_path('auth.php'),
-            '|\'admin\' => \[|',
             '\'guards\' => [',
             '\'guards\' => [
         \'admin\' => [
             \'driver\' => \'session\',
             \'provider\' => \'admin_users\',
         ],
-        '
+        ',
+            '|\'admin\' => \[|',
         );
         if (!isset($auth['guards'])) {
             $auth['guards'] = [];
@@ -107,15 +102,15 @@ class AdminAuthInstall extends Command
 
         $this->strReplaceInFile(
             config_path('auth.php'),
-            '|    \'providers\' => \[
-        \'admin_users\' => \[|',
             '\'providers\' => [',
             '\'providers\' => [
         \'admin_users\' => [
             \'driver\' => \'eloquent\',
             \'model\' => Brackets\AdminAuth\Models\AdminUser::class,
         ], 
-        '
+        ',
+            '|    \'providers\' => \[
+        \'admin_users\' => \[|',
         );
         if (!isset($auth['providers'])) {
             $auth['providers'] = [];
@@ -127,8 +122,6 @@ class AdminAuthInstall extends Command
 
         $this->strReplaceInFile(
             config_path('auth.php'),
-            '|\'passwords\' => \[
-        \'admin_users\' => \[|',
             '\'passwords\' => [',
             '\'passwords\' => [
         \'admin_users\' => [
@@ -136,7 +129,9 @@ class AdminAuthInstall extends Command
             \'table\' => \'admin_password_resets\',
             \'expire\' => 60,
         ],
-        '
+        ',
+            '|\'passwords\' => \[
+        \'admin_users\' => \[|',
         );
         if (!isset($auth['passwords'])) {
             $auth['passwords'] = [];

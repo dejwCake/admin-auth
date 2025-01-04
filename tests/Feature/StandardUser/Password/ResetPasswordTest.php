@@ -4,7 +4,7 @@ namespace Brackets\AdminAuth\Tests\Feature\StandardUser\Password;
 
 use Brackets\AdminAuth\Tests\Models\TestStandardUserModel;
 use Brackets\AdminAuth\Tests\StandardTestCase;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Hash;
 
@@ -35,7 +35,7 @@ class ResetPasswordTest extends StandardTestCase
         $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user->email,
             'token' => bcrypt($this->token),
-            'created_at' => Carbon::now()
+            'created_at' => CarbonImmutable::now()
         ]);
 
         $this->assertDatabaseHas('password_reset_tokens', [
@@ -129,7 +129,7 @@ class ResetPasswordTest extends StandardTestCase
         $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user2->email,
             'token' => bcrypt($this->token . '2'),
-            'created_at' => Carbon::now()
+            'created_at' => CarbonImmutable::now()
         ]);
 
         $this->assertDatabaseHas('password_reset_tokens', [

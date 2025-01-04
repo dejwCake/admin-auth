@@ -4,22 +4,14 @@ namespace Brackets\AdminAuth\Activation\Providers;
 
 use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
 use Brackets\AdminAuth\Activation\Facades\Activation;
+use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
-class ActivationServiceProvider extends ServiceProvider
+class ActivationServiceProvider extends ServiceProvider implements DeferrableProvider
 {
     /**
-     * Indicates if loading of the provider is deferred.
-     *
-     * @var bool
-     */
-    protected $defer = true;
-
-    /**
      * Bootstrap any application services.
-     *
-     * @return void
      */
     public function boot(): void
     {
@@ -38,8 +30,6 @@ class ActivationServiceProvider extends ServiceProvider
 
     /**
      * Register the service provider.
-     *
-     * @return void
      */
     public function register(): void
     {
@@ -56,8 +46,6 @@ class ActivationServiceProvider extends ServiceProvider
 
     /**
      * Register the password broker instance.
-     *
-     * @return void
      */
     protected function registerActivationBroker(): void
     {
@@ -73,7 +61,7 @@ class ActivationServiceProvider extends ServiceProvider
     /**
      * Get the services provided by the provider.
      *
-     * @return array
+     * @return array<string>
      */
     public function provides(): array
     {

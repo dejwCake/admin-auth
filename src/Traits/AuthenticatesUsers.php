@@ -2,11 +2,18 @@
 
 namespace Brackets\AdminAuth\Traits;
 
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 trait AuthenticatesUsers
 {
@@ -14,10 +21,8 @@ trait AuthenticatesUsers
 
     /**
      * Show the application's login form.
-     *
-     * @return \Illuminate\View\View
      */
-    public function showLoginForm()
+    public function showLoginForm(): View
     {
         return view('auth.login');
     }
@@ -25,60 +30,54 @@ trait AuthenticatesUsers
     /**
      * Handle a login request to the application.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\Response|\Illuminate\Http\JsonResponse
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
-    public function login(Request $request)
+    public function login(Request $request): JsonResponse|RedirectResponse
     {
         $this->validateLogin($request);
 
         // If the class is using the ThrottlesLogins trait, we can automatically throttle
         // the login attempts for this application. We'll key this by the username and
         // the IP address of the client making these requests into this application.
-        if (method_exists($this, 'hasTooManyLoginAttempts') &&
-            $this->hasTooManyLoginAttempts($request)) {
+        if (in_array(ThrottlesLogins::class, class_uses_recursive(get_class($this)))
+            && $this->hasTooManyLoginAttempts($request)
+        ) {
             $this->fireLockoutEvent($request);
 
-            return $this->sendLockoutResponse($request);
+            $this->throwLockoutResponse($request);
         }
 
-        if ($this->attemptLogin($request)) {
-            return $this->sendLoginResponse($request);
+        if (!$this->attemptLogin($request)) {
+            // If the login attempt was unsuccessful we will increment the number of attempts
+            // to login and redirect the user back to the login form. Of course, when this
+            // user surpasses their maximum number of attempts they will get locked out.
+            if (in_array(ThrottlesLogins::class, class_uses_recursive(get_class($this)))) {
+                $this->incrementLoginAttempts($request);
+            }
+
+            $this->throwFailedLogin();
         }
 
-        // If the login attempt was unsuccessful we will increment the number of attempts
-        // to login and redirect the user back to the login form. Of course, when this
-        // user surpasses their maximum number of attempts they will get locked out.
-        $this->incrementLoginAttempts($request);
-
-        return $this->sendFailedLoginResponse($request);
+        return $this->sendLoginResponse($request);
     }
 
     /**
      * Validate the user login request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
-    protected function validateLogin(Request $request)
+    protected function validateLogin(Request $request): void
     {
         $request->validate([
-            $this->username() => 'required|string',
-            'password' => 'required|string',
+            $this->username() => ['required', 'string'],
+            'password' => ['required', 'string'],
         ]);
     }
 
     /**
      * Attempt to log the user into the application.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return bool
      */
-    protected function attemptLogin(Request $request)
+    protected function attemptLogin(Request $request): bool
     {
         return $this->guard()->attempt(
             $this->credentials($request), $request->filled('remember')
@@ -88,45 +87,35 @@ trait AuthenticatesUsers
     /**
      * Get the needed authorization credentials from the request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, string>
      */
-    protected function credentials(Request $request)
+    protected function credentials(Request $request): array
     {
         return $request->only($this->username(), 'password');
     }
 
     /**
      * Send the response after the user was authenticated.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    protected function sendLoginResponse(Request $request)
+    protected function sendLoginResponse(Request $request): JsonResponse|RedirectResponse
     {
         $request->session()->regenerate();
 
         $this->clearLoginAttempts($request);
 
-        if ($response = $this->authenticated($request, $this->guard()->user())) {
-            return $response;
-        }
+        $this->authenticated($this->guard()->user());
 
         return $request->wantsJson()
-            ? new Response('', 204)
+            ? new JsonResponse(null, Response::HTTP_NO_CONTENT)
             : redirect()->intended($this->redirectPath());
     }
 
     /**
      * The user has been authenticated.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  mixed  $user
-     * @return mixed
      */
-    protected function authenticated(Request $request, $user)
+    protected function authenticated(?Authenticatable $user): void
     {
-        if(Schema::hasColumn($user->getTable(), 'last_login_at')) {
+        if($user instanceof Model && Schema::hasColumn($user->getTable(), 'last_login_at')) {
             $user->last_login_at = now();
             $user->save();
         }
@@ -135,12 +124,9 @@ trait AuthenticatesUsers
     /**
      * Get the failed login response instance.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Symfony\Component\HttpFoundation\Response
-     *
-     * @throws \Illuminate\Validation\ValidationException
+     * @throws ValidationException
      */
-    protected function sendFailedLoginResponse(Request $request)
+    protected function throwFailedLogin(): void
     {
         throw ValidationException::withMessages([
             $this->username() => [trans('auth.failed')],
@@ -149,21 +135,16 @@ trait AuthenticatesUsers
 
     /**
      * Get the login username to be used by the controller.
-     *
-     * @return string
      */
-    public function username()
+    public function username(): string
     {
         return 'email';
     }
 
     /**
      * Log the user out of the application.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
      */
-    public function logout(Request $request)
+    public function logout(Request $request): JsonResponse|RedirectResponse
     {
         $this->guard()->logout();
 
@@ -171,32 +152,25 @@ trait AuthenticatesUsers
 
         $request->session()->regenerateToken();
 
-        if ($response = $this->loggedOut($request)) {
-            return $response;
-        }
+        $this->loggedOut($request);
 
         return $request->wantsJson()
-            ? new Response('', 204)
+            ? new JsonResponse(null, 204)
             : redirect('/');
     }
 
     /**
      * The user has logged out of the application.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return mixed
      */
-    protected function loggedOut(Request $request)
+    protected function loggedOut(Request $request): void
     {
-        //
+        //do nothing
     }
 
     /**
      * Get the guard to be used during authentication.
-     *
-     * @return \Illuminate\Contracts\Auth\StatefulGuard
      */
-    protected function guard()
+    protected function guard(): Guard|StatefulGuard
     {
         return Auth::guard();
     }

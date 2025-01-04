@@ -44,17 +44,14 @@ interface ActivationBroker
     /**
      * Send activation link to a user.
      *
-     * @param array $credentials
-     * @return string
+     * @param array<string, string> $credentials
      */
     public function sendActivationLink(array $credentials): string;
 
     /**
      * Activate user for the given token.
      *
-     * @param array $credentials
-     * @param Closure $callback
-     * @return mixed
+     * @param array<string, string> $credentials
      */
-    public function activate(array $credentials, Closure $callback);
+    public function activate(array $credentials, Closure $callback): string;
 }

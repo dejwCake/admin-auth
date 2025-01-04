@@ -5,7 +5,8 @@ namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Activation;
 use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Tests\BracketsTestCase;
 use Brackets\AdminAuth\Tests\Models\TestBracketsUserModel;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Notification;
 
@@ -26,7 +27,7 @@ class DisabledActivationTest extends BracketsTestCase
         bool $activated = true,
         bool $forbidden = false,
         bool $used = false,
-        Carbon $activationCreatedAt = null
+        CarbonInterface $activationCreatedAt = null
     ): TestBracketsUserModel {
         $user = TestBracketsUserModel::create([
             'email' => 'john@example.com',
@@ -46,7 +47,7 @@ class DisabledActivationTest extends BracketsTestCase
             'email' => $user->email,
             'token' => $this->token,
             'used' => $used,
-            'created_at' => $activationCreatedAt ?? Carbon::now(),
+            'created_at' => $activationCreatedAt ?? CarbonImmutable::now(),
         ]);
 
         $this->assertDatabaseHas('admin_activations', [

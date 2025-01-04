@@ -6,9 +6,6 @@ interface ActivationBrokerFactory
 {
     /**
      * Get a password broker instance by name.
-     *
-     * @param string|null $name
-     * @return mixed
      */
-    public function broker($name = null);
+    public function broker(?string $name = null): ?ActivationBroker;
 }

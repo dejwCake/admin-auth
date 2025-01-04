@@ -2,6 +2,7 @@
 
 namespace Brackets\AdminAuth\Console\Commands;
 
+use Brackets\AdminAuth\Models\AdminUser;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Config;
 use Illuminate\Support\Facades\File;
@@ -12,6 +13,7 @@ class AdminAuthInstall extends Command
      * The name and signature of the console command.
      *
      * @var string
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $signature = 'admin-auth:install {--dont-install-admin-ui}';
 
@@ -19,13 +21,12 @@ class AdminAuthInstall extends Command
      * The console command description.
      *
      * @var string
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $description = 'Install a brackets/admin-auth package';
 
     /**
      * Execute the console command.
-     *
-     * @return void
      */
     public function handle(): void
     {
@@ -74,8 +75,6 @@ class AdminAuthInstall extends Command
 
     /**
      * Append admin-auth config to auth config
-     *
-     * @return void
      */
     private function appendAdminAuthToAuthConfig(): void
     {
@@ -117,7 +116,7 @@ class AdminAuthInstall extends Command
         }
         $auth['providers']['admin_users'] = [
             'driver' => 'eloquent',
-            'model' => \Brackets\AdminAuth\Models\AdminUser::class,
+            'model' => AdminUser::class,
         ];
 
         $this->strReplaceInFile(

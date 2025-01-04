@@ -1,5 +1,12 @@
 <?php
 
+use Brackets\AdminAuth\Http\Controllers\AdminHomepageController;
+use Brackets\AdminAuth\Http\Controllers\Auth\ActivationController;
+use Brackets\AdminAuth\Http\Controllers\Auth\ForgotPasswordController;
+use Brackets\AdminAuth\Http\Controllers\Auth\LoginController;
+use Brackets\AdminAuth\Http\Controllers\Auth\ResetPasswordController;
+use Illuminate\Support\Facades\Route;
+
 /*
 |--------------------------------------------------------------------------
 | Web Routes
@@ -11,24 +18,34 @@
 |
 */
 
-Route::middleware(['web'])->group(static function () {
-    Route::namespace('Brackets\AdminAuth\Http\Controllers\Auth')->group(static function () {
-        Route::get('/admin/login', 'LoginController@showLoginForm')->name('brackets/admin-auth::admin/login');
-        Route::post('/admin/login', 'LoginController@login');
+Route::middleware(['web'])
+    ->prefix('/admin')
+    ->name('brackets/admin-auth::admin/')
+    ->group(static function () {
+        Route::get('/login', [LoginController::class, 'showLoginForm'])
+            ->name('login');
+        Route::post('/login', [LoginController::class, 'login']);
 
-        Route::any('/admin/logout', 'LoginController@logout')->name('brackets/admin-auth::admin/logout');
+        Route::any('/logout', [LoginController::class, 'logout'])
+            ->name('logout');
 
-        Route::get('/admin/password-reset', 'ForgotPasswordController@showLinkRequestForm')->name('brackets/admin-auth::admin/password/showForgotForm');
-        Route::post('/admin/password-reset/send', 'ForgotPasswordController@sendResetLinkEmail');
-        Route::get('/admin/password-reset/{token}', 'ResetPasswordController@showResetForm')->name('brackets/admin-auth::admin/password/showResetForm');
-        Route::post('/admin/password-reset/reset', 'ResetPasswordController@reset');
+        Route::prefix('/password-reset')
+            ->name('password/')
+            ->group(static function () {
+                Route::get('/', [ForgotPasswordController::class, 'showLinkRequestForm'])
+                    ->name('showForgotForm');
+                Route::post('/send', [ForgotPasswordController::class, 'sendResetLinkEmail']);
+                Route::get('/{token}', [ResetPasswordController::class, 'showResetForm'])
+                    ->name('showResetForm');
+                Route::post('/reset', [ResetPasswordController::class, 'reset']);
+            });
 
-        Route::get('/admin/activation/{token}', 'ActivationController@activate')->name('brackets/admin-auth::admin/activation/activate');
+        Route::get('/admin/activation/{token}', [ActivationController::class, 'activate'])
+            ->name('activation/activate');
     });
-});
 
-Route::middleware(['web', 'admin', 'auth:' . config('admin-auth.defaults.guard')])->group(static function () {
-    Route::namespace('Brackets\AdminAuth\Http\Controllers')->group(static function () {
-        Route::get('/admin', 'AdminHomepageController@index')->name('brackets/admin-auth::admin');
+Route::middleware(['web', 'admin', 'auth:' . config('admin-auth.defaults.guard')])
+    ->group(static function () {
+        Route::get('/admin', [AdminHomepageController::class, 'index'])
+            ->name('brackets/admin-auth::admin');
     });
-});

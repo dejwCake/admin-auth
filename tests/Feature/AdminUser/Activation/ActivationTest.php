@@ -5,7 +5,8 @@ namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Activation;
 use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Tests\BracketsTestCase;
 use Brackets\AdminAuth\Tests\Models\TestBracketsUserModel;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Notification;
 
@@ -25,7 +26,7 @@ class ActivationTest extends BracketsTestCase
         bool $activated = true,
         bool $forbidden = false,
         bool $used = false,
-        Carbon $activationCreatedAt = null
+        CarbonInterface $activationCreatedAt = null
     ): TestBracketsUserModel {
         Notification::fake();
         // TODO maybe we can Mock sending an email to speed up a test?
@@ -53,7 +54,7 @@ class ActivationTest extends BracketsTestCase
             'email' => $user->email,
             'token' => $this->token,
             'used' => $used,
-            'created_at' => $activationCreatedAt ?? Carbon::now(),
+            'created_at' => $activationCreatedAt ?? CarbonImmutable::now(),
         ]);
 
         $this->assertDatabaseHas('admin_activations', [
@@ -125,7 +126,7 @@ class ActivationTest extends BracketsTestCase
 
     public function testDoNotActivateUserIfTokenExpired(): void
     {
-        $user = $this->createTestUser(false, false, false, Carbon::now()->subDays(10));
+        $user = $this->createTestUser(false, false, false, CarbonImmutable::now()->subDays(10));
 
         $response = $this->get(route('brackets/admin-auth::admin/activation/activate', ['token' => $this->token]));
         $response->assertStatus(302);

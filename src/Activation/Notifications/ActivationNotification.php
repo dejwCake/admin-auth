@@ -9,16 +9,11 @@ class ActivationNotification extends Notification
 {
     /**
      * The password reset token.
-     *
-     * @var string
      */
-    public $token;
+    public string $token;
 
     /**
      * Create a notification instance.
-     *
-     * @param string $token
-     * @return void
      */
     public function __construct(string $token)
     {
@@ -28,21 +23,17 @@ class ActivationNotification extends Notification
     /**
      * Get the notification's channels.
      *
-     * @param mixed $notifiable
-     * @return array|string
+     * @return array<int, string>
      */
-    public function via($notifiable)
+    public function via(object $notifiable): array
     {
         return ['mail'];
     }
 
     /**
      * Build the mail representation of the notification.
-     *
-     * @param mixed $notifiable
-     * @return MailMessage
      */
-    public function toMail($notifiable): MailMessage
+    public function toMail(object $notifiable): MailMessage
     {
         //TODO change to template?
         return (new MailMessage)

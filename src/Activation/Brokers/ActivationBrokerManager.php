@@ -21,9 +21,9 @@ class ActivationBrokerManager implements FactoryContract
     /**
      * The array of created "drivers".
      *
-     * @var array
+     * @var array<string, ActivationBrokerContract>
      */
-    protected $brokers = [];
+    protected array $brokers = [];
 
     /**
      * Create a new ActivationBroker manager instance.
@@ -38,11 +38,8 @@ class ActivationBrokerManager implements FactoryContract
 
     /**
      * Attempt to get the broker from the local cache.
-     *
-     * @param string $name
-     * @return ActivationBrokerContract
      */
-    public function broker($name = null): ?ActivationBrokerContract
+    public function broker(?string $name = null): ?ActivationBrokerContract
     {
         $name = $name ?: $this->getDefaultDriver();
 
@@ -53,10 +50,10 @@ class ActivationBrokerManager implements FactoryContract
      * Resolve the given broker.
      *
      * @param string $name
-     * @throws \InvalidArgumentException
+     * @throws InvalidArgumentException
      * @return ActivationBrokerContract
      */
-    protected function resolve($name): ActivationBrokerContract
+    protected function resolve(string $name): ActivationBrokerContract
     {
         $config = $this->getConfig($name);
 
@@ -76,8 +73,7 @@ class ActivationBrokerManager implements FactoryContract
     /**
      * Create a token repository instance based on the given configuration.
      *
-     * @param array $config
-     * @return DatabaseTokenRepository
+     * @param array<string, string|int> $config
      */
     protected function createTokenRepository(array $config): DatabaseTokenRepository
     {
@@ -101,18 +97,15 @@ class ActivationBrokerManager implements FactoryContract
     /**
      * Get the activation broker configuration.
      *
-     * @param string $name
-     * @return array
+     * @return array<string, string|int>|null
      */
-    protected function getConfig($name): array
+    protected function getConfig(string $name): ?array
     {
         return $this->app['config']["activation.activations.{$name}"];
     }
 
     /**
      * Get the default activation broker name.
-     *
-     * @return string
      */
     public function getDefaultDriver(): string
     {
@@ -121,23 +114,16 @@ class ActivationBrokerManager implements FactoryContract
 
     /**
      * Set the default activation broker name.
-     *
-     * @param string $name
-     * @return void
      */
-    public function setDefaultDriver($name): void
+    public function setDefaultDriver(string $name): void
     {
         $this->app['config']['activation.defaults.activations'] = $name;
     }
 
     /**
      * Dynamically call the default driver instance.
-     *
-     * @param string $method
-     * @param array $parameters
-     * @return mixed
      */
-    public function __call($method, $parameters)
+    public function __call(string $method, array $parameters)
     {
         return $this->broker()->{$method}(...$parameters);
     }

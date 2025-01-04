@@ -5,7 +5,7 @@ namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Auth;
 use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Tests\BracketsTestCase;
 use Brackets\AdminAuth\Tests\Models\TestBracketsUserModel;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Notification;
@@ -102,7 +102,7 @@ class LoginBracketsTest extends BracketsTestCase
 
     public function testDeletedUserCannotLogIn(): void
     {
-        $time = Carbon::now();
+        $time = CarbonImmutable::now();
         //Delted at is not fillable, therefore we need to unguard to force fill
         TestBracketsUserModel::unguard();
         $user = TestBracketsUserModel::create([

@@ -8,8 +8,6 @@ trait CanActivate
 {
     /**
      * Get the e-mail address where activation links are sent.
-     *
-     * @return string
      */
     public function getEmailForActivation(): string
     {
@@ -18,9 +16,6 @@ trait CanActivate
 
     /**
      * Send the password reset notification.
-     *
-     * @param string $token
-     * @return void
      */
     public function sendActivationNotification(string $token): void
     {

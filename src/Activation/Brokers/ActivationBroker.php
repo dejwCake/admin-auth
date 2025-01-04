@@ -14,24 +14,14 @@ class ActivationBroker implements ActivationBrokerContract
 {
     /**
      * The activation token repository.
-     *
-     * @var TokenRepositoryInterface
      */
     protected TokenRepositoryInterface $tokens;
 
     /**
      * The user provider implementation.
-     *
-     * @var UserProvider
      */
     protected UserProvider $users;
 
-    /**
-     * Create a new password broker instance.
-     *
-     * @param TokenRepositoryInterface $tokens
-     * @param UserProvider $users
-     */
     public function __construct(
         TokenRepositoryInterface $tokens,
         UserProvider $users
@@ -42,9 +32,7 @@ class ActivationBroker implements ActivationBrokerContract
 
     /**
      * Send a activation link to a user.
-     *
-     * @param array $credentials
-     * @return string
+     * @param array<string, string> $credentials
      */
     public function sendActivationLink(array $credentials): string
     {
@@ -70,11 +58,9 @@ class ActivationBroker implements ActivationBrokerContract
     /**
      * Activate account for the given token.
      *
-     * @param array $credentials
-     * @param Closure $callback
-     * @return mixed
+     * @param array<string, string> $credentials
      */
-    public function activate(array $credentials, Closure $callback)
+    public function activate(array $credentials, Closure $callback): string
     {
         // If the responses from the validate method is not a user instance, we will
         // assume that it is a redirect and simply return it from this method and
@@ -98,16 +84,17 @@ class ActivationBroker implements ActivationBrokerContract
     /**
      * Validate an activation for the given credentials.
      *
-     * @param array $credentials
-     * @return CanActivateContract|string
+     * @param array<string, string> $credentials
      */
-    protected function validateActivation(array $credentials)
+    protected function validateActivation(array $credentials): string|CanActivateContract
     {
-        if (empty($tokenRecord = $this->tokens->getByToken($credentials['token']))) {
+        $tokenRecord = $this->tokens->getByToken($credentials['token']);
+        if ($tokenRecord === null) {
             return static::INVALID_TOKEN;
         }
 
-        if (($user = $this->getUser(['email' => $tokenRecord['email']])) === null) {
+        $user = $this->getUser(['email' => $tokenRecord['email']]);
+        if ($user === null) {
             return static::INVALID_USER;
         }
 
@@ -117,8 +104,7 @@ class ActivationBroker implements ActivationBrokerContract
     /**
      * Get the user for the given credentials.
      *
-     * @param array $credentials
-     * @return CanActivateContract|null
+     * @param array<string, string> $credentials
      */
     public function getUser(array $credentials): ?CanActivateContract
     {
@@ -126,7 +112,7 @@ class ActivationBroker implements ActivationBrokerContract
 
         $user = $this->users->retrieveByCredentials($credentials);
 
-        if ($user && !$user instanceof CanActivateContract) {
+        if ($user !== null && !$user instanceof CanActivateContract) {
             throw new UnexpectedValueException('User must implement CanActivateContract interface.');
         }
 
@@ -135,9 +121,6 @@ class ActivationBroker implements ActivationBrokerContract
 
     /**
      * Create a new password reset token for the given user.
-     *
-     * @param CanActivateContract $user
-     * @return string
      */
     public function createToken(CanActivateContract $user): string
     {
@@ -162,15 +145,13 @@ class ActivationBroker implements ActivationBrokerContract
      * @param string $token
      * @return bool
      */
-    public function tokenExists(CanActivateContract $user, $token): bool
+    public function tokenExists(CanActivateContract $user, string $token): bool
     {
         return $this->tokens->exists($user, $token);
     }
 
     /**
      * Get the activation token repository implementation.
-     *
-     * @return TokenRepositoryInterface
      */
     public function getRepository(): TokenRepositoryInterface
     {
@@ -179,10 +160,8 @@ class ActivationBroker implements ActivationBrokerContract
 
     /**
      * Get the user model class implementation.
-     *
-     * @return CanActivateContract
      */
-    public function getUserModelClass()
+    public function getUserModelClass(): string
     {
         return $this->users->getModel();
     }

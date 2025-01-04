@@ -5,7 +5,7 @@ namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Password;
 use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Tests\BracketsTestCase;
 use Brackets\AdminAuth\Tests\Models\TestBracketsUserModel;
-use Carbon\Carbon;
+use Carbon\CarbonImmutable;
 use Illuminate\Foundation\Testing\DatabaseMigrations;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Notification;
@@ -42,7 +42,7 @@ class ResetPasswordTest extends BracketsTestCase
         $this->app['db']->connection()->table('admin_password_resets')->insert([
             'email' => $user->email,
             'token' => bcrypt($this->token),
-            'created_at' => Carbon::now()
+            'created_at' => CarbonImmutable::now()
         ]);
 
         $this->assertDatabaseHas('admin_password_resets', [
@@ -143,7 +143,7 @@ class ResetPasswordTest extends BracketsTestCase
         $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user2->email,
             'token' => bcrypt($this->token . '2'),
-            'created_at' => Carbon::now()
+            'created_at' => CarbonImmutable::now()
         ]);
 
         $this->assertDatabaseHas('password_reset_tokens', [

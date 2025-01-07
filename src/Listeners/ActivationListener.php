@@ -11,16 +11,9 @@ class ActivationListener
 {
     /**
      * Activation broker used for admin user
-     *
-     * @var string
      */
-    protected $activationBroker = 'admin_users';
+    protected string $activationBroker = 'admin_users';
 
-    /**
-     * Create a new ActivationListener
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->activationBroker = config('admin-auth.defaults.activations');
@@ -28,10 +21,8 @@ class ActivationListener
 
     /**
      * Register the listeners for the subscriber.
-     *
-     * @param Dispatcher $events
      */
-    public function subscribe(Dispatcher $events)
+    public function subscribe(Dispatcher $events): void
     {
         $activationBrokerConfig = config("activation.activations.{$this->activationBroker}");
         if (app('auth')->createUserProvider($activationBrokerConfig['provider']) !== null) {

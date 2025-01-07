@@ -3,13 +3,22 @@
 namespace Brackets\AdminAuth\Traits;
 
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Contracts\Auth\Authenticatable;
+use Illuminate\Contracts\Auth\CanResetPassword;
+use Illuminate\Contracts\Auth\Guard;
+use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use RuntimeException;
 
 trait ResetsPasswords
 {
@@ -19,12 +28,8 @@ trait ResetsPasswords
      * Display the password reset view for the given token.
      *
      * If no token is present, display the link request form.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string|null  $token
-     * @return \Illuminate\Contracts\View\Factory|\Illuminate\View\View
      */
-    public function showResetForm(Request $request, $token = null)
+    public function showResetForm(Request $request, ?string $token = null): View
     {
         return view('auth.passwords.reset')->with(
             ['token' => $token, 'email' => $request->email]
@@ -33,11 +38,8 @@ trait ResetsPasswords
 
     /**
      * Reset the given user's password.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
-    public function reset(Request $request)
+    public function reset(Request $request): RedirectResponse|JsonResponse
     {
         $request->validate($this->rules(), $this->validationErrorMessages());
 
@@ -61,23 +63,21 @@ trait ResetsPasswords
     /**
      * Get the password reset validation rules.
      *
-     * @return array
+     * @return array<string, array<string>>
      */
-    protected function rules()
+    protected function rules(): array
     {
         return [
-            'token' => 'required',
-            'email' => 'required|email',
-            'password' => 'required|confirmed|min:8',
+            'token' => ['required'],
+            'email' => ['required', 'email'],
+            'password' => ['required', 'confirmed', 'min:8'],
         ];
     }
 
     /**
      * Get the password reset validation error messages.
-     *
-     * @return array
      */
-    protected function validationErrorMessages()
+    protected function validationErrorMessages(): array
     {
         return [];
     }
@@ -85,10 +85,9 @@ trait ResetsPasswords
     /**
      * Get the password reset credentials from the request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, string>
      */
-    protected function credentials(Request $request)
+    protected function credentials(Request $request): array
     {
         return $request->only(
             'email', 'password', 'password_confirmation', 'token'
@@ -97,12 +96,8 @@ trait ResetsPasswords
 
     /**
      * Reset the given user's password.
-     *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
-     * @param  string  $password
-     * @return void
      */
-    protected function resetPassword($user, $password)
+    protected function resetPassword(CanResetPassword&Authenticatable&Model $user, string $password): void
     {
         $this->setUserPassword($user, $password);
 
@@ -117,41 +112,30 @@ trait ResetsPasswords
 
     /**
      * Set the user's password.
-     *
-     * @param  \Illuminate\Contracts\Auth\CanResetPassword  $user
-     * @param  string  $password
-     * @return void
      */
-    protected function setUserPassword($user, $password)
+    protected function setUserPassword(CanResetPassword $user, string $password): void
     {
+        if (!property_exists($user, 'password')) {
+            throw new RuntimeException('User must have a password property for password reset.');
+        }
         $user->password = Hash::make($password);
     }
 
     /**
      * Get the response for a successful password reset.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $response
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
-    protected function sendResetResponse(Request $request, $response)
+    protected function sendResetResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
-        if ($request->wantsJson()) {
-            return new JsonResponse(['message' => trans($response)], 200);
-        }
-
-        return redirect($this->redirectPath())
-            ->with('status', trans($response));
+        return $request->wantsJson()
+            ? new JsonResponse(['message' => trans($response)], 200)
+            : redirect($this->redirectPath())->with('status', trans($response));
     }
 
     /**
      * Get the response for a failed password reset.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $response
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @throws ValidationException
      */
-    protected function sendResetFailedResponse(Request $request, $response)
+    protected function sendResetFailedResponse(Request $request, string $response): RedirectResponse
     {
         if ($request->wantsJson()) {
             throw ValidationException::withMessages([
@@ -166,20 +150,16 @@ trait ResetsPasswords
 
     /**
      * Get the broker to be used during password reset.
-     *
-     * @return \Illuminate\Contracts\Auth\PasswordBroker
      */
-    public function broker()
+    public function broker(): PasswordBroker
     {
         return Password::broker();
     }
 
     /**
      * Get the guard to be used during password reset.
-     *
-     * @return \Illuminate\Contracts\Auth\StatefulGuard
      */
-    protected function guard()
+    protected function guard(): Guard|StatefulGuard
     {
         return Auth::guard();
     }

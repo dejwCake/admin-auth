@@ -121,10 +121,8 @@ class ForgotPasswordController extends Controller
 
     /**
      * Get the broker to be used during password reset.
-     *
-     * @return PasswordBrokerContract
      */
-    public function broker(): ?PasswordBrokerContract
+    public function broker(): PasswordBrokerContract
     {
         return Password::broker($this->passwordBroker);
     }

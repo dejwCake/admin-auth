@@ -2,7 +2,10 @@
 
 namespace Brackets\AdminAuth\Traits;
 
+use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
@@ -11,21 +14,16 @@ trait SendsPasswordResetEmails
 {
     /**
      * Display the form to request a password reset link.
-     *
-     * @return \Illuminate\View\View
      */
-    public function showLinkRequestForm()
+    public function showLinkRequestForm(): View
     {
         return view('auth.passwords.email');
     }
 
     /**
      * Send a reset link to the given user.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
-    public function sendResetLinkEmail(Request $request)
+    public function sendResetLinkEmail(Request $request): JsonResponse|RedirectResponse
     {
         $this->validateEmail($request);
 
@@ -43,34 +41,26 @@ trait SendsPasswordResetEmails
 
     /**
      * Validate the email for the given request.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return void
      */
-    protected function validateEmail(Request $request)
+    protected function validateEmail(Request $request): void
     {
-        $request->validate(['email' => 'required|email']);
+        $request->validate(['email' => ['required', 'email']]);
     }
 
     /**
      * Get the needed authentication credentials from the request.
      *
-     * @param  \Illuminate\Http\Request  $request
-     * @return array
+     * @return array<string, string>
      */
-    protected function credentials(Request $request)
+    protected function credentials(Request $request): array
     {
         return $request->only('email');
     }
 
     /**
      * Get the response for a successful password reset link.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $response
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
      */
-    protected function sendResetLinkResponse(Request $request, $response)
+    protected function sendResetLinkResponse(Request $request, string $response): JsonResponse|RedirectResponse
     {
         return $request->wantsJson()
             ? new JsonResponse(['message' => trans($response)], 200)
@@ -79,30 +69,19 @@ trait SendsPasswordResetEmails
 
     /**
      * Get the response for a failed password reset link.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  string  $response
-     * @return \Illuminate\Http\RedirectResponse|\Illuminate\Http\JsonResponse
+     * @throws ValidationException
      */
-    protected function sendResetLinkFailedResponse(Request $request, $response)
+    protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse
     {
-        if ($request->wantsJson()) {
-            throw ValidationException::withMessages([
-                'email' => [trans($response)],
-            ]);
-        }
-
-        return back()
-            ->withInput($request->only('email'))
-            ->withErrors(['email' => trans($response)]);
+        return $request->wantsJson()
+            ? throw ValidationException::withMessages(['email' => [trans($response)]])
+            : back()->withInput($request->only('email'))->withErrors(['email' => trans($response)]);
     }
 
     /**
      * Get the broker to be used during password reset.
-     *
-     * @return \Illuminate\Contracts\Auth\PasswordBroker
      */
-    public function broker()
+    public function broker(): PasswordBroker
     {
         return Password::broker();
     }

@@ -11,10 +11,8 @@ class ActivationService
 {
     /**
      * Activation broker used for admin user
-     *
-     * @var string
      */
-    protected $activationBroker = 'admin_users';
+    protected string $activationBroker = 'admin_users';
 
     /**
      * ActivationService constructor.
@@ -26,18 +24,15 @@ class ActivationService
 
     /**
      * Handles activation creation after user created
-     *
-     * @param CanActivateContract $user
-     * @return boolean
      */
-    public function handle(CanActivateContract $user)
+    public function handle(CanActivateContract $user): bool|string
     {
         if (!config('admin-auth.activation_enabled')) {
             Log::info('Activation disabled.');
             return false;
         }
 
-        if ($user->activated === true) {
+        if (property_exists($user, 'activated') && $user->activated === true) {
             Log::info('User is already activated.');
             return true;
         }
@@ -61,8 +56,7 @@ class ActivationService
     /**
      * Get the needed authorization credentials from user.
      *
-     * @param CanActivateContract $user
-     * @return array
+     * @return array<string, string|bool>
      */
     protected function credentials(CanActivateContract $user): array
     {
@@ -71,10 +65,8 @@ class ActivationService
 
     /**
      * Get the broker to be used during activation.
-     *
-     * @return ActivationBrokerContract
      */
-    public function broker(): ?ActivationBrokerContract
+    public function broker(): ActivationBrokerContract
     {
         return Activation::broker($this->activationBroker);
     }

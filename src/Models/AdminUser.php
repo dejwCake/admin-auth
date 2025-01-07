@@ -8,19 +8,20 @@ use Brackets\AdminAuth\Notifications\ResetPassword;
 use Brackets\Media\HasMedia\AutoProcessMediaTrait;
 use Brackets\Media\HasMedia\HasMediaCollectionsTrait;
 use Brackets\Media\HasMedia\HasMediaThumbsTrait;
+use Brackets\Media\HasMedia\MediaCollection;
 use Brackets\Media\HasMedia\ProcessMediaTrait;
-use Illuminate\Contracts\Routing\UrlGenerator;
+use Carbon\CarbonImmutable;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use Spatie\Image\Exceptions\InvalidManipulation;
+use Spatie\Image\Enums\Fit;
 use Spatie\MediaLibrary\HasMedia;
 use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
- * @property mixed first_name
- * @property mixed last_name
+ * @property string $first_name
+ * @property string $last_name
  */
 class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 {
@@ -33,6 +34,9 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
     use HasMediaThumbsTrait;
     use ProcessMediaTrait;
 
+    /**
+     * @var array<int, string>
+     */
     protected $fillable = [
         'email',
         'password',
@@ -44,36 +48,44 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
         'last_login_at',
     ];
 
+    /**
+     * @var array<string>
+     */
     protected $hidden = [
         'password',
         'remember_token',
     ];
 
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
-        'last_login_at',
-    ];
-
+    /**
+     * @var array<string>
+     */
     protected $appends = ['full_name', 'resource_url'];
+
+    /**
+     * @return array<class-string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'created_at' => CarbonImmutable::class,
+            'updated_at' => CarbonImmutable::class,
+            'deleted_at' => CarbonImmutable::class,
+            'last_login_at' => CarbonImmutable::class,
+        ];
+    }
 
     /* ************************ ACCESSOR ************************* */
 
     /**
      * Resource url to generate edit
-     *
-     * @return UrlGenerator|string
      */
-    public function getResourceUrlAttribute(): string|UrlGenerator
+    public function getResourceUrlAttribute(): string
     {
         return url('/admin/admin-users/' . $this->getKey());
     }
 
     /**
      * Full name for admin user
-     *
-     * @return string
      */
     public function getFullNameAttribute(): string
     {
@@ -82,8 +94,6 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 
     /**
      * Get url of avatar image
-     *
-     * @return string|null
      */
     public function getAvatarThumbUrlAttribute(): ?string
     {
@@ -94,9 +104,8 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
      * Send the password reset notification.
      *
      * @param string $token
-     * @return void
      */
-    public function sendPasswordResetNotification($token)
+    public function sendPasswordResetNotification($token): void
     {
         $this->notify(app(ResetPassword::class, ['token' => $token]));
     }
@@ -114,9 +123,6 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 
     /**
      * Register media conversions
-     *
-     * @param Media|null $media
-     * @throws InvalidManipulation
      */
     public function registerMediaConversions(Media $media = null): void
     {
@@ -125,7 +131,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
         $this->addMediaConversion('thumb_75')
             ->width(75)
             ->height(75)
-            ->fit('crop', 75, 75)
+            ->fit(Fit::Crop, 75, 75)
             ->optimize()
             ->performOnCollections('avatar')
             ->nonQueued();
@@ -133,7 +139,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
         $this->addMediaConversion('thumb_150')
             ->width(150)
             ->height(150)
-            ->fit('crop', 150, 150)
+            ->fit(Fit::Crop, 150, 150)
             ->optimize()
             ->performOnCollections('avatar')
             ->nonQueued();
@@ -142,13 +148,15 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
     /**
      * Auto register thumb overridden
      */
-    public function autoRegisterThumb200()
+    public function autoRegisterThumb200(): void
     {
-        $this->getMediaCollections()->filter->isImage()->each(function ($mediaCollection) {
+        $this->getMediaCollections()->filter(function(MediaCollection $mediaCollection) {
+            return $mediaCollection->isImage();
+        })->each(function (MediaCollection $mediaCollection) {
             $this->addMediaConversion('thumb_200')
                 ->width(200)
                 ->height(200)
-                ->fit('crop', 200, 200)
+                ->fit(Fit::Crop, 200, 200)
                 ->optimize()
                 ->performOnCollections($mediaCollection->getName())
                 ->nonQueued();

@@ -39,7 +39,7 @@ class ActivationBrokerManager implements FactoryContract
     /**
      * Attempt to get the broker from the local cache.
      */
-    public function broker(?string $name = null): ?ActivationBrokerContract
+    public function broker(?string $name = null): ActivationBrokerContract
     {
         $name = $name ?: $this->getDefaultDriver();
 

@@ -26,10 +26,7 @@ class ActivationBrokerManager implements FactoryContract
     protected array $brokers = [];
 
     /**
-     * Create a new ActivationBroker manager instance.
-     *
      * @param Application $app
-     * @return void
      */
     public function __construct($app)
     {

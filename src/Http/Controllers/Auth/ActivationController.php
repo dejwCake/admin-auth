@@ -7,6 +7,7 @@ use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
 use Brackets\AdminAuth\Activation\Facades\Activation;
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\RedirectsUsers;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -26,30 +27,19 @@ class ActivationController extends Controller
 
     /**
      * Guard used for admin user
-     *
-     * @var string
      */
-    protected $guard = 'admin';
+    protected string $guard = 'admin';
 
     /**
      * Where to redirect users after activating their accounts.
-     *
-     * @var string
      */
-    protected $redirectTo = '/';
+    protected string $redirectTo = '/';
 
     /**
      * Activation broker used for admin user
-     *
-     * @var string
      */
-    protected $activationBroker = 'admin_users';
+    protected string $activationBroker = 'admin_users';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->guard = config('admin-auth.defaults.guard');
@@ -61,12 +51,9 @@ class ActivationController extends Controller
     /**
      * Activate user from token
      *
-     * @param Request $request
-     * @param mixed $token
      * @throws ValidationException
-     * @return RedirectResponse
      */
-    public function activate(Request $request, $token)
+    public function activate(Request $request, string $token): RedirectResponse|View
     {
         if (!config('admin-auth.activation_enabled')) {
             return $this->sendActivationFailedResponse($request, Activation::ACTIVATION_DISABLED);
@@ -76,7 +63,7 @@ class ActivationController extends Controller
 
         // Here we will attempt to activate the user's account. If it is successful we
         // will update the activation flag on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
+        // database. Otherwise, we will parse the error and return the response.
         $response = $this->broker()->activate(
             $this->credentials($request, $token),
             function ($user) {
@@ -94,8 +81,6 @@ class ActivationController extends Controller
 
     /**
      * Get the activation validation rules.
-     *
-     * @return array
      */
     protected function rules(): array
     {
@@ -104,8 +89,6 @@ class ActivationController extends Controller
 
     /**
      * Get the activation validation error messages.
-     *
-     * @return array
      */
     protected function validationErrorMessages(): array
     {
@@ -115,20 +98,15 @@ class ActivationController extends Controller
     /**
      * Get the activation credentials from the request.
      *
-     * @param Request $request
-     * @param $token
-     * @return array
+     * @return array<string, string>
      */
-    protected function credentials(Request $request, $token): array
+    protected function credentials(Request $request, string $token): array
     {
         return ['token' => $token];
     }
 
     /**
      * Activate the given user account.
-     *
-     * @param CanActivateContract $user
-     * @return void
      */
     protected function activateUser(CanActivateContract $user): void
     {
@@ -139,12 +117,8 @@ class ActivationController extends Controller
 
     /**
      * Get the response for a successful activation.
-     *
-     * @param Request $request
-     * @param string $response
-     * @return RedirectResponse
      */
-    protected function sendActivationResponse(Request $request, $response)
+    protected function sendActivationResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
         if ($response === Activation::ACTIVATED) {
@@ -156,13 +130,8 @@ class ActivationController extends Controller
 
     /**
      * Get the response for a failed activation.
-     *
-     * @param Request
-     * @param string $response
-     * @param Request $request
-     * @return RedirectResponse
      */
-    protected function sendActivationFailedResponse(Request $request, string $response)
+    protected function sendActivationFailedResponse(Request $request, string $response): RedirectResponse|View
     {
         $message = trans($response);
         if ($response === Activation::INVALID_USER || $response === Activation::INVALID_TOKEN) {
@@ -185,10 +154,8 @@ class ActivationController extends Controller
 
     /**
      * Get the broker to be used during activation.
-     *
-     * @return ActivationBrokerContract
      */
-    public function broker(): ?ActivationBrokerContract
+    public function broker(): ActivationBrokerContract
     {
         return Activation::broker($this->activationBroker);
     }

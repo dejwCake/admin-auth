@@ -9,8 +9,6 @@ class MissingRoutesController extends Controller
 {
     /**
      * Display default admin home page
-     *
-     * @return RedirectResponse
      */
     public function redirect(): RedirectResponse
     {

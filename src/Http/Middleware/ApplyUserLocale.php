@@ -10,10 +10,8 @@ class ApplyUserLocale
 {
     /**
      * Guard used for admin user
-     *
-     * @var string
      */
-    protected $guard = 'admin';
+    protected string $guard = 'admin';
 
     /**
      * ApplyUserLocale constructor.
@@ -26,11 +24,9 @@ class ApplyUserLocale
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
-     * @param Closure $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         if (Auth::guard($this->guard)->check() && isset(Auth::guard($this->guard)->user()->language)) {
             app()->setLocale(Auth::guard($this->guard)->user()->language);

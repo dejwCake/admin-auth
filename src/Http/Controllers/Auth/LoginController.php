@@ -4,9 +4,11 @@ namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\AuthenticatesUsers;
+use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Auth;
 
 class LoginController extends Controller
@@ -26,30 +28,19 @@ class LoginController extends Controller
 
     /**
      * Where to redirect users after login.
-     *
-     * @var string
      */
-    protected $redirectTo = '/admin';
+    protected string $redirectTo = '/admin';
 
     /**
      * Where to redirect users after logout.
-     *
-     * @var string
      */
-    protected $redirectToAfterLogout = '/admin/login';
+    protected string $redirectToAfterLogout = '/admin/login';
 
     /**
      * Guard used for admin user
-     *
-     * @var string
      */
-    protected $guard = 'admin';
+    protected string $guard = 'admin';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->guard = config('admin-auth.defaults.guard');
@@ -60,21 +51,16 @@ class LoginController extends Controller
 
     /**
      * Show the application's login form.
-     *
-     * @return Response
      */
-    public function showLoginForm()
+    public function showLoginForm(): View
     {
         return view('brackets/admin-auth::admin.auth.login');
     }
 
     /**
      * Log the user out of the application.
-     *
-     * @param Request $request
-     * @return Response
      */
-    public function logout(Request $request)
+    public function logout(Request $request): RedirectResponse
     {
         $this->guard()->logout();
 
@@ -88,8 +74,7 @@ class LoginController extends Controller
     /**
      * Get the needed authorization credentials from the request.
      *
-     * @param Request $request
-     * @return array
+     * @return array<string, string|bool>
      */
     protected function credentials(Request $request): array
     {
@@ -105,8 +90,6 @@ class LoginController extends Controller
 
     /**
      * Get the post register / login redirect path.
-     *
-     * @return string
      */
     public function redirectAfterLogoutPath(): string
     {
@@ -119,10 +102,8 @@ class LoginController extends Controller
 
     /**
      * Get the guard to be used during authentication.
-     *
-     * @return StatefulGuard
      */
-    protected function guard()
+    protected function guard(): Guard|StatefulGuard
     {
         return Auth::guard($this->guard);
     }

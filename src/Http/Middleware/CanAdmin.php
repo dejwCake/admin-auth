@@ -7,19 +7,12 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\UnauthorizedException;
 
-/**
- * Class CanAdmin
- *
- * @package Brackets\AdminAuth\Http\Middleware
- */
 class CanAdmin
 {
     /**
      * Guard used for admin user
-     *
-     * @var string
      */
-    protected $guard = 'admin';
+    protected string $guard = 'admin';
 
     /**
      * CanAdmin constructor.
@@ -32,11 +25,9 @@ class CanAdmin
     /**
      * Handle an incoming request.
      *
-     * @param Request $request
-     * @param Closure $next
      * @return mixed
      */
-    public function handle($request, Closure $next)
+    public function handle(Request $request, Closure $next)
     {
         if (Auth::guard($this->guard)->check() && Auth::guard($this->guard)->user()->can('admin')) {
             return $next($request);

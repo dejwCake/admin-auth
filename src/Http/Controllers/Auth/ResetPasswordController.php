@@ -53,11 +53,6 @@ class ResetPasswordController extends Controller
      */
     protected $passwordBroker = 'admin_users';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->guard = config('admin-auth.defaults.guard');

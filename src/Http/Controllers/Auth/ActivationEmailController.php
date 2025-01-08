@@ -5,10 +5,14 @@ namespace Brackets\AdminAuth\Http\Controllers\Auth;
 use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
 use Brackets\AdminAuth\Activation\Facades\Activation;
 use Brackets\AdminAuth\Http\Controllers\Controller;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpKernel\Exception\HttpException;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ActivationEmailController extends Controller
 {
@@ -25,23 +29,14 @@ class ActivationEmailController extends Controller
 
     /**
      * Guard used for admin user
-     *
-     * @var string
      */
-    protected $guard = 'admin';
+    protected string $guard = 'admin';
 
     /**
      * Activation broker used for admin user
-     *
-     * @var string
      */
-    protected $activationBroker = 'admin_users';
+    protected string $activationBroker = 'admin_users';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->guard = config('admin-auth.defaults.guard');
@@ -52,9 +47,9 @@ class ActivationEmailController extends Controller
     /**
      * Display the form to request a activation link.
      *
-     * @return Response
+     * @throws NotFoundHttpException
      */
-    public function showLinkRequestForm()
+    public function showLinkRequestForm(): View
     {
         if (config('admin-auth.self_activation_form_enabled')) {
             return view('brackets/admin-auth::admin.auth.activation.email');
@@ -66,9 +61,8 @@ class ActivationEmailController extends Controller
     /**
      * Send an activation link to the given user.
      *
-     * @param Request $request
      * @throws ValidationException
-     * @return RedirectResponse|Response
+     * @throws NotFoundHttpException
      */
     public function sendActivationEmail(Request $request)
     {
@@ -95,23 +89,17 @@ class ActivationEmailController extends Controller
     /**
      * Validate the email for the given request.
      *
-     * @param Request $request
      * @throws ValidationException
-     * @return void
      */
-    protected function validateEmail(Request $request)
+    protected function validateEmail(Request $request): void
     {
-        $this->validate($request, ['email' => 'required|email']);
+        $this->validate($request, ['email' => ['required', 'email']]);
     }
 
     /**
      * Get the response for a successful activation link.
-     *
-     * @param Request $request
-     * @param string $response
-     * @return RedirectResponse
      */
-    protected function sendActivationLinkResponse(Request $request, $response)
+    protected function sendActivationLinkResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans('brackets/admin-auth::admin.activations.sent');
         return back()->with('status', $message);
@@ -119,13 +107,8 @@ class ActivationEmailController extends Controller
 
     /**
      * Get the response for a failed activation link.
-     *
-     * @param Request
-     * @param string $response
-     * @param Request $request
-     * @return RedirectResponse
      */
-    protected function sendActivationLinkFailedResponse(Request $request, $response)
+    protected function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
         if ($response === Activation::ACTIVATION_DISABLED) {
@@ -139,8 +122,7 @@ class ActivationEmailController extends Controller
     /**
      * Get the needed authorization credentials from the request.
      *
-     * @param Request $request
-     * @return array
+     * @return array<string, string|bool>
      */
     protected function credentials(Request $request): array
     {
@@ -150,10 +132,8 @@ class ActivationEmailController extends Controller
 
     /**
      * Get the broker to be used during activation.
-     *
-     * @return ActivationBrokerContract
      */
-    public function broker(): ?ActivationBrokerContract
+    public function broker(): ActivationBrokerContract
     {
         return Activation::broker($this->activationBroker);
     }

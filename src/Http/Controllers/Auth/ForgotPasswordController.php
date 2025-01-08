@@ -5,11 +5,9 @@ namespace Brackets\AdminAuth\Http\Controllers\Auth;
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\SendsPasswordResetEmails;
 use Illuminate\Contracts\Auth\PasswordBroker as PasswordBrokerContract;
-
-use Illuminate\Http\JsonResponse;
+use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Password;
 
 class ForgotPasswordController extends Controller
@@ -29,23 +27,14 @@ class ForgotPasswordController extends Controller
 
     /**
      * Guard used for admin user
-     *
-     * @var string
      */
-    protected $guard = 'admin';
+    protected string $guard = 'admin';
 
     /**
      * Password broker used for admin user
-     *
-     * @var string
      */
-    protected $passwordBroker = 'admin_users';
+    protected string $passwordBroker = 'admin_users';
 
-    /**
-     * Create a new controller instance.
-     *
-     * @return void
-     */
     public function __construct()
     {
         $this->guard = config('admin-auth.defaults.guard');
@@ -55,21 +44,16 @@ class ForgotPasswordController extends Controller
 
     /**
      * Display the form to request a password reset link.
-     *
-     * @return Response
      */
-    public function showLinkRequestForm()
+    public function showLinkRequestForm(): View
     {
         return view('brackets/admin-auth::admin.auth.passwords.email');
     }
 
     /**
      * Send a reset link to the given user.
-     *
-     * @param Request $request
-     * @return RedirectResponse
      */
-    public function sendResetLinkEmail(Request $request)
+    public function sendResetLinkEmail(Request $request): RedirectResponse
     {
         $this->validateEmail($request);
 
@@ -87,12 +71,8 @@ class ForgotPasswordController extends Controller
 
     /**
      * Get the response for a successful password reset link.
-     *
-     * @param Request $request
-     * @param string $response
-     * @return RedirectResponse
      */
-    protected function sendResetLinkResponse(Request $request, $response)
+    protected function sendResetLinkResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
         if ($response === Password::RESET_LINK_SENT) {
@@ -103,16 +83,10 @@ class ForgotPasswordController extends Controller
 
     /**
      * Get the response for a failed password reset link.
-     *
-     * @param Request $request
-     * @param string $response
-     * @return RedirectResponse|JsonResponse
      */
-    protected function sendResetLinkFailedResponse(Request $request, $response)
+    protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
-
-        // TODO what should be here?
 
         return back()
             ->withInput($request->only('email'))

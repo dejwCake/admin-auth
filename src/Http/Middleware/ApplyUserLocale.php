@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Http\Middleware;
 
 use Closure;
@@ -23,10 +25,8 @@ class ApplyUserLocale
 
     /**
      * Handle an incoming request.
-     *
-     * @return mixed
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
         if (Auth::guard($this->guard)->check() && isset(Auth::guard($this->guard)->user()->language)) {
             app()->setLocale(Auth::guard($this->guard)->user()->language);

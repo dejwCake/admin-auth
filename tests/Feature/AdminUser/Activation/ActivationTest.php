@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Activation;
 
 use Brackets\AdminAuth\Notifications\ActivationNotification;
@@ -14,19 +16,18 @@ class ActivationTest extends BracketsTestCase
 {
     use DatabaseMigrations;
 
-    protected $token;
+    protected string $token = '123456aabbcc';
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->token = '123456aabbcc';
     }
 
     protected function createTestUser(
         bool $activated = true,
         bool $forbidden = false,
         bool $used = false,
-        CarbonInterface $activationCreatedAt = null
+        ?CarbonInterface $activationCreatedAt = null,
     ): TestBracketsUserModel {
         Notification::fake();
         // TODO maybe we can Mock sending an email to speed up a test?
@@ -37,10 +38,7 @@ class ActivationTest extends BracketsTestCase
             'forbidden' => $forbidden,
         ]);
         if ($activated === false) {
-            Notification::assertSentTo(
-                $user,
-                ActivationNotification::class
-            );
+            Notification::assertSentTo($user, ActivationNotification::class);
         }
 
         $this->assertDatabaseHas('test_brackets_user_models', [
@@ -68,7 +66,7 @@ class ActivationTest extends BracketsTestCase
 
     public function testActivateUserIfTokenIsOk(): void
     {
-        $user = $this->createTestUser(false);
+        $this->createTestUser(false);
 
         $response = $this->get(route('brackets/admin-auth::admin/activation/activate', ['token' => $this->token]));
         $response->assertStatus(302);
@@ -87,14 +85,13 @@ class ActivationTest extends BracketsTestCase
 
     public function testDoNotActivateUserIfTokenDoesNotExists(): void
     {
-        $user = $this->createTestUser(false);
+        $this->createTestUser(false);
 
         $response = $this->get(route(
             'brackets/admin-auth::admin/activation/activate',
-            ['token' => $this->token . '11']
+            ['token' => $this->token . '11'],
         ));
         $response->assertStatus(302);
-
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
         self::assertEquals(0, $userNew->activated);
@@ -108,11 +105,10 @@ class ActivationTest extends BracketsTestCase
 
     public function testDoNotActivateUserIfTokenUsed(): void
     {
-        $user = $this->createTestUser(false, false, true);
+        $this->createTestUser(false, false, true);
 
         $response = $this->get(route('brackets/admin-auth::admin/activation/activate', ['token' => $this->token]));
         $response->assertStatus(302);
-
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
         self::assertEquals(0, $userNew->activated);
@@ -126,11 +122,10 @@ class ActivationTest extends BracketsTestCase
 
     public function testDoNotActivateUserIfTokenExpired(): void
     {
-        $user = $this->createTestUser(false, false, false, CarbonImmutable::now()->subDays(10));
+        $this->createTestUser(false, false, false, CarbonImmutable::now()->subDays(10));
 
         $response = $this->get(route('brackets/admin-auth::admin/activation/activate', ['token' => $this->token]));
         $response->assertStatus(302);
-
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
         self::assertEquals(0, $userNew->activated);

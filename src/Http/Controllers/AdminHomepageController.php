@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Http\Controllers;
 
 use Illuminate\Contracts\View\View;
@@ -16,7 +18,7 @@ class AdminHomepageController extends Controller
 
         return view('brackets/admin-auth::admin.homepage.index', [
             'quote' => $quote,
-            'quoteAuthor' => $quoteAuthor
+            'quoteAuthor' => $quoteAuthor,
         ]);
     }
 }

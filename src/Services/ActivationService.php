@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Services;
 
 use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
@@ -29,11 +31,13 @@ class ActivationService
     {
         if (!config('admin-auth.activation_enabled')) {
             Log::info('Activation disabled.');
+
             return false;
         }
 
         if (property_exists($user, 'activated') && $user->activated === true) {
             Log::info('User is already activated.');
+
             return true;
         }
 
@@ -41,7 +45,7 @@ class ActivationService
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
         $response = $this->broker()->sendActivationLink(
-            $this->credentials($user)
+            $this->credentials($user),
         );
 
         if ($response === Activation::ACTIVATION_LINK_SENT) {
@@ -54,6 +58,14 @@ class ActivationService
     }
 
     /**
+     * Get the broker to be used during activation.
+     */
+    public function broker(): ActivationBrokerContract
+    {
+        return Activation::broker($this->activationBroker);
+    }
+
+    /**
      * Get the needed authorization credentials from user.
      *
      * @return array<string, string|bool>
@@ -61,13 +73,5 @@ class ActivationService
     protected function credentials(CanActivateContract $user): array
     {
         return ['email' => $user->getEmailForActivation(), 'activated' => false];
-    }
-
-    /**
-     * Get the broker to be used during activation.
-     */
-    public function broker(): ActivationBrokerContract
-    {
-        return Activation::broker($this->activationBroker);
     }
 }

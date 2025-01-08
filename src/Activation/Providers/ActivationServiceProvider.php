@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Activation\Providers;
 
 use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
@@ -22,7 +24,8 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
 
             if (!glob(base_path('database/migrations/*_create_activations_table.php'))) {
                 $this->publishes([
-                    __DIR__ . '/../../../install-stubs/database/migrations/create_activations_table.php' => database_path('migrations') . '/2017_08_24_000000_create_activations_table.php',
+                    __DIR__ . '/../../../install-stubs/database/migrations/create_activations_table.php'
+                    => database_path('migrations') . '/2017_08_24_000000_create_activations_table.php',
                 ], 'migrations');
             }
         }
@@ -33,29 +36,12 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../../../install-stubs/config/activation.php',
-            'activation'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/../../../install-stubs/config/activation.php', 'activation');
 
         $this->registerActivationBroker();
 
         $loader = AliasLoader::getInstance();
         $loader->alias('Activation', Activation::class);
-    }
-
-    /**
-     * Register the password broker instance.
-     */
-    protected function registerActivationBroker(): void
-    {
-        $this->app->singleton('auth.activation', function ($app) {
-            return new ActivationBrokerManager($app);
-        });
-
-        $this->app->bind('auth.activation.broker', function ($app) {
-            return $app->make('auth.activation')->broker();
-        });
     }
 
     /**
@@ -66,5 +52,15 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
     public function provides(): array
     {
         return ['auth.activation', 'auth.activation.broker'];
+    }
+
+    /**
+     * Register the password broker instance.
+     */
+    protected function registerActivationBroker(): void
+    {
+        $this->app->singleton('auth.activation', static fn ($app) => new ActivationBrokerManager($app));
+
+        $this->app->bind('auth.activation.broker', static fn ($app) => $app->make('auth.activation')->broker());
     }
 }

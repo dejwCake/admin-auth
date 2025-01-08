@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Listeners;
 
 use Brackets\AdminAuth\Activation\Contracts\CanActivate;
@@ -29,10 +31,7 @@ class ActivationListener
             $userClass = Activation::broker($this->activationBroker)->getUserModelClass();
             $interfaces = class_implements($userClass);
             if ($interfaces && in_array(CanActivate::class, $interfaces, true)) {
-                $events->listen(
-                    'eloquent.created: ' . $userClass,
-                    ActivationService::class
-                );
+                $events->listen('eloquent.created: ' . $userClass, ActivationService::class);
             }
 
             //TODO listen on user edit and if email has changed, deactivate user and send email again

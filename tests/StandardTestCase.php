@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests;
 
 abstract class StandardTestCase extends TestCase
@@ -7,6 +9,7 @@ abstract class StandardTestCase extends TestCase
     public function setUp(): void
     {
         parent::setUp();
+
         $this->app['config']->set('admin-auth.defaults.guard', 'web');
         $this->app['config']->set('admin-auth.defaults.passwords', 'users');
         $this->app['config']->set('admin-auth.defaults.activations', 'users');

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Traits;
 
 use Illuminate\Auth\Events\Lockout;
@@ -13,12 +15,29 @@ use Illuminate\Validation\ValidationException;
 trait ThrottlesLogins
 {
     /**
+     * Get the maximum number of attempts to allow.
+     */
+    public function maxAttempts(): int
+    {
+        return property_exists($this, 'maxAttempts') ? (int) $this->maxAttempts : 5;
+    }
+
+    /**
+     * Get the number of minutes to throttle for.
+     */
+    public function decayMinutes(): int
+    {
+        return property_exists($this, 'decayMinutes') ? (int) $this->decayMinutes : 1;
+    }
+
+    /**
      * Determine if the user has too many failed login attempts.
      */
     protected function hasTooManyLoginAttempts(Request $request): bool
     {
         return $this->limiter()->tooManyAttempts(
-            $this->throttleKey($request), $this->maxAttempts()
+            $this->throttleKey($request),
+            $this->maxAttempts(),
         );
     }
 
@@ -28,7 +47,8 @@ trait ThrottlesLogins
     protected function incrementLoginAttempts(Request $request): void
     {
         $this->limiter()->hit(
-            $this->throttleKey($request), $this->decayMinutes() * 60
+            $this->throttleKey($request),
+            $this->decayMinutes() * 60,
         );
     }
 
@@ -40,7 +60,7 @@ trait ThrottlesLogins
     protected function throwLockoutResponse(Request $request): void
     {
         $seconds = $this->limiter()->availableIn(
-            $this->throttleKey($request)
+            $this->throttleKey($request),
         );
 
         throw ValidationException::withMessages([
@@ -72,7 +92,7 @@ trait ThrottlesLogins
      */
     protected function throttleKey(Request $request): string
     {
-        return Str::lower($request->input($this->username())).'|'.$request->ip();
+        return Str::lower($request->input($this->username())) . '|' . $request->ip();
     }
 
     /**
@@ -81,21 +101,5 @@ trait ThrottlesLogins
     protected function limiter(): RateLimiter
     {
         return app(RateLimiter::class);
-    }
-
-    /**
-     * Get the maximum number of attempts to allow.
-     */
-    public function maxAttempts(): int
-    {
-        return property_exists($this, 'maxAttempts') ? (int) $this->maxAttempts : 5;
-    }
-
-    /**
-     * Get the number of minutes to throttle for.
-     */
-    public function decayMinutes(): int
-    {
-        return property_exists($this, 'decayMinutes') ? (int) $this->decayMinutes : 1;
     }
 }

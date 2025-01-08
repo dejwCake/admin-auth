@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Http\Middleware;
 
 use Closure;
@@ -24,10 +26,8 @@ class CanAdmin
 
     /**
      * Handle an incoming request.
-     *
-     * @return mixed
      */
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): mixed
     {
         if (Auth::guard($this->guard)->check() && Auth::guard($this->guard)->user()->can('admin')) {
             return $next($request);

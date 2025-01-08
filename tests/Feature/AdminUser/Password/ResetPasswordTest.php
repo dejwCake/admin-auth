@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Password;
 
 use Brackets\AdminAuth\Notifications\ActivationNotification;
@@ -14,12 +16,11 @@ class ResetPasswordTest extends BracketsTestCase
 {
     use DatabaseMigrations;
 
-    protected $token;
+    protected string $token = '123456aabbcc';
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->token = '123456aabbcc';
     }
 
     protected function createTestUser(): TestBracketsUserModel
@@ -29,10 +30,7 @@ class ResetPasswordTest extends BracketsTestCase
             'email' => 'john@example.com',
             'password' => bcrypt('testpass123'),
         ]);
-        Notification::assertSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertSentTo($user, ActivationNotification::class);
 
         $this->assertDatabaseHas('test_brackets_user_models', [
             'email' => 'john@example.com',
@@ -42,7 +40,7 @@ class ResetPasswordTest extends BracketsTestCase
         $this->app['db']->connection()->table('admin_password_resets')->insert([
             'email' => $user->email,
             'token' => bcrypt($this->token),
-            'created_at' => CarbonImmutable::now()
+            'created_at' => CarbonImmutable::now(),
         ]);
 
         $this->assertDatabaseHas('admin_password_resets', [
@@ -69,15 +67,12 @@ class ResetPasswordTest extends BracketsTestCase
                 'email' => 'john@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token
-            ]
+                'token' => $this->token,
+            ],
         );
         $response->assertStatus(302);
 
-        Notification::assertSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertSentTo($user, ActivationNotification::class);
 
         $userNew = TestBracketsUserModel::where('email', 'john@example.com')->first();
 
@@ -86,7 +81,7 @@ class ResetPasswordTest extends BracketsTestCase
 
     public function testDoNotResetPasswordIfEmailNotFound(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post(
             url('/admin/password-reset/reset'),
@@ -94,8 +89,8 @@ class ResetPasswordTest extends BracketsTestCase
                 'email' => 'john1@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token
-            ]
+                'token' => $this->token,
+            ],
         );
         $response->assertStatus(302);
 
@@ -107,7 +102,7 @@ class ResetPasswordTest extends BracketsTestCase
 
     public function testDoNotResetPasswordIfTokenFailed(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post(
             url('/admin/password-reset/reset'),
@@ -115,8 +110,8 @@ class ResetPasswordTest extends BracketsTestCase
                 'email' => 'john@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token . '11'
-            ]
+                'token' => $this->token . '11',
+            ],
         );
         $response->assertStatus(302);
 
@@ -128,7 +123,7 @@ class ResetPasswordTest extends BracketsTestCase
 
     public function testDoNotResetPasswordIfEmailAndTokenDoesNotMatch(): void
     {
-        $user1 = $this->createTestUser();
+        $this->createTestUser();
 
         $user2 = TestBracketsUserModel::create([
             'email' => 'john2@example.com',
@@ -143,7 +138,7 @@ class ResetPasswordTest extends BracketsTestCase
         $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user2->email,
             'token' => bcrypt($this->token . '2'),
-            'created_at' => CarbonImmutable::now()
+            'created_at' => CarbonImmutable::now(),
         ]);
 
         $this->assertDatabaseHas('password_reset_tokens', [
@@ -156,8 +151,8 @@ class ResetPasswordTest extends BracketsTestCase
                 'email' => 'john2@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token
-            ]
+                'token' => $this->token,
+            ],
         );
         $response->assertStatus(302);
 
@@ -172,8 +167,8 @@ class ResetPasswordTest extends BracketsTestCase
                 'email' => 'john@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token . '2'
-            ]
+                'token' => $this->token . '2',
+            ],
         );
         $response->assertStatus(302);
 
@@ -185,7 +180,7 @@ class ResetPasswordTest extends BracketsTestCase
 
     public function testDoNotResetPasswordIfPasswordValidationFailed(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         //Fixme not working getting error instead of exception
         $response = $this->post(
@@ -194,8 +189,8 @@ class ResetPasswordTest extends BracketsTestCase
                 'email' => 'john@example.com',
                 'password' => 'testpass',
                 'password_confirmation' => 'testpass',
-                'token' => $this->token . '11'
-            ]
+                'token' => $this->token . '11',
+            ],
         );
         $response->assertStatus(302);
 

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests;
 
 use Brackets\AdminAuth\AdminAuthServiceProvider;
@@ -21,6 +23,7 @@ abstract class TestCase extends Orchestra
     public function setUp(): void
     {
         parent::setUp();
+
         $this->getEnvironmentSetUp($this->app);
         $this->setUpDatabase($this->app);
 
@@ -28,11 +31,9 @@ abstract class TestCase extends Orchestra
     }
 
     /**
-     * @param Application $app
-     *
-     * @return array
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    protected function getPackageProviders($app): array
+    protected function getPackageProviders(Application $app): array
     {
         return [
             AdminAuthServiceProvider::class,
@@ -42,6 +43,7 @@ abstract class TestCase extends Orchestra
 
     /**
      * @param Application $app
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     protected function getEnvironmentSetUp($app): void
     {
@@ -113,13 +115,11 @@ abstract class TestCase extends Orchestra
         $app['config']->set('admin-auth.activation_enabled', true);
     }
 
-    /**
-     * @param Application $app
-     */
     protected function setUpDatabase(Application $app): void
     {
-        $app['db']->connection()->getSchemaBuilder()->create('test_standard_user_models',
-            static function (Blueprint $table) {
+        $app['db']->connection()->getSchemaBuilder()->create(
+            'test_standard_user_models',
+            static function (Blueprint $table): void {
                 $table->increments('id');
                 $table->string('name')->nullable();
                 $table->string('email');
@@ -127,10 +127,12 @@ abstract class TestCase extends Orchestra
                 $table->string('remember_token')->nullable();
                 $table->dateTime('created_at');
                 $table->dateTime('updated_at');
-            });
+            },
+        );
 
-        $app['db']->connection()->getSchemaBuilder()->create('test_brackets_user_models',
-            static function (Blueprint $table) {
+        $app['db']->connection()->getSchemaBuilder()->create(
+            'test_brackets_user_models',
+            static function (Blueprint $table): void {
                 $table->increments('id');
                 $table->string('first_name')->nullable();
                 $table->string('last_name')->nullable();
@@ -144,26 +146,35 @@ abstract class TestCase extends Orchestra
                 $table->softDeletes('deleted_at');
                 $table->dateTime('created_at');
                 $table->dateTime('updated_at');
-            });
+            },
+        );
 
-        $app['db']->connection()->getSchemaBuilder()->create('password_reset_tokens', static function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->timestamp('created_at')->nullable();
-        });
-
-        $app['db']->connection()->getSchemaBuilder()->create('admin_password_resets',
-            static function (Blueprint $table) {
+        $app['db']->connection()->getSchemaBuilder()->create(
+            'password_reset_tokens',
+            static function (Blueprint $table): void {
                 $table->string('email')->index();
                 $table->string('token');
                 $table->timestamp('created_at')->nullable();
-            });
+            },
+        );
 
-        $app['db']->connection()->getSchemaBuilder()->create('admin_activations', static function (Blueprint $table) {
-            $table->string('email')->index();
-            $table->string('token');
-            $table->boolean('used')->default(false);
-            $table->timestamp('created_at')->nullable();
-        });
+        $app['db']->connection()->getSchemaBuilder()->create(
+            'admin_password_resets',
+            static function (Blueprint $table): void {
+                $table->string('email')->index();
+                $table->string('token');
+                $table->timestamp('created_at')->nullable();
+            },
+        );
+
+        $app['db']->connection()->getSchemaBuilder()->create(
+            'admin_activations',
+            static function (Blueprint $table): void {
+                $table->string('email')->index();
+                $table->string('token');
+                $table->boolean('used')->default(false);
+                $table->timestamp('created_at')->nullable();
+            },
+        );
     }
 }

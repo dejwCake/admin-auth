@@ -1,24 +1,30 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Exceptions;
 
-use Exception;
 use Illuminate\Auth\Access\AuthorizationException;
 use Illuminate\Auth\AuthenticationException;
 use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Exceptions\Handler as ExceptionHandler;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Session\TokenMismatchException;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response as SymfonyResponse;
 use Symfony\Component\HttpKernel\Exception\HttpException;
+use Throwable;
 
 class Handler extends ExceptionHandler
 {
     /**
      * A list of the exception types that should not be reported.
      *
-     * @var array
+     * @var array<class-string>
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $dontReport = [
         AuthenticationException::class,
@@ -34,36 +40,35 @@ class Handler extends ExceptionHandler
      *
      * This is a great spot to send exceptions to Sentry, Bugsnag, etc.
      *
-     * @param Exception $exception
-     * @throws Exception
-     * @return void
+     * @throws Throwable
      */
-    public function report(Exception $exception)
+    public function report(Throwable $e): void
     {
-        parent::report($exception);
+        parent::report($e);
     }
 
     /**
      * Render an exception into an HTTP response.
      *
      * @param Request $request
-     * @param Exception $exception
-     * @return Response
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
-    public function render($request, Exception $exception)
+    public function render($request, Throwable $e): SymfonyResponse
     {
-        return parent::render($request, $exception);
+        return parent::render($request, $e);
     }
 
     /**
      * Convert an authentication exception into an unauthenticated response.
      *
      * @param Request $request
-     * @param AuthenticationException $exception
-     * @return Response
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    protected function unauthenticated($request, AuthenticationException $exception)
-    {
+    protected function unauthenticated(
+        $request,
+        AuthenticationException $exception,
+    ): JsonResponse|RedirectResponse|Response {
         if ($request->expectsJson()) {
             return response()->json(['error' => 'Unauthenticated.'], 401);
         }

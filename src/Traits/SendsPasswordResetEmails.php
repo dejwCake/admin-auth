@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Traits;
 
 use Illuminate\Contracts\Auth\PasswordBroker;
@@ -31,12 +33,20 @@ trait SendsPasswordResetEmails
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
         $response = $this->broker()->sendResetLink(
-            $this->credentials($request)
+            $this->credentials($request),
         );
 
-        return $response == Password::RESET_LINK_SENT
+        return $response === Password::RESET_LINK_SENT
             ? $this->sendResetLinkResponse($request, $response)
             : $this->sendResetLinkFailedResponse($request, $response);
+    }
+
+    /**
+     * Get the broker to be used during password reset.
+     */
+    public function broker(): PasswordBroker
+    {
+        return Password::broker();
     }
 
     /**
@@ -69,6 +79,7 @@ trait SendsPasswordResetEmails
 
     /**
      * Get the response for a failed password reset link.
+     *
      * @throws ValidationException
      */
     protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse
@@ -76,13 +87,5 @@ trait SendsPasswordResetEmails
         return $request->wantsJson()
             ? throw ValidationException::withMessages(['email' => [trans($response)]])
             : back()->withInput($request->only('email'))->withErrors(['email' => trans($response)]);
-    }
-
-    /**
-     * Get the broker to be used during password reset.
-     */
-    public function broker(): PasswordBroker
-    {
-        return Password::broker();
     }
 }

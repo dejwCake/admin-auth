@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Activation;
 
 use Brackets\AdminAuth\Notifications\ActivationNotification;
@@ -14,20 +16,20 @@ class DisabledActivationTest extends BracketsTestCase
 {
     use DatabaseMigrations;
 
-    protected $token;
+    protected string $token = '123456aabbcc';
 
     public function setUp(): void
     {
         parent::setUp();
+
         $this->app['config']->set('admin-auth.activation_enabled', false);
-        $this->token = '123456aabbcc';
     }
 
     protected function createTestUser(
         bool $activated = true,
         bool $forbidden = false,
         bool $used = false,
-        CarbonInterface $activationCreatedAt = null
+        ?CarbonInterface $activationCreatedAt = null,
     ): TestBracketsUserModel {
         $user = TestBracketsUserModel::create([
             'email' => 'john@example.com',
@@ -65,10 +67,7 @@ class DisabledActivationTest extends BracketsTestCase
 
         $user = $this->createTestUser(false);
 
-        Notification::assertNotSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertNotSentTo($user, ActivationNotification::class);
     }
 
     public function testDoNotSendActivationMailFormFilled(): void
@@ -80,15 +79,12 @@ class DisabledActivationTest extends BracketsTestCase
         $response = $this->post(url('/admin/activation/send'), ['email' => 'john@example.com']);
         $response->assertStatus(302);
 
-        Notification::assertNotSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertNotSentTo($user, ActivationNotification::class);
     }
 
     public function testDoNotActivateUserIfActivationDisabled(): void
     {
-        $user = $this->createTestUser(false);
+        $this->createTestUser(false);
 
         $response = $this->get(route('brackets/admin-auth::admin/activation/activate', ['token' => $this->token]));
         $response->assertStatus(302);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Http\Controllers\Controller;
@@ -22,7 +24,6 @@ class ForgotPasswordController extends Controller
     | your application to your users. Feel free to explore this trait.
     |
     */
-
     use SendsPasswordResetEmails;
 
     /**
@@ -61,7 +62,7 @@ class ForgotPasswordController extends Controller
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
         $response = $this->broker()->sendResetLink(
-            $request->only('email')
+            $request->only('email'),
         );
 
         return $response === Password::RESET_LINK_SENT
@@ -70,7 +71,17 @@ class ForgotPasswordController extends Controller
     }
 
     /**
+     * Get the broker to be used during password reset.
+     */
+    public function broker(): PasswordBrokerContract
+    {
+        return Password::broker($this->passwordBroker);
+    }
+
+    /**
      * Get the response for a successful password reset link.
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
     protected function sendResetLinkResponse(Request $request, string $response): RedirectResponse
     {
@@ -78,6 +89,7 @@ class ForgotPasswordController extends Controller
         if ($response === Password::RESET_LINK_SENT) {
             $message = trans('brackets/admin-auth::admin.passwords.sent');
         }
+
         return back()->with('status', $message);
     }
 
@@ -91,13 +103,5 @@ class ForgotPasswordController extends Controller
         return back()
             ->withInput($request->only('email'))
             ->withErrors(['email' => $message]);
-    }
-
-    /**
-     * Get the broker to be used during password reset.
-     */
-    public function broker(): PasswordBrokerContract
-    {
-        return Password::broker($this->passwordBroker);
     }
 }

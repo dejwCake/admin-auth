@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Http\Middleware;
 
 use Closure;
@@ -23,17 +25,11 @@ class RedirectIfAuthenticated
 
     /**
      * Handle an incoming request.
-     *
-     * @return mixed
      */
-    public function handle(Request $request, Closure $next, ?string $guard = null)
+    public function handle(Request $request, Closure $next, ?string $guard = null): mixed
     {
         if (Auth::guard($guard)->check()) {
-            if ($guard === $this->guard) {
-                return redirect(config('admin-auth.login_redirect'));
-            } else {
-                return redirect('/home');
-            }
+            return $guard === $this->guard ? redirect(config('admin-auth.login_redirect')) : redirect('/home');
         }
 
         return $next($request);

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Activation\Repositories;
 
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
@@ -13,28 +15,16 @@ use Illuminate\Support\Str;
 
 class DatabaseTokenRepository implements TokenRepositoryInterface
 {
-    protected ConnectionInterface $connection;
-
-    protected HasherContract $hasher;
-
-    protected string $table;
-
-    protected string $hashKey;
-
     protected int $expires;
 
     public function __construct(
-        ConnectionInterface $connection,
-        HasherContract $hasher,
-        string $table,
-        string $hashKey,
-        int $expires = 60
+        protected ConnectionInterface $connection,
+        protected HasherContract $hasher,
+        protected string $table,
+        protected string $hashKey,
+        int $expires = 60,
     ) {
-        $this->table = $table;
-        $this->hasher = $hasher;
-        $this->hashKey = $hashKey;
         $this->expires = $expires * 60;
-        $this->connection = $connection;
     }
 
     /**
@@ -42,7 +32,7 @@ class DatabaseTokenRepository implements TokenRepositoryInterface
      */
     public function getByUser(CanActivateContract $user): ?array
     {
-        return (array)$this->getTable()
+        return (array) $this->getTable()
             ->where(['email' => $user->getEmailForActivation(), 'used' => false])
             ->where('created_at', '>=', CarbonImmutable::now()->subSeconds($this->expires))
             ->first();
@@ -53,7 +43,7 @@ class DatabaseTokenRepository implements TokenRepositoryInterface
      */
     public function getByToken(string $token): ?array
     {
-        return (array)$this->getTable()
+        return (array) $this->getTable()
             ->where(['token' => $token, 'used' => false])
             ->where('created_at', '>=', CarbonImmutable::now()->subSeconds($this->expires))
             ->first();
@@ -107,45 +97,18 @@ class DatabaseTokenRepository implements TokenRepositoryInterface
     }
 
     /**
-     * Delete all existing activation tokens from the database.
-     */
-    protected function deleteExisting(CanActivateContract $user): ?int
-    {
-        return $this->getTable()->where('email', $user->getEmailForPasswordReset())->delete();
-    }
-
-    /**
-     * Build the record payload for the table.
-     *
-     * @throws Exception
-     * @return array<string, string|CarbonInterface>
-     */
-    protected function getPayload(string $email, string $token): array
-    {
-        return ['email' => $email, 'token' => $token, 'created_at' => CarbonImmutable::now()];
-    }
-
-    /**
      * Determine if a token record exists and is valid.
      */
     public function exists(CanActivateContract $user, string $token): bool
     {
-        $record = (array)$this->getTable()->where(
-            ['email' => $user->getEmailForActivation(), 'used' => false]
+        $record = (array) $this->getTable()->where(
+            ['email' => $user->getEmailForActivation(), 'used' => false],
         )->first();
 
         return $record !== []
             && isset($record['created_at'], $record['token'])
             && !$this->tokenExpired($record['created_at'])
             && $token === $record['token'];
-    }
-
-    /**
-     * Determine if the token has expired.
-     */
-    protected function tokenExpired(string $createdAt): bool
-    {
-        return CarbonImmutable::parse($createdAt)->addSeconds($this->expires)->isPast();
     }
 
     /**
@@ -183,18 +146,45 @@ class DatabaseTokenRepository implements TokenRepositoryInterface
     }
 
     /**
-     * Begin a new database query against the table.
-     */
-    protected function getTable(): Builder
-    {
-        return $this->connection->table($this->table);
-    }
-
-    /**
      * Get the hasher instance.
      */
     public function getHasher(): HasherContract
     {
         return $this->hasher;
+    }
+
+    /**
+     * Delete all existing activation tokens from the database.
+     */
+    protected function deleteExisting(CanActivateContract $user): ?int
+    {
+        return $this->getTable()->where('email', $user->getEmailForPasswordReset())->delete();
+    }
+
+    /**
+     * Build the record payload for the table.
+     *
+     * @throws Exception
+     * @return array<string, string|CarbonInterface>
+     */
+    protected function getPayload(string $email, string $token): array
+    {
+        return ['email' => $email, 'token' => $token, 'created_at' => CarbonImmutable::now()];
+    }
+
+    /**
+     * Determine if the token has expired.
+     */
+    protected function tokenExpired(string $createdAt): bool
+    {
+        return CarbonImmutable::parse($createdAt)->addSeconds($this->expires)->isPast();
+    }
+
+    /**
+     * Begin a new database query against the table.
+     */
+    protected function getTable(): Builder
+    {
+        return $this->connection->table($this->table);
     }
 }

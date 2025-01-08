@@ -31,4 +31,12 @@
             </property>
         </properties>
     </rule>
+
+    <rule ref="SlevomatCodingStandard.Files.LineLength.LineTooLong">
+        <exclude-pattern>install-stubs/database/migrations/create_admin_users_table.php</exclude-pattern>
+        <exclude-pattern>src/Console/Commands/AdminAuthInstall.php</exclude-pattern>
+    </rule>
+    <rule ref="SlevomatCodingStandard.Classes.TraitUseSpacing.IncorrectLinesCountAfterLastUse">
+        <exclude-pattern>src/Http/Controllers/Controller.php</exclude-pattern>
+    </rule>
 </ruleset>

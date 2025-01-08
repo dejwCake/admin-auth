@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Activation;
 
 use Brackets\AdminAuth\Tests\BracketsTestCase;
@@ -12,6 +14,7 @@ class DisabledActivationFormTest extends BracketsTestCase
     public function setUp(): void
     {
         parent::setUp();
+
         $this->app['config']->set('admin-auth.self_activation_form_enabled', false);
     }
 

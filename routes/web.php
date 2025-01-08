@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Brackets\AdminAuth\Http\Controllers\AdminHomepageController;
 use Brackets\AdminAuth\Http\Controllers\Auth\ActivationController;
 use Brackets\AdminAuth\Http\Controllers\Auth\ForgotPasswordController;
@@ -21,7 +23,7 @@ use Illuminate\Support\Facades\Route;
 Route::middleware(['web'])
     ->prefix('/admin')
     ->name('brackets/admin-auth::admin/')
-    ->group(static function () {
+    ->group(static function (): void {
         Route::get('/login', [LoginController::class, 'showLoginForm'])
             ->name('login');
         Route::post('/login', [LoginController::class, 'login']);
@@ -31,7 +33,7 @@ Route::middleware(['web'])
 
         Route::prefix('/password-reset')
             ->name('password/')
-            ->group(static function () {
+            ->group(static function (): void {
                 Route::get('/', [ForgotPasswordController::class, 'showLinkRequestForm'])
                     ->name('showForgotForm');
                 Route::post('/send', [ForgotPasswordController::class, 'sendResetLinkEmail']);
@@ -45,7 +47,7 @@ Route::middleware(['web'])
     });
 
 Route::middleware(['web', 'admin', 'auth:' . config('admin-auth.defaults.guard')])
-    ->group(static function () {
+    ->group(static function (): void {
         Route::get('/admin', [AdminHomepageController::class, 'index'])
             ->name('brackets/admin-auth::admin');
     });

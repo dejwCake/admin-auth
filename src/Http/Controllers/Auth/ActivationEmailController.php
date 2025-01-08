@@ -1,17 +1,16 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
 use Brackets\AdminAuth\Activation\Facades\Activation;
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
-use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Validation\ValidationException;
-use Symfony\Component\HttpKernel\Exception\HttpException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 class ActivationEmailController extends Controller
@@ -64,7 +63,7 @@ class ActivationEmailController extends Controller
      * @throws ValidationException
      * @throws NotFoundHttpException
      */
-    public function sendActivationEmail(Request $request)
+    public function sendActivationEmail(Request $request): RedirectResponse
     {
         if (config('admin-auth.self_activation_form_enabled')) {
             if (!config('admin-auth.activation_enabled')) {
@@ -77,13 +76,21 @@ class ActivationEmailController extends Controller
             // to send the link, we will examine the response then see the message we
             // need to show to the user. Finally, we'll send out a proper response.
             $response = $this->broker()->sendActivationLink(
-                $this->credentials($request)
+                $this->credentials($request),
             );
 
             return $this->sendActivationLinkResponse($request, $response);
         } else {
             abort(404);
         }
+    }
+
+    /**
+     * Get the broker to be used during activation.
+     */
+    public function broker(): ActivationBrokerContract
+    {
+        return Activation::broker($this->activationBroker);
     }
 
     /**
@@ -98,15 +105,20 @@ class ActivationEmailController extends Controller
 
     /**
      * Get the response for a successful activation link.
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
     protected function sendActivationLinkResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans('brackets/admin-auth::admin.activations.sent');
+
         return back()->with('status', $message);
     }
 
     /**
      * Get the response for a failed activation link.
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
     protected function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse
     {
@@ -114,8 +126,9 @@ class ActivationEmailController extends Controller
         if ($response === Activation::ACTIVATION_DISABLED) {
             $message = trans('brackets/admin-auth::admin.activations.disabled');
         }
+
         return back()->withErrors(
-            ['email' => $message]
+            ['email' => $message],
         );
     }
 
@@ -127,14 +140,7 @@ class ActivationEmailController extends Controller
     protected function credentials(Request $request): array
     {
         $conditions = ['activated' => false];
-        return array_merge($request->only('email'), $conditions);
-    }
 
-    /**
-     * Get the broker to be used during activation.
-     */
-    public function broker(): ActivationBrokerContract
-    {
-        return Activation::broker($this->activationBroker);
+        return array_merge($request->only('email'), $conditions);
     }
 }

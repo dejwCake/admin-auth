@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\StandardUser\Auth;
 
 use Brackets\AdminAuth\Tests\Models\TestStandardUserModel;
@@ -15,7 +17,7 @@ class LogoutTest extends StandardTestCase
     {
         $user = TestStandardUserModel::create([
             'email' => 'john@example.com',
-            'password' => bcrypt('testpass123')
+            'password' => bcrypt('testpass123'),
         ]);
 
         $this->assertDatabaseHas('test_standard_user_models', [
@@ -27,7 +29,7 @@ class LogoutTest extends StandardTestCase
 
     public function testAuthUserCanLogout(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);

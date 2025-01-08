@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Traits;
 
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -17,7 +19,8 @@ use Symfony\Component\HttpFoundation\Response;
 
 trait AuthenticatesUsers
 {
-    use RedirectsUsers, ThrottlesLogins;
+    use RedirectsUsers;
+    use ThrottlesLogins;
 
     /**
      * Show the application's login form.
@@ -39,7 +42,8 @@ trait AuthenticatesUsers
         // If the class is using the ThrottlesLogins trait, we can automatically throttle
         // the login attempts for this application. We'll key this by the username and
         // the IP address of the client making these requests into this application.
-        if (in_array(ThrottlesLogins::class, class_uses_recursive(get_class($this)))
+        if (
+            in_array(ThrottlesLogins::class, class_uses_recursive(static::class), true)
             && $this->hasTooManyLoginAttempts($request)
         ) {
             $this->fireLockoutEvent($request);
@@ -51,7 +55,7 @@ trait AuthenticatesUsers
             // If the login attempt was unsuccessful we will increment the number of attempts
             // to login and redirect the user back to the login form. Of course, when this
             // user surpasses their maximum number of attempts they will get locked out.
-            if (in_array(ThrottlesLogins::class, class_uses_recursive(get_class($this)))) {
+            if (in_array(ThrottlesLogins::class, class_uses_recursive(static::class), true)) {
                 $this->incrementLoginAttempts($request);
             }
 
@@ -59,6 +63,32 @@ trait AuthenticatesUsers
         }
 
         return $this->sendLoginResponse($request);
+    }
+
+    /**
+     * Get the login username to be used by the controller.
+     */
+    public function username(): string
+    {
+        return 'email';
+    }
+
+    /**
+     * Log the user out of the application.
+     */
+    public function logout(Request $request): JsonResponse|RedirectResponse
+    {
+        $this->guard()->logout();
+
+        $request->session()->invalidate();
+
+        $request->session()->regenerateToken();
+
+        $this->loggedOut($request);
+
+        return $request->wantsJson()
+            ? new JsonResponse(null, 204)
+            : redirect('/');
     }
 
     /**
@@ -80,7 +110,8 @@ trait AuthenticatesUsers
     protected function attemptLogin(Request $request): bool
     {
         return $this->guard()->attempt(
-            $this->credentials($request), $request->filled('remember')
+            $this->credentials($request),
+            $request->filled('remember'),
         );
     }
 
@@ -115,7 +146,7 @@ trait AuthenticatesUsers
      */
     protected function authenticated(?Authenticatable $user): void
     {
-        if($user instanceof Model && Schema::hasColumn($user->getTable(), 'last_login_at')) {
+        if ($user instanceof Model && Schema::hasColumn($user->getTable(), 'last_login_at')) {
             $user->last_login_at = now();
             $user->save();
         }
@@ -134,33 +165,9 @@ trait AuthenticatesUsers
     }
 
     /**
-     * Get the login username to be used by the controller.
-     */
-    public function username(): string
-    {
-        return 'email';
-    }
-
-    /**
-     * Log the user out of the application.
-     */
-    public function logout(Request $request): JsonResponse|RedirectResponse
-    {
-        $this->guard()->logout();
-
-        $request->session()->invalidate();
-
-        $request->session()->regenerateToken();
-
-        $this->loggedOut($request);
-
-        return $request->wantsJson()
-            ? new JsonResponse(null, 204)
-            : redirect('/');
-    }
-
-    /**
      * The user has logged out of the application.
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
     protected function loggedOut(Request $request): void
     {

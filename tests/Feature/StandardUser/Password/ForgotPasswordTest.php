@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\StandardUser\Password;
 
 use Brackets\AdminAuth\Notifications\ResetPassword;
@@ -41,10 +43,7 @@ class ForgotPasswordTest extends StandardTestCase
         $response = $this->post(url('/admin/password-reset/send'), ['email' => 'john@example.com']);
         $response->assertStatus(302);
 
-        Notification::assertSentTo(
-            $user,
-            ResetPassword::class
-        );
+        Notification::assertSentTo($user, ResetPassword::class);
     }
 
     public function testDoNotSendPasswordEmailIfEmailNotFound(): void
@@ -56,9 +55,6 @@ class ForgotPasswordTest extends StandardTestCase
         $response = $this->post(url('/admin/password-reset/send'), ['email' => 'john1@example.com']);
         $response->assertStatus(302);
 
-        Notification::assertNotSentTo(
-            $user,
-            ResetPassword::class
-        );
+        Notification::assertNotSentTo($user, ResetPassword::class);
     }
 }

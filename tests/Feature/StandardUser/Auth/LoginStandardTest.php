@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\StandardUser\Auth;
 
 use Brackets\AdminAuth\Tests\Models\TestStandardUserModel;
@@ -15,7 +17,7 @@ class LoginStandardTest extends StandardTestCase
     {
         $user = TestStandardUserModel::create([
             'email' => 'john@example.com',
-            'password' => bcrypt('testpass123')
+            'password' => bcrypt('testpass123'),
         ]);
 
         $this->assertDatabaseHas('test_standard_user_models', [
@@ -33,7 +35,7 @@ class LoginStandardTest extends StandardTestCase
 
     public function testUserCanLogIn(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
@@ -43,7 +45,7 @@ class LoginStandardTest extends StandardTestCase
 
     public function testUserWithWrongCredentialsCannotLogIn(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'incorrect password']);
         $response->assertStatus(302);
@@ -53,7 +55,7 @@ class LoginStandardTest extends StandardTestCase
 
     public function testAlreadyAuthUserIsRedirectedFromLogin(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);

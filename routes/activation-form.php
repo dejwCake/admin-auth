@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Brackets\AdminAuth\Http\Controllers\Auth\ActivationEmailController;
 use Illuminate\Support\Facades\Route;
 
@@ -16,7 +18,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web'])
     ->prefix('/admin/activation')
-    ->group(static function () {
+    ->group(static function (): void {
         Route::get('/', [ActivationEmailController::class, 'showLinkRequestForm'])
             ->name('brackets/admin-auth::admin/activation');
         Route::post('/send', [ActivationEmailController::class, 'sendActivationEmail']);

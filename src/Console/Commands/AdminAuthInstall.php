@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Console\Commands;
 
 use Brackets\AdminAuth\Models\AdminUser;
@@ -63,7 +65,7 @@ class AdminAuthInstall extends Command
         string $filePath,
         string $find,
         string $replaceWith,
-        ?string $ifRegexNotExists = null
+        ?string $ifRegexNotExists = null,
     ): bool|int {
         $content = File::get($filePath);
         if ($ifRegexNotExists !== null && preg_match($ifRegexNotExists, $content)) {

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\StandardUser\Password;
 
 use Brackets\AdminAuth\Tests\Models\TestStandardUserModel;
@@ -12,12 +14,11 @@ class ResetPasswordTest extends StandardTestCase
 {
     use DatabaseMigrations;
 
-    protected $token;
+    protected string $token = '123456aabbcc';
 
     public function setUp(): void
     {
         parent::setUp();
-        $this->token = '123456aabbcc';
     }
 
     protected function createTestUser(): TestStandardUserModel
@@ -35,7 +36,7 @@ class ResetPasswordTest extends StandardTestCase
         $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user->email,
             'token' => bcrypt($this->token),
-            'created_at' => CarbonImmutable::now()
+            'created_at' => CarbonImmutable::now(),
         ]);
 
         $this->assertDatabaseHas('password_reset_tokens', [
@@ -53,7 +54,7 @@ class ResetPasswordTest extends StandardTestCase
 
     public function testResetPasswordAfterFormFilled(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post(
             url('/admin/password-reset/reset'),
@@ -61,8 +62,8 @@ class ResetPasswordTest extends StandardTestCase
                 'email' => 'john@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token
-            ]
+                'token' => $this->token,
+            ],
         );
         $response->assertStatus(302);
 
@@ -73,7 +74,7 @@ class ResetPasswordTest extends StandardTestCase
 
     public function testDoNotResetPasswordIfEmailNotFound(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post(
             url('/admin/password-reset/reset'),
@@ -81,8 +82,8 @@ class ResetPasswordTest extends StandardTestCase
                 'email' => 'john1@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token
-            ]
+                'token' => $this->token,
+            ],
         );
         $response->assertStatus(302);
 
@@ -94,7 +95,7 @@ class ResetPasswordTest extends StandardTestCase
 
     public function testDoNotResetPasswordIfTokenFailed(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post(
             url('/admin/password-reset/reset'),
@@ -102,8 +103,8 @@ class ResetPasswordTest extends StandardTestCase
                 'email' => 'john@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token . '11'
-            ]
+                'token' => $this->token . '11',
+            ],
         );
         $response->assertStatus(302);
 
@@ -115,7 +116,7 @@ class ResetPasswordTest extends StandardTestCase
 
     public function testDoNotResetPasswordIfEmailAndTokenDoesNotMatch(): void
     {
-        $user1 = $this->createTestUser();
+        $this->createTestUser();
 
         $user2 = TestStandardUserModel::create([
             'email' => 'john2@example.com',
@@ -129,7 +130,7 @@ class ResetPasswordTest extends StandardTestCase
         $this->app['db']->connection()->table('password_reset_tokens')->insert([
             'email' => $user2->email,
             'token' => bcrypt($this->token . '2'),
-            'created_at' => CarbonImmutable::now()
+            'created_at' => CarbonImmutable::now(),
         ]);
 
         $this->assertDatabaseHas('password_reset_tokens', [
@@ -142,8 +143,8 @@ class ResetPasswordTest extends StandardTestCase
                 'email' => 'john2@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token
-            ]
+                'token' => $this->token,
+            ],
         );
         $response->assertStatus(302);
 
@@ -158,8 +159,8 @@ class ResetPasswordTest extends StandardTestCase
                 'email' => 'john@example.com',
                 'password' => 'testpass123new',
                 'password_confirmation' => 'testpass123new',
-                'token' => $this->token . '2'
-            ]
+                'token' => $this->token . '2',
+            ],
         );
         $response->assertStatus(302);
 
@@ -171,7 +172,7 @@ class ResetPasswordTest extends StandardTestCase
 
     public function testDoNotResetPasswordIfPasswordValidationFailed(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         //Fixme not working getting error instead of exception
         $response = $this->post(
@@ -180,8 +181,8 @@ class ResetPasswordTest extends StandardTestCase
                 'email' => 'john@example.com',
                 'password' => 'testpass',
                 'password_confirmation' => 'testpass',
-                'token' => $this->token.'11'
-            ]
+                'token' => $this->token . '11',
+            ],
         );
         $response->assertStatus(302);
 
@@ -198,8 +199,8 @@ class ResetPasswordTest extends StandardTestCase
                 'email' => 'john@example.com',
                 'password' => 'test777',
                 'password_confirmation' => 'test777',
-                'token' => $this->token
-            ]
+                'token' => $this->token,
+            ],
         );
         $response->assertStatus(302);
 

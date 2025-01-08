@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Auth;
 
 use Brackets\AdminAuth\Tests\BracketsTestCase;
@@ -31,7 +33,7 @@ class LogoutTest extends BracketsTestCase
 
     public function testAuthUserCanLogout(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);

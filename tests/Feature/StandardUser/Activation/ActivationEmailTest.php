@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\StandardUser\Activation;
 
 use Brackets\AdminAuth\Notifications\ActivationNotification;
@@ -38,10 +40,7 @@ class ActivationEmailTest extends StandardTestCase
 
         $user = $this->createTestUser();
 
-        Notification::assertNotSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertNotSentTo($user, ActivationNotification::class);
     }
 
     public function testDoNotSendActivationEmailAfterUserNotActivatedAndFormFilled(): void
@@ -53,10 +52,7 @@ class ActivationEmailTest extends StandardTestCase
         $response = $this->post(url('/admin/activation/send'), ['email' => 'john@example.com']);
         $response->assertStatus(302);
 
-        Notification::assertNotSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertNotSentTo($user, ActivationNotification::class);
     }
 
     public function testDoNotSendActivationEmailIfEmailNotFound(): void
@@ -71,9 +67,6 @@ class ActivationEmailTest extends StandardTestCase
             'password' => bcrypt('testpass123'),
         ]);
 
-        Notification::assertNotSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertNotSentTo($user, ActivationNotification::class);
     }
 }

@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'auth_global' => [
         'email' => 'Your e-mail',
@@ -45,5 +47,5 @@ return [
         'invalid_password' => 'Password must be at least six characters long and match the confirmation.',
         'invalid_token' => 'The password reset token is invalid.',
         'invalid_user' => "We can't find a user with this e-mail address.",
-    ]
+    ],
 ];

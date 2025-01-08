@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Models;
 
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
@@ -14,9 +16,8 @@ class TestStandardUserModel extends Authenticatable implements CanActivateContra
     use CanActivate;
 
     /**
-     * The attributes that are mass assignable.
-     *
-     * @var array
+     * @var array<string>
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $fillable = [
         'name',
@@ -25,9 +26,8 @@ class TestStandardUserModel extends Authenticatable implements CanActivateContra
     ];
 
     /**
-     * The attributes that should be hidden for arrays.
-     *
-     * @var array
+     * @var array<string>
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $hidden = [
         'password',
@@ -38,9 +38,9 @@ class TestStandardUserModel extends Authenticatable implements CanActivateContra
      * Send the password reset notification.
      *
      * @param string $token
-     * @return void
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
-    public function sendPasswordResetNotification($token)
+    public function sendPasswordResetNotification($token): void
     {
         $this->notify(app(ResetPassword::class, ['token' => $token]));
     }

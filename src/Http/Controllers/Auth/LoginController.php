@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Http\Controllers\Controller;
@@ -23,7 +25,6 @@ class LoginController extends Controller
     | to conveniently provide its functionality to your applications.
     |
     */
-
     use AuthenticatesUsers;
 
     /**
@@ -72,6 +73,18 @@ class LoginController extends Controller
     }
 
     /**
+     * Get the post register / login redirect path.
+     */
+    public function redirectAfterLogoutPath(): string
+    {
+        if (method_exists($this, 'redirectToAfterLogout')) {
+            return $this->redirectToAfterLogout();
+        }
+
+        return property_exists($this, 'redirectToAfterLogout') ? $this->redirectToAfterLogout : '/';
+    }
+
+    /**
      * Get the needed authorization credentials from the request.
      *
      * @return array<string, string|bool>
@@ -85,19 +98,8 @@ class LoginController extends Controller
         if (config('admin-auth.activation_enabled')) {
             $conditions['activated'] = true;
         }
+
         return array_merge($request->only($this->username(), 'password'), $conditions);
-    }
-
-    /**
-     * Get the post register / login redirect path.
-     */
-    public function redirectAfterLogoutPath(): string
-    {
-        if (method_exists($this, 'redirectToAfterLogout')) {
-            return $this->redirectToAfterLogout();
-        }
-
-        return property_exists($this, 'redirectToAfterLogout') ? $this->redirectToAfterLogout : '/';
     }
 
     /**

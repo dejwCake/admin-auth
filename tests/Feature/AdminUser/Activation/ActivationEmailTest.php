@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Activation;
 
 use Brackets\AdminAuth\Notifications\ActivationNotification;
@@ -42,10 +44,7 @@ class ActivationEmailTest extends BracketsTestCase
 
         $user = $this->createTestUser(false);
 
-        Notification::assertSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertSentTo($user, ActivationNotification::class);
     }
 
     public function testSendActivationEmailAfterUserNotActivatedAndFormFilled(): void
@@ -57,10 +56,7 @@ class ActivationEmailTest extends BracketsTestCase
         $response = $this->post(url('/admin/activation/send'), ['email' => 'john@example.com']);
         $response->assertStatus(302);
 
-        Notification::assertSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertSentTo($user, ActivationNotification::class);
     }
 
     public function testDoNotSendActivationEmailIfEmailNotFound(): void
@@ -77,10 +73,7 @@ class ActivationEmailTest extends BracketsTestCase
             'forbidden' => false,
         ]);
 
-        Notification::assertNotSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertNotSentTo($user, ActivationNotification::class);
     }
 
     public function testDoNotSendActivationEmailIfUserAlreadyActivated(): void
@@ -92,9 +85,6 @@ class ActivationEmailTest extends BracketsTestCase
         $response = $this->post(url('/admin/activation/send'), ['email' => 'john@example.com']);
         $response->assertStatus(302);
 
-        Notification::assertNotSentTo(
-            $user,
-            ActivationNotification::class
-        );
+        Notification::assertNotSentTo($user, ActivationNotification::class);
     }
 }

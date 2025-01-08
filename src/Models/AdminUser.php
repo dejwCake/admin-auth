@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Models;
 
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
@@ -36,6 +38,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 
     /**
      * @var array<int, string>
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $fillable = [
         'email',
@@ -50,6 +53,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 
     /**
      * @var array<string>
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $hidden = [
         'password',
@@ -58,23 +62,9 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 
     /**
      * @var array<string>
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $appends = ['full_name', 'resource_url'];
-
-    /**
-     * @return array<class-string>
-     */
-    protected function casts(): array
-    {
-        return [
-            'created_at' => CarbonImmutable::class,
-            'updated_at' => CarbonImmutable::class,
-            'deleted_at' => CarbonImmutable::class,
-            'last_login_at' => CarbonImmutable::class,
-        ];
-    }
-
-    /* ************************ ACCESSOR ************************* */
 
     /**
      * Resource url to generate edit
@@ -104,6 +94,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
      * Send the password reset notification.
      *
      * @param string $token
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     public function sendPasswordResetNotification($token): void
     {
@@ -123,8 +114,10 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 
     /**
      * Register media conversions
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    public function registerMediaConversions(Media $media = null): void
+    public function registerMediaConversions(?Media $media = null): void
     {
         $this->autoRegisterThumb200();
 
@@ -150,18 +143,31 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
      */
     public function autoRegisterThumb200(): void
     {
-        $this->getMediaCollections()->filter(function(MediaCollection $mediaCollection) {
-            return $mediaCollection->isImage();
-        })->each(function (MediaCollection $mediaCollection) {
-            $this->addMediaConversion('thumb_200')
-                ->width(200)
-                ->height(200)
-                ->fit(Fit::Crop, 200, 200)
-                ->optimize()
-                ->performOnCollections($mediaCollection->getName())
-                ->nonQueued();
-        });
+        $this->getMediaCollections()->filter(
+            static fn (MediaCollection $mediaCollection) => $mediaCollection->isImage(),
+        )->each(
+            function (MediaCollection $mediaCollection): void {
+                $this->addMediaConversion('thumb_200')
+                    ->width(200)
+                    ->height(200)
+                    ->fit(Fit::Crop, 200, 200)
+                    ->optimize()
+                    ->performOnCollections($mediaCollection->getName())
+                    ->nonQueued();
+            },
+        );
     }
 
-    /* ************************ RELATIONS ************************ */
+    /**
+     * @return array<class-string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'created_at' => CarbonImmutable::class,
+            'updated_at' => CarbonImmutable::class,
+            'deleted_at' => CarbonImmutable::class,
+            'last_login_at' => CarbonImmutable::class,
+        ];
+    }
 }

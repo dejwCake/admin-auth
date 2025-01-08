@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Activation\Repositories;
 
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;

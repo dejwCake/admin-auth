@@ -1,10 +1,13 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth;
 
 use Brackets\AdminAuth\Activation\Providers\ActivationServiceProvider;
 use Brackets\AdminAuth\Console\Commands\AdminAuthInstall;
 use Brackets\AdminAuth\Exceptions\Handler;
+use Brackets\AdminAuth\Http\Controllers\MissingRoutesController;
 use Brackets\AdminAuth\Http\Middleware\ApplyUserLocale;
 use Brackets\AdminAuth\Http\Middleware\CanAdmin;
 use Brackets\AdminAuth\Http\Middleware\RedirectIfAuthenticated;
@@ -38,25 +41,31 @@ class AdminAuthServiceProvider extends ServiceProvider
 
             if (!glob(base_path('database/migrations/*_create_admin_activations_table.php'))) {
                 $this->publishes([
-                    __DIR__ . '/../install-stubs/database/migrations/create_admin_activations_table.php' => database_path('migrations') . '/2017_08_24_000000_create_admin_activations_table.php',
+                    __DIR__ . '/../install-stubs/database/migrations/create_admin_activations_table.php'
+                    => database_path('migrations') . '/2017_08_24_000000_create_admin_activations_table.php',
                 ], 'migrations');
             }
 
             if (!glob(base_path('database/migrations/*_create_admin_password_resets_table.php'))) {
                 $this->publishes([
-                    __DIR__ . '/../install-stubs/database/migrations/create_admin_password_resets_table.php' => database_path('migrations') . '/2017_08_24_000000_create_admin_password_resets_table.php',
+                    __DIR__ . '/../install-stubs/database/migrations/create_admin_password_resets_table.php'
+                    => database_path('migrations') . '/2017_08_24_000000_create_admin_password_resets_table.php',
                 ], 'migrations');
             }
 
             if (!glob(base_path('database/migrations/*_create_admin_users_table.php'))) {
                 $this->publishes([
-                    __DIR__ . '/../install-stubs/database/migrations/create_admin_users_table.php' => database_path('migrations') . '/2017_08_24_000000_create_admin_users_table.php',
+                    __DIR__ . '/../install-stubs/database/migrations/create_admin_users_table.php'
+                    => database_path('migrations') . '/2017_08_24_000000_create_admin_users_table.php',
                 ], 'migrations');
             }
 
             if (!glob(base_path('database/migrations/*_add_last_login_at_timestamp_to_admin_users_table.php'))) {
                 $this->publishes([
-                    __DIR__ . '/../install-stubs/database/migrations/add_last_login_at_timestamp_to_admin_users_table.php' => database_path('migrations') . '/2020_10_21_000000_add_last_login_at_timestamp_to_admin_users_table.php',
+                    __DIR__
+                    . '/../install-stubs/database/migrations/add_last_login_at_timestamp_to_admin_users_table.php'
+                    => database_path('migrations',)
+                        . '/2020_10_21_000000_add_last_login_at_timestamp_to_admin_users_table.php',
                 ], 'migrations');
             }
 
@@ -65,10 +74,7 @@ class AdminAuthServiceProvider extends ServiceProvider
             ], 'lang');
         }
 
-        $this->app->bind(
-            ExceptionHandler::class,
-            Handler::class
-        );
+        $this->app->bind(ExceptionHandler::class, Handler::class);
     }
 
     /**
@@ -76,33 +82,36 @@ class AdminAuthServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(
-            __DIR__ . '/../install-stubs/config/admin-auth.php',
-            'admin-auth'
-        );
+        $this->mergeConfigFrom(__DIR__ . '/../install-stubs/config/admin-auth.php', 'admin-auth');
 
         if (config('admin-auth.use_routes', true)) {
             $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
         }
 
-        if (config('admin-auth.use_routes', true) && config(
-            'admin-auth.activations.self_activation_form_enabled',
-            true
-        )) {
+        if (
+            config('admin-auth.use_routes', true)
+            && config('admin-auth.activations.self_activation_form_enabled', true)
+        ) {
             $this->loadRoutesFrom(__DIR__ . '/../routes/activation-form.php');
         }
 
-        //This is just because laravel does not provide it by default, however expect in AuthenticationException that it exists
+        //This is just because laravel does not provide it by default,
+        // however expect in AuthenticationException that it exists
         if (!Route::has('login')) {
-            Route::middleware(['web'])->namespace('Brackets\AdminAuth\Http\Controllers')->group(function () {
-                Route::get('/login', 'MissingRoutesController@redirect')->name('login');
-            });
+            Route::middleware(['web'])->namespace('Brackets\AdminAuth\Http\Controllers')->group(
+                static function (): void {
+                    Route::get('/login', [MissingRoutesController::class, 'redirect'])->name('login');
+                },
+            );
         }
-        //This is just because in welcome.blade.php someone was lazy to check if also register route exists and ask only for login
+        //This is just because in welcome.blade.php someone was lazy to check
+        // if also register route exists and ask only for login
         if (!Route::has('register')) {
-            Route::middleware(['web'])->namespace('Brackets\AdminAuth\Http\Controllers')->group(function () {
-                Route::get('/register', 'MissingRoutesController@redirect')->name('register');
-            });
+            Route::middleware(['web'])->namespace('Brackets\AdminAuth\Http\Controllers')->group(
+                static function (): void {
+                    Route::get('/register', [MissingRoutesController::class, 'redirect'])->name('register');
+                },
+            );
         }
 
         app(Router::class)->pushMiddlewareToGroup('admin', CanAdmin::class);

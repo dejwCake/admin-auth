@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Tests\Feature\AdminUser\Auth;
 
 use Brackets\AdminAuth\Notifications\ActivationNotification;
@@ -24,10 +26,7 @@ class LoginBracketsTest extends BracketsTestCase
             'forbidden' => $forbidden,
         ]);
         if ($activated === false) {
-            Notification::assertSentTo(
-                $user,
-                ActivationNotification::class
-            );
+            Notification::assertSentTo($user, ActivationNotification::class);
         }
 
         $this->assertDatabaseHas('test_brackets_user_models', [
@@ -59,7 +58,7 @@ class LoginBracketsTest extends BracketsTestCase
 
     public function testUserWithWrongCredentialsCannotLogIn(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->json('post', '/admin/login', ['email' => 'john@example.com', 'password' => 'testpass1231']);
         $response->assertStatus(422);
@@ -69,7 +68,7 @@ class LoginBracketsTest extends BracketsTestCase
 
     public function testNotActivatedUserCannotLogIn(): void
     {
-        $user = $this->createTestUser(false);
+        $this->createTestUser(false);
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
@@ -80,7 +79,7 @@ class LoginBracketsTest extends BracketsTestCase
 
     public function testNotActivatedUserCanLogInIfActivationDisabled(): void
     {
-        $user = $this->createTestUser(false);
+        $this->createTestUser(false);
 
         $this->app['config']->set('admin-auth.activation_enabled', false);
 
@@ -92,7 +91,7 @@ class LoginBracketsTest extends BracketsTestCase
 
     public function testForbiddenUserCannotLogIn(): void
     {
-        $user = $this->createTestUser(true, true);
+        $this->createTestUser(true, true);
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);
@@ -105,7 +104,7 @@ class LoginBracketsTest extends BracketsTestCase
         $time = CarbonImmutable::now();
         //Delted at is not fillable, therefore we need to unguard to force fill
         TestBracketsUserModel::unguard();
-        $user = TestBracketsUserModel::create([
+        TestBracketsUserModel::create([
             'email' => 'john@example.com',
             'password' => bcrypt('testpass123'),
             'activated' => true,
@@ -129,7 +128,7 @@ class LoginBracketsTest extends BracketsTestCase
 
     public function testAlreadyAuthUserIsRedirectedFromLogin(): void
     {
-        $user = $this->createTestUser();
+        $this->createTestUser();
 
         $response = $this->post('/admin/login', ['email' => 'john@example.com', 'password' => 'testpass123']);
         $response->assertStatus(302);

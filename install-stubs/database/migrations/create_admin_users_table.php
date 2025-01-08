@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\DB;
@@ -9,12 +11,10 @@ return new class extends Migration
 {
     /**
      * Run the migrations.
-     *
-     * @return void
      */
     public function up(): void
     {
-        Schema::create('admin_users', static function (Blueprint $table) {
+        Schema::create('admin_users', static function (Blueprint $table): void {
             $table->increments('id');
             $table->string('first_name')->nullable();
             $table->string('last_name')->nullable();
@@ -35,16 +35,17 @@ return new class extends Migration
         $connection = config('database.default');
         $driver = config("database.connections.{$connection}.driver");
         if ($driver === 'pgsql') {
-            Schema::table('admin_users', static function (Blueprint $table) {
-                DB::statement('CREATE UNIQUE INDEX admin_users_email_null_deleted_at ON admin_users (email) WHERE deleted_at IS NULL;');
+            //phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
+            Schema::table('admin_users', static function (Blueprint $table): void {
+                DB::statement(
+                    'CREATE UNIQUE INDEX admin_users_email_null_deleted_at ON admin_users (email) WHERE deleted_at IS NULL;',
+                );
             });
         }
     }
 
     /**
      * Reverse the migrations.
-     *
-     * @return void
      */
     public function down(): void
     {

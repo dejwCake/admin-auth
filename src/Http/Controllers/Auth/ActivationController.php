@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
@@ -15,15 +17,6 @@ use Illuminate\Validation\ValidationException;
 class ActivationController extends Controller
 {
     use RedirectsUsers;
-
-    /*
-    |--------------------------------------------------------------------------
-    | Activation Controller
-    |--------------------------------------------------------------------------
-    |
-    | This controller is responsible for handling activation requests.
-    |
-    */
 
     /**
      * Guard used for admin user
@@ -66,9 +59,9 @@ class ActivationController extends Controller
         // database. Otherwise, we will parse the error and return the response.
         $response = $this->broker()->activate(
             $this->credentials($request, $token),
-            function ($user) {
+            function ($user): void {
                 $this->activateUser($user);
-            }
+            },
         );
 
         // If the activation was successful, we will redirect the user back to
@@ -77,6 +70,14 @@ class ActivationController extends Controller
         return $response === Activation::ACTIVATED
             ? $this->sendActivationResponse($request, $response)
             : $this->sendActivationFailedResponse($request, $response);
+    }
+
+    /**
+     * Get the broker to be used during activation.
+     */
+    public function broker(): ActivationBrokerContract
+    {
+        return Activation::broker($this->activationBroker);
     }
 
     /**
@@ -99,6 +100,7 @@ class ActivationController extends Controller
      * Get the activation credentials from the request.
      *
      * @return array<string, string>
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
     protected function credentials(Request $request, string $token): array
     {
@@ -117,6 +119,8 @@ class ActivationController extends Controller
 
     /**
      * Get the response for a successful activation.
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
     protected function sendActivationResponse(Request $request, string $response): RedirectResponse
     {
@@ -124,6 +128,7 @@ class ActivationController extends Controller
         if ($response === Activation::ACTIVATED) {
             $message = trans('brackets/admin-auth::admin.activations.activated');
         }
+
         return redirect($this->redirectPath())
             ->with('status', $message);
     }
@@ -147,16 +152,8 @@ class ActivationController extends Controller
                 ->withErrors(['token' => $message]);
         } else {
             return view('brackets/admin-auth::admin.auth.activation.error')->withErrors(
-                ['token' => $message]
+                ['token' => $message],
             );
         }
-    }
-
-    /**
-     * Get the broker to be used during activation.
-     */
-    public function broker(): ActivationBrokerContract
-    {
-        return Activation::broker($this->activationBroker);
     }
 }

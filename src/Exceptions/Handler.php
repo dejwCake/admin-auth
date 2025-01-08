@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace Brackets\AdminAuth\Exceptions;
 
 use Illuminate\Auth\AuthenticationException;
@@ -14,16 +16,13 @@ class Handler extends ParentHandler
      * Convert an authentication exception into a response.
      *
      * @param Request $request
-     * @param AuthenticationException $exception
-     * @return JsonResponse|RedirectResponse
+     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
-    protected function unauthenticated($request, AuthenticationException $exception): JsonResponse|RedirectResponse
+    protected function unauthenticated($request, AuthenticationException $exception,): JsonResponse|RedirectResponse
     {
-        if (str_starts_with($request->getRequestUri(), '/admin')) {
-            $url = route('brackets/admin-auth::admin/login');
-        } else {
-            $url = route('login');
-        }
+        $url = str_starts_with($request->getRequestUri(), '/admin')
+            ? route('brackets/admin-auth::admin/login')
+            : route('login');
 
         return $this->shouldReturnJson($request, $exception)
             ? response()->json(['message' => $exception->getMessage()], 401)

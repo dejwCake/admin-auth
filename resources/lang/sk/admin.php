@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 return [
     'auth_global' => [
         'email' => 'E-Mail',

@@ -8,7 +8,6 @@ use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
 use Brackets\AdminAuth\Activation\Traits\CanActivate;
 use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Notifications\ResetPassword;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -63,15 +62,15 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
     protected $appends = ['full_name', 'resource_url'];
 
     /**
-     * @return array<class-string>
+     * @return array<string>
      */
     protected function casts(): array
     {
         return [
-            'created_at' => CarbonImmutable::class,
-            'updated_at' => CarbonImmutable::class,
-            'deleted_at' => CarbonImmutable::class,
-            'last_login_at' => CarbonImmutable::class,
+            'created_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
+            'updated_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
+            'deleted_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
+            'last_login_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
         ];
     }
 

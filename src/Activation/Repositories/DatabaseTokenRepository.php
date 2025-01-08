@@ -76,7 +76,7 @@ class DatabaseTokenRepository implements TokenRepositoryInterface
     public function createOrGet(CanActivateContract $user): string
     {
         $record = $this->getByUser($user);
-        if ($record !== null) {
+        if ($record !== []) {
             return $record['token'];
         }
 

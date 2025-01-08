@@ -12,7 +12,6 @@ use Brackets\Media\HasMedia\HasMediaCollectionsTrait;
 use Brackets\Media\HasMedia\HasMediaThumbsTrait;
 use Brackets\Media\HasMedia\MediaCollection;
 use Brackets\Media\HasMedia\ProcessMediaTrait;
-use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -166,15 +165,15 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
     }
 
     /**
-     * @return array<class-string>
+     * @return array<string>
      */
     protected function casts(): array
     {
         return [
-            'created_at' => CarbonImmutable::class,
-            'updated_at' => CarbonImmutable::class,
-            'deleted_at' => CarbonImmutable::class,
-            'last_login_at' => CarbonImmutable::class,
+            'created_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
+            'updated_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
+            'deleted_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
+            'last_login_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
         ];
     }
 }

@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Http\Middleware;
 
 use Closure;
+use Illuminate\Contracts\Auth\Access\Authorizable;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Validation\UnauthorizedException;
@@ -29,8 +30,11 @@ class CanAdmin
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        if (Auth::guard($this->guard)->check() && Auth::guard($this->guard)->user()->can('admin')) {
-            return $next($request);
+        if (Auth::guard($this->guard)->check()) {
+            $user = Auth::guard($this->guard)->user();
+            if ($user instanceof Authorizable && $user->can('admin')) {
+                return $next($request);
+            }
         }
 
         if (!Auth::guard($this->guard)->check()) {

@@ -10,13 +10,18 @@ use Brackets\AdminAuth\Notifications\ResetPassword;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
+/**
+ * @property string $name
+ * @property string $email
+ * @property string $password
+ */
 class TestStandardUserModel extends Authenticatable implements CanActivateContract
 {
     use Notifiable;
     use CanActivate;
 
     /**
-     * @var array<string>
+     * @var array<int, string>
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $fillable = [
@@ -26,7 +31,7 @@ class TestStandardUserModel extends Authenticatable implements CanActivateContra
     ];
 
     /**
-     * @var array<string>
+     * @var array<int, string>
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $hidden = [

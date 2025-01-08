@@ -9,14 +9,21 @@ use Brackets\AdminAuth\Activation\Traits\CanActivate;
 use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Notifications\ResetPassword;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
+ * @property string $email
+ * @property string $password
  * @property string $first_name
  * @property string $last_name
+ * @property bool $activated
+ * @property bool $forbidden
+ * @property string $language
+ * @property ?CarbonInterface $last_login_at
  */
 class TestBracketsUserModel extends Authenticatable implements CanActivateContract
 {
@@ -26,7 +33,7 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
     use HasRoles;
 
     /**
-     * @var array<string>
+     * @var array<int, string>
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $fillable = [
@@ -37,10 +44,11 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
         'activated',
         'forbidden',
         'language',
+        'last_login_at',
     ];
 
     /**
-     * @var array<string>
+     * @var array<int, string>
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $hidden = [
@@ -49,17 +57,7 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
     ];
 
     /**
-     * @var array<string>
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
-     */
-    protected $dates = [
-        'created_at',
-        'updated_at',
-        'deleted_at',
-    ];
-
-    /**
-     * @var array<string>
+     * @var array<int, string>
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $appends = ['full_name', 'resource_url'];
@@ -73,6 +71,7 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
             'created_at' => CarbonImmutable::class,
             'updated_at' => CarbonImmutable::class,
             'deleted_at' => CarbonImmutable::class,
+            'last_login_at' => CarbonImmutable::class,
         ];
     }
 

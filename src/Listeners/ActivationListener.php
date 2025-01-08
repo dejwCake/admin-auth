@@ -29,6 +29,10 @@ class ActivationListener
         $activationBrokerConfig = config("activation.activations.{$this->activationBroker}");
         if (app('auth')->createUserProvider($activationBrokerConfig['provider']) !== null) {
             $userClass = Activation::broker($this->activationBroker)->getUserModelClass();
+            if ($userClass === null) {
+                return;
+            }
+
             $interfaces = class_implements($userClass);
             if ($interfaces && in_array(CanActivate::class, $interfaces, true)) {
                 $events->listen('eloquent.created: ' . $userClass, ActivationService::class);

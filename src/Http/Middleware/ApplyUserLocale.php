@@ -28,8 +28,11 @@ class ApplyUserLocale
      */
     public function handle(Request $request, Closure $next): mixed
     {
-        if (Auth::guard($this->guard)->check() && isset(Auth::guard($this->guard)->user()->language)) {
-            app()->setLocale(Auth::guard($this->guard)->user()->language);
+        if (Auth::guard($this->guard)->check()) {
+            $user = Auth::guard($this->guard)->user();
+            if (property_exists($user, 'language') && $user->language !== null) {
+                app()->setLocale($user->language);
+            }
         }
 
         return $next($request);

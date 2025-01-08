@@ -6,10 +6,12 @@ namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\ResetsPasswords;
+use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\PasswordBroker as PasswordBrokerContract;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\View\Factory;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -79,10 +81,10 @@ class ResetPasswordController extends Controller
 
         // Here we will attempt to reset the user's password. If it is successful we
         // will update the password on an actual user model and persist it to the
-        // database. Otherwise we will parse the error and return the response.
+        // database. Otherwise, we will parse the error and return the response.
         $response = $this->broker()->reset(
             $this->credentials($request),
-            function ($user, $password): void {
+            function (CanResetPassword&Authenticatable&Model $user, string $password): void {
                 $this->resetPassword($user, $password);
             },
         );
@@ -106,7 +108,7 @@ class ResetPasswordController extends Controller
     /**
      * Reset the given user's password.
      */
-    protected function resetPassword(CanResetPassword $user, string $password): void
+    protected function resetPassword(CanResetPassword&Authenticatable&Model $user, string $password): void
     {
         $user->forceFill([
             'password' => bcrypt($password),
@@ -136,12 +138,9 @@ class ResetPasswordController extends Controller
 
     /**
      * Get the response for a failed password reset.
-     *
-     * @param Request
      */
     protected function sendResetFailedResponse(Request $request, string $response): RedirectResponse
     {
-        $message = trans($response);
         if ($response === Password::INVALID_TOKEN) {
             $message = trans('brackets/admin-auth::admin.passwords.invalid_token');
         } else {
@@ -172,7 +171,8 @@ class ResetPasswordController extends Controller
      */
     protected function loginCheck(CanResetPassword $user): bool
     {
-        return ($user->activated === null || $user->activated) && ($user->forbidden === null || !$user->forbidden);
+        return (!property_exists($user, 'activated') || $user->activated === null || $user->activated)
+            && (!property_exists($user, 'forbidden') || $user->forbidden === null || !$user->forbidden);
     }
 
     /**

@@ -14,20 +14,8 @@ use UnexpectedValueException;
 
 class ActivationBroker implements ActivationBrokerContract
 {
-    /**
-     * The activation token repository.
-     */
-    protected TokenRepositoryInterface $tokens;
-
-    /**
-     * The user provider implementation.
-     */
-    protected UserProvider $users;
-
-    public function __construct(TokenRepositoryInterface $tokens, UserProvider $users)
+    public function __construct(protected TokenRepositoryInterface $tokens, protected UserProvider $users)
     {
-        $this->users = $users;
-        $this->tokens = $tokens;
     }
 
     /**
@@ -135,9 +123,9 @@ class ActivationBroker implements ActivationBrokerContract
     /**
      * Get the user model class implementation.
      */
-    public function getUserModelClass(): string
+    public function getUserModelClass(): ?string
     {
-        return $this->users->getModel();
+        return method_exists($this->users, 'getModel') ? $this->users->getModel() : null;
     }
 
     /**

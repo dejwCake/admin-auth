@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Traits;
 
+use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -147,7 +148,9 @@ trait AuthenticatesUsers
     protected function authenticated(?Authenticatable $user): void
     {
         if ($user instanceof Model && Schema::hasColumn($user->getTable(), 'last_login_at')) {
-            $user->last_login_at = now();
+            if (property_exists($user, 'last_login_at')) {
+                $user->last_login_at = CarbonImmutable::now();
+            }
             $user->save();
         }
     }

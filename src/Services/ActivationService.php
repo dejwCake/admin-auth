@@ -16,9 +16,6 @@ class ActivationService
      */
     protected string $activationBroker = 'admin_users';
 
-    /**
-     * ActivationService constructor.
-     */
     public function __construct()
     {
         $this->activationBroker = config('admin-auth.defaults.activations');

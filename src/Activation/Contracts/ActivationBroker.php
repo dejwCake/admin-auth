@@ -46,4 +46,9 @@ interface ActivationBroker
      * @param array<string, string> $credentials
      */
     public function activate(array $credentials, Closure $callback): string;
+
+    /**
+     * Get the user model class implementation.
+     */
+    public function getUserModelClass(): ?string;
 }

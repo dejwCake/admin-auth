@@ -10,6 +10,7 @@ use Brackets\AdminAuth\Activation\Facades\Activation;
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\RedirectsUsers;
 use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\ValidationException;
@@ -110,7 +111,7 @@ class ActivationController extends Controller
     /**
      * Activate the given user account.
      */
-    protected function activateUser(CanActivateContract $user): void
+    protected function activateUser(CanActivateContract&Model $user): void
     {
         $user->forceFill([
             'activated' => true,
@@ -142,7 +143,7 @@ class ActivationController extends Controller
         if ($response === Activation::INVALID_USER || $response === Activation::INVALID_TOKEN) {
             $message = trans('brackets/admin-auth::admin.activations.invalid_request');
         } else {
-            if (Activation::ACTIVATION_DISABLED) {
+            if ($response === Activation::ACTIVATION_DISABLED) {
                 $message = trans('brackets/admin-auth::admin.activations.disabled');
             }
         }

@@ -158,7 +158,7 @@ class DatabaseTokenRepository implements TokenRepositoryInterface
      */
     protected function deleteExisting(CanActivateContract $user): ?int
     {
-        return $this->getTable()->where('email', $user->getEmailForPasswordReset())->delete();
+        return $this->getTable()->where('email', $user->getEmailForActivation())->delete();
     }
 
     /**

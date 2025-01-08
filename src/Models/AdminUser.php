@@ -13,6 +13,7 @@ use Brackets\Media\HasMedia\HasMediaThumbsTrait;
 use Brackets\Media\HasMedia\MediaCollection;
 use Brackets\Media\HasMedia\ProcessMediaTrait;
 use Carbon\CarbonImmutable;
+use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -22,8 +23,14 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
+ * @property string $email
+ * @property string $password
  * @property string $first_name
  * @property string $last_name
+ * @property bool $activated
+ * @property bool $forbidden
+ * @property string $language
+ * @property CarbonInterface $last_login_at
  */
 class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 {
@@ -52,7 +59,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
     ];
 
     /**
-     * @var array<string>
+     * @var array<int, string>
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $hidden = [
@@ -61,7 +68,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
     ];
 
     /**
-     * @var array<string>
+     * @var array<int, string>
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $appends = ['full_name', 'resource_url'];
@@ -122,20 +129,20 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
         $this->autoRegisterThumb200();
 
         $this->addMediaConversion('thumb_75')
+            ->performOnCollections('avatar')
+            ->nonQueued()
             ->width(75)
             ->height(75)
             ->fit(Fit::Crop, 75, 75)
-            ->optimize()
-            ->performOnCollections('avatar')
-            ->nonQueued();
+            ->optimize();
 
         $this->addMediaConversion('thumb_150')
+            ->performOnCollections('avatar')
+            ->nonQueued()
             ->width(150)
             ->height(150)
             ->fit(Fit::Crop, 150, 150)
-            ->optimize()
-            ->performOnCollections('avatar')
-            ->nonQueued();
+            ->optimize();
     }
 
     /**
@@ -148,12 +155,12 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
         )->each(
             function (MediaCollection $mediaCollection): void {
                 $this->addMediaConversion('thumb_200')
+                    ->performOnCollections($mediaCollection->getName())
+                    ->nonQueued()
                     ->width(200)
                     ->height(200)
                     ->fit(Fit::Crop, 200, 200)
-                    ->optimize()
-                    ->performOnCollections($mediaCollection->getName())
-                    ->nonQueued();
+                    ->optimize();
             },
         );
     }

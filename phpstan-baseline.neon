@@ -1,3 +1,67 @@
 parameters:
 	ignoreErrors:
+		-
+			message: "#^Out of 10 possible constant types, only 0 \\- 0\\.0 %% actually have it\\. Add more constant types to get over 99 %%$#"
+			count: 5
+			path: src/Activation/Contracts/ActivationBroker.php
+
+		-
+			message: "#^Out of 10 possible constant types, only 0 \\- 0\\.0 %% actually have it\\. Add more constant types to get over 99 %%$#"
+			count: 5
+			path: src/Activation/Facades/Activation.php
+
+		-
+			message: "#^Out of 172 possible param types, only 161 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			count: 2
+			path: src/Activation/Providers/ActivationServiceProvider.php
+
+		-
+			message: "#^Out of 172 possible param types, only 161 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			count: 1
+			path: src/Exceptions/Handler.php
+
+		-
+			message: "#^Out of 172 possible param types, only 161 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			count: 1
+			path: src/Http/Controllers/Auth/ActivationController.php
+
+		-
+			message: "#^Access to property \\$language on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 2
+			path: src/Http/Middleware/ApplyUserLocale.php
+
+		-
+			message: "#^Call to method can\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: src/Http/Middleware/CanAdmin.php
+
+		-
+			message: "#^Out of 172 possible param types, only 161 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			count: 1
+			path: src/Models/AdminUser.php
+
+		-
+			message: "#^Out of 172 possible param types, only 161 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			count: 2
+			path: tests/Exceptions/Handler.php
+
+		-
+			message: "#^Access to property \\$last_login_at on an unknown class App\\\\Models\\\\User\\.$#"
+			count: 1
+			path: tests/Feature/AdminUser/Auth/LoginBracketsTest.php
+
+		-
+			message: "#^Out of 172 possible param types, only 161 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			count: 1
+			path: tests/Models/TestBracketsUserModel.php
+
+		-
+			message: "#^Out of 172 possible param types, only 161 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			count: 1
+			path: tests/Models/TestStandardUserModel.php
+
+		-
+			message: "#^Out of 172 possible param types, only 161 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			count: 2
+			path: tests/TestCase.php
 

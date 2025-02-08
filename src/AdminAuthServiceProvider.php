@@ -19,9 +19,6 @@ use Illuminate\Support\ServiceProvider;
 
 class AdminAuthServiceProvider extends ServiceProvider
 {
-    /**
-     * Bootstrap any application services.
-     */
     public function boot(): void
     {
         $this->commands([
@@ -77,9 +74,6 @@ class AdminAuthServiceProvider extends ServiceProvider
         $this->app->bind(ExceptionHandler::class, Handler::class);
     }
 
-    /**
-     * Register any application services.
-     */
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../install-stubs/config/admin-auth.php', 'admin-auth');

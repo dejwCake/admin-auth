@@ -6,8 +6,8 @@ namespace Brackets\AdminAuth\Console\Commands;
 
 use Brackets\AdminAuth\Models\AdminUser;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Config;
-use Illuminate\Support\Facades\File;
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Filesystem\Filesystem;
 
 class AdminAuthInstall extends Command
 {
@@ -26,6 +26,11 @@ class AdminAuthInstall extends Command
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
     protected $description = 'Install a brackets/admin-auth package';
+
+    public function __construct(private readonly Filesystem $filesystem, private readonly Config $config)
+    {
+        parent::__construct();
+    }
 
     /**
      * Execute the console command.
@@ -67,12 +72,12 @@ class AdminAuthInstall extends Command
         string $replaceWith,
         ?string $ifRegexNotExists = null,
     ): bool|int {
-        $content = File::get($filePath);
+        $content = $this->filesystem->get($filePath);
         if ($ifRegexNotExists !== null && preg_match($ifRegexNotExists, $content)) {
             return false;
         }
 
-        return File::put($filePath, str_replace($find, $replaceWith, $content));
+        return $this->filesystem->put($filePath, str_replace($find, $replaceWith, $content));
     }
 
     /**
@@ -80,7 +85,7 @@ class AdminAuthInstall extends Command
      */
     private function appendAdminAuthToAuthConfig(): void
     {
-        $auth = Config::get('auth');
+        $auth = $this->config->get('auth');
 
         $this->strReplaceInFile(
             config_path('auth.php'),
@@ -143,6 +148,6 @@ class AdminAuthInstall extends Command
             'expire' => 60,
         ];
 
-        Config::set('auth', $auth);
+        $this->config->set('auth', $auth);
     }
 }

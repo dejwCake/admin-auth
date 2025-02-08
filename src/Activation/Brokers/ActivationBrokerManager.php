@@ -101,6 +101,10 @@ class ActivationBrokerManager implements FactoryContract
             $key = base64_decode(substr($key, 7), true);
         }
 
+        if ($key === null) {
+            $key = 'default key';
+        }
+
         $connection = $config['connection'] ?? null;
 
         return new DatabaseTokenRepository(

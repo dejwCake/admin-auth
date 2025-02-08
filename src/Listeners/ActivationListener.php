@@ -29,7 +29,7 @@ class ActivationListener
     {
         $activationBrokerConfig = config("activation.activations.{$this->activationBroker}");
         if (app('auth')->createUserProvider($activationBrokerConfig['provider']) !== null) {
-            try{
+            try {
                 $userClass = Activation::broker($this->activationBroker)->getUserModelClass();
                 if ($userClass === null) {
                     return;

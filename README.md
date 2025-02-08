@@ -11,6 +11,14 @@ Provided functionality is ready to use - package exposes a set of routes, it has
 
 You can find full documentation at https://docs.getcraftable.com/#/admin-auth
 
+## Composer
+
+To develop this package, you need to have composer installed. To run composer command use:
+
+```shell
+  docker compose run -it --rm test composer update
+```
+
 ## Run tests
 
 To run tests use this docker environment.

@@ -1,67 +1,146 @@
 parameters:
 	ignoreErrors:
 		-
-			message: "#^Out of 10 possible constant types, only 0 \\- 0\\.0 %% actually have it\\. Add more constant types to get over 99 %%$#"
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 2
+			path: install-stubs/config/admin-auth.php
+
+		-
+			message: '#^Out of 10 possible constant types, only 0 \- 0\.0 %% actually have it\. Add more constant types to get over 75 %%$#'
+			identifier: typeCoverage.constantTypeCoverage
 			count: 5
 			path: src/Activation/Contracts/ActivationBroker.php
 
 		-
-			message: "#^Out of 10 possible constant types, only 0 \\- 0\\.0 %% actually have it\\. Add more constant types to get over 99 %%$#"
+			message: '#^Out of 10 possible constant types, only 0 \- 0\.0 %% actually have it\. Add more constant types to get over 75 %%$#'
+			identifier: typeCoverage.constantTypeCoverage
 			count: 5
 			path: src/Activation/Facades/Activation.php
 
 		-
-			message: "#^Out of 174 possible param types, only 163 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
-			count: 2
-			path: src/Activation/Providers/ActivationServiceProvider.php
-
-		-
-			message: "#^Out of 174 possible param types, only 163 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
 			count: 1
-			path: src/Exceptions/Handler.php
+			path: src/Http/Controllers/AdminHomepageController.php
 
 		-
-			message: "#^Out of 174 possible param types, only 163 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			message: '#^Call to function property_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\ActivationController\) and ''redirectTo'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
 			count: 1
 			path: src/Http/Controllers/Auth/ActivationController.php
 
 		-
-			message: "#^Access to property \\$language on an unknown class App\\\\Models\\\\User\\.$#"
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/Auth/ActivationController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/Auth/ActivationEmailController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/Auth/ForgotPasswordController.php
+
+		-
+			message: '#^Call to function property_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\LoginController\) and ''redirectTo'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Http/Controllers/Auth/LoginController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/Auth/LoginController.php
+
+		-
+			message: '#^Call to function property_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\ResetPasswordController\) and ''redirectTo'' will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
+			count: 1
+			path: src/Http/Controllers/Auth/ResetPasswordController.php
+
+		-
+			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
+			identifier: argument.type
+			count: 1
+			path: src/Http/Controllers/Auth/ResetPasswordController.php
+
+		-
+			message: '#^Access to property \$language on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
 			count: 2
 			path: src/Http/Middleware/ApplyUserLocale.php
 
 		-
-			message: "#^Call to method can\\(\\) on an unknown class App\\\\Models\\\\User\\.$#"
+			message: '#^Call to method can\(\) on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
 			count: 1
 			path: src/Http/Middleware/CanAdmin.php
 
 		-
-			message: "#^Out of 174 possible param types, only 163 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Models\\AdminUser\:\:\$appends is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$appends\.$#'
+			identifier: property.phpDocType
 			count: 1
 			path: src/Models/AdminUser.php
 
 		-
-			message: "#^Out of 174 possible param types, only 163 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
-			count: 2
-			path: tests/Exceptions/Handler.php
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Models\\AdminUser\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: src/Models/AdminUser.php
 
 		-
-			message: "#^Access to property \\$last_login_at on an unknown class App\\\\Models\\\\User\\.$#"
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Models\\AdminUser\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: src/Models/AdminUser.php
+
+		-
+			message: '#^Access to property \$last_login_at on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
 			count: 1
 			path: tests/Feature/AdminUser/Auth/LoginBracketsTest.php
 
 		-
-			message: "#^Out of 174 possible param types, only 163 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestBracketsUserModel\:\:\$appends is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$appends\.$#'
+			identifier: property.phpDocType
 			count: 1
 			path: tests/Models/TestBracketsUserModel.php
 
 		-
-			message: "#^Out of 174 possible param types, only 163 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestBracketsUserModel\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: tests/Models/TestBracketsUserModel.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestBracketsUserModel\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: tests/Models/TestBracketsUserModel.php
+
+		-
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestStandardUserModel\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			identifier: property.phpDocType
 			count: 1
 			path: tests/Models/TestStandardUserModel.php
 
 		-
-			message: "#^Out of 174 possible param types, only 163 \\- 93\\.6 %% actually have it\\. Add more param types to get over 99 %%$#"
-			count: 2
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestStandardUserModel\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			identifier: property.phpDocType
+			count: 1
+			path: tests/Models/TestStandardUserModel.php
+
+		-
+			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
+			identifier: larastan.noEnvCallsOutsideOfConfig
+			count: 8
 			path: tests/TestCase.php
 

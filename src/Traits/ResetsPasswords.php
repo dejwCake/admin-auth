@@ -122,12 +122,12 @@ trait ResetsPasswords
     /**
      * Set the user's password.
      */
-    protected function setUserPassword(CanResetPassword $user, string $password): void
+    protected function setUserPassword(CanResetPassword&Model $user, string $password): void
     {
-        if (!property_exists($user, 'password')) {
+        if (!$user->hasAttribute('password')) {
             throw new RuntimeException('User must have a password property for password reset.');
         }
-        $user->password = Hash::make($password);
+        $user->fill(['password' => Hash::make($password)]);
     }
 
     /**

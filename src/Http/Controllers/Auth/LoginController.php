@@ -81,7 +81,7 @@ class LoginController extends Controller
             return $this->redirectToAfterLogout();
         }
 
-        return property_exists($this, 'redirectToAfterLogout') ? $this->redirectToAfterLogout : '/';
+        return $this->redirectToAfterLogout;
     }
 
     /**

@@ -148,10 +148,7 @@ trait AuthenticatesUsers
     protected function authenticated(?Authenticatable $user): void
     {
         if ($user instanceof Model && Schema::hasColumn($user->getTable(), 'last_login_at')) {
-            if (property_exists($user, 'last_login_at')) {
-                $user->last_login_at = CarbonImmutable::now();
-            }
-            $user->save();
+            $user->update(['last_login_at' => CarbonImmutable::now()]);
         }
     }
 

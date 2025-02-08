@@ -43,10 +43,12 @@ class DatabaseTokenRepository implements TokenRepositoryInterface
      */
     public function getByToken(string $token): ?array
     {
-        return (array) $this->getTable()
+        $token = $this->getTable()
             ->where(['token' => $token, 'used' => false])
             ->where('created_at', '>=', CarbonImmutable::now()->subSeconds($this->expires))
             ->first();
+
+        return $token !== null ? (array) $token : null;
     }
 
     /**

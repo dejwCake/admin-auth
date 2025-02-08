@@ -29,7 +29,7 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $activated
  * @property bool $forbidden
  * @property string $language
- * @property CarbonInterface $last_login_at
+ * @property ?CarbonInterface $last_login_at
  */
 class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 {

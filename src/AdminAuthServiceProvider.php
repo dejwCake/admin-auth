@@ -25,13 +25,14 @@ class AdminAuthServiceProvider extends ServiceProvider
             AdminAuthInstall::class,
         ]);
 
-        $this->loadTranslationsFrom(__DIR__ . '/../resources/lang', 'brackets/admin-auth');
+        $this->loadTranslationsFrom(__DIR__ . '/../lang', 'brackets/admin-auth');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'brackets/admin-auth');
 
         $this->app->register(ActivationServiceProvider::class);
         $this->app->register(EventServiceProvider::class);
 
         if ($this->app->runningInConsole()) {
+            $time = date('His', time());
             $this->publishes([
                 __DIR__ . '/../install-stubs/config/admin-auth.php' => config_path('admin-auth.php'),
             ], 'config');
@@ -39,35 +40,36 @@ class AdminAuthServiceProvider extends ServiceProvider
             if (!glob(base_path('database/migrations/*_create_admin_activations_table.php'))) {
                 $this->publishes([
                     __DIR__ . '/../install-stubs/database/migrations/create_admin_activations_table.php'
-                    => database_path('migrations') . '/2017_08_24_000000_create_admin_activations_table.php',
+                    => database_path('migrations') . '/2025_01_01_' . $time . '_create_admin_activations_table.php',
                 ], 'migrations');
             }
 
             if (!glob(base_path('database/migrations/*_create_admin_password_resets_table.php'))) {
                 $this->publishes([
                     __DIR__ . '/../install-stubs/database/migrations/create_admin_password_resets_table.php'
-                    => database_path('migrations') . '/2017_08_24_000000_create_admin_password_resets_table.php',
+                    => database_path('migrations') . '/2025_01_01_' . $time . '_create_admin_password_resets_table.php',
                 ], 'migrations');
             }
 
             if (!glob(base_path('database/migrations/*_create_admin_users_table.php'))) {
                 $this->publishes([
                     __DIR__ . '/../install-stubs/database/migrations/create_admin_users_table.php'
-                    => database_path('migrations') . '/2017_08_24_000000_create_admin_users_table.php',
+                    => database_path('migrations') . '/2025_01_01_' . $time . '_create_admin_users_table.php',
                 ], 'migrations');
             }
 
+            $time = date('His', time() + 1);
             if (!glob(base_path('database/migrations/*_add_last_login_at_timestamp_to_admin_users_table.php'))) {
                 $this->publishes([
                     __DIR__
                     . '/../install-stubs/database/migrations/add_last_login_at_timestamp_to_admin_users_table.php'
                     => database_path('migrations',)
-                        . '/2020_10_21_000000_add_last_login_at_timestamp_to_admin_users_table.php',
+                        . '/2025_01_01_' . $time . '_add_last_login_at_timestamp_to_admin_users_table.php',
                 ], 'migrations');
             }
 
             $this->publishes([
-                __DIR__ . '/../install-stubs/resources/lang' => lang_path('vendor/admin-auth'),
+                __DIR__ . '/../install-stubs/lang' => lang_path('vendor/admin-auth'),
             ], 'lang');
         }
 
@@ -79,7 +81,7 @@ class AdminAuthServiceProvider extends ServiceProvider
         $this->mergeConfigFrom(__DIR__ . '/../install-stubs/config/admin-auth.php', 'admin-auth');
 
         if (config('admin-auth.use_routes', true)) {
-            $this->loadRoutesFrom(__DIR__ . '/../routes/web.php');
+            $this->loadRoutesFrom(__DIR__ . '/../routes/admin.php');
         }
 
         if (
@@ -92,7 +94,7 @@ class AdminAuthServiceProvider extends ServiceProvider
         //This is just because laravel does not provide it by default,
         // however expect in AuthenticationException that it exists
         if (!Route::has('login')) {
-            Route::middleware(['web'])->namespace('Brackets\AdminAuth\Http\Controllers')->group(
+            Route::middleware(['web'])->group(
                 static function (): void {
                     Route::get('/login', [MissingRoutesController::class, 'redirect'])->name('login');
                 },
@@ -101,7 +103,7 @@ class AdminAuthServiceProvider extends ServiceProvider
         //This is just because in welcome.blade.php someone was lazy to check
         // if also register route exists and ask only for login
         if (!Route::has('register')) {
-            Route::middleware(['web'])->namespace('Brackets\AdminAuth\Http\Controllers')->group(
+            Route::middleware(['web'])->group(
                 static function (): void {
                     Route::get('/register', [MissingRoutesController::class, 'redirect'])->name('register');
                 },

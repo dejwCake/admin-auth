@@ -18,6 +18,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
     public function boot(): void
     {
         if ($this->app->runningInConsole()) {
+            $time = date('His', time());
             $this->publishes([
                 __DIR__ . '/../../../install-stubs/config/activation.php' => config_path('activation.php'),
             ], 'config');
@@ -25,7 +26,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
             if (!glob(base_path('database/migrations/*_create_activations_table.php'))) {
                 $this->publishes([
                     __DIR__ . '/../../../install-stubs/database/migrations/create_activations_table.php'
-                    => database_path('migrations') . '/2017_08_24_000000_create_activations_table.php',
+                    => database_path('migrations') . '/2025_01_01_' . $time . '_create_activations_table.php',
                 ], 'migrations');
             }
         }

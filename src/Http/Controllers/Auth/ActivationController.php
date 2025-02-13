@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
+use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
 use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
-use Brackets\AdminAuth\Activation\Facades\Activation;
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\RedirectsUsers;
 use Illuminate\Contracts\View\View;
@@ -34,7 +34,7 @@ class ActivationController extends Controller
      */
     protected string $activationBroker = 'admin_users';
 
-    public function __construct()
+    public function __construct(public readonly ActivationBrokerManager $activationBrokerManager)
     {
         $this->guard = config('admin-auth.defaults.guard');
         $this->activationBroker = config('admin-auth.defaults.activations');
@@ -50,7 +50,7 @@ class ActivationController extends Controller
     public function activate(Request $request, string $token): RedirectResponse|View
     {
         if (!config('admin-auth.activation_enabled')) {
-            return $this->sendActivationFailedResponse($request, Activation::ACTIVATION_DISABLED);
+            return $this->sendActivationFailedResponse($request, ActivationBrokerContract::ACTIVATION_DISABLED);
         }
 
         $this->validate($request, $this->rules(), $this->validationErrorMessages());
@@ -58,7 +58,7 @@ class ActivationController extends Controller
         // Here we will attempt to activate the user's account. If it is successful we
         // will update the activation flag on an actual user model and persist it to the
         // database. Otherwise, we will parse the error and return the response.
-        $response = $this->broker()->activate(
+        $response = $this->activationBrokerManager->broker($this->activationBroker)->activate(
             $this->credentials($request, $token),
             function ($user): void {
                 $this->activateUser($user);
@@ -68,17 +68,9 @@ class ActivationController extends Controller
         // If the activation was successful, we will redirect the user back to
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
-        return $response === Activation::ACTIVATED
+        return $response === ActivationBrokerContract::ACTIVATED
             ? $this->sendActivationResponse($request, $response)
             : $this->sendActivationFailedResponse($request, $response);
-    }
-
-    /**
-     * Get the broker to be used during activation.
-     */
-    public function broker(): ActivationBrokerContract
-    {
-        return Activation::broker($this->activationBroker);
     }
 
     /**
@@ -126,7 +118,7 @@ class ActivationController extends Controller
     protected function sendActivationResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
-        if ($response === Activation::ACTIVATED) {
+        if ($response === ActivationBrokerContract::ACTIVATED) {
             $message = trans('brackets/admin-auth::admin.activations.activated');
         }
 
@@ -140,10 +132,13 @@ class ActivationController extends Controller
     protected function sendActivationFailedResponse(Request $request, string $response): RedirectResponse|View
     {
         $message = trans($response);
-        if ($response === Activation::INVALID_USER || $response === Activation::INVALID_TOKEN) {
+        if (
+            $response === ActivationBrokerContract::INVALID_USER
+            || $response === ActivationBrokerContract::INVALID_TOKEN
+        ) {
             $message = trans('brackets/admin-auth::admin.activations.invalid_request');
         } else {
-            if ($response === Activation::ACTIVATION_DISABLED) {
+            if ($response === ActivationBrokerContract::ACTIVATION_DISABLED) {
                 $message = trans('brackets/admin-auth::admin.activations.disabled');
             }
         }

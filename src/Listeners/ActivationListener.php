@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Listeners;
 
+use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
 use Brackets\AdminAuth\Activation\Contracts\CanActivate;
-use Brackets\AdminAuth\Activation\Facades\Activation;
 use Brackets\AdminAuth\Services\ActivationService;
 use Illuminate\Events\Dispatcher;
 use Throwable;
@@ -17,7 +17,7 @@ class ActivationListener
      */
     protected string $activationBroker = 'admin_users';
 
-    public function __construct()
+    public function __construct(public readonly ActivationBrokerManager $activationBrokerManager)
     {
         $this->activationBroker = config('admin-auth.defaults.activations');
     }
@@ -30,7 +30,8 @@ class ActivationListener
         $activationBrokerConfig = config("activation.activations.{$this->activationBroker}");
         if (app('auth')->createUserProvider($activationBrokerConfig['provider']) !== null) {
             try {
-                $userClass = Activation::broker($this->activationBroker)->getUserModelClass();
+                $userClass = $this->activationBrokerManager->broker($this->activationBroker)
+                    ->getUserModelClass();
                 if ($userClass === null) {
                     return;
                 }

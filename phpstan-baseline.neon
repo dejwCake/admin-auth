@@ -19,6 +19,15 @@ parameters:
 			path: src/Activation/Facades/Activation.php
 
 		-
+			message: '''
+				#^Fetching class constant class of deprecated class Brackets\\AdminAuth\\Activation\\Facades\\Activation\:
+				We won't be using this facade in the future\. Use the ActivationBrokerManager class instead\.$#
+			'''
+			identifier: classConstant.deprecatedClass
+			count: 1
+			path: src/Activation/Providers/ActivationServiceProvider.php
+
+		-
 			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
 			identifier: argument.type
 			count: 1

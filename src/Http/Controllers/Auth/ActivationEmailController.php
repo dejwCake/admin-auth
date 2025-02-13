@@ -4,8 +4,8 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
+use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
 use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
-use Brackets\AdminAuth\Activation\Facades\Activation;
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -36,7 +36,7 @@ class ActivationEmailController extends Controller
      */
     protected string $activationBroker = 'admin_users';
 
-    public function __construct()
+    public function __construct(public readonly ActivationBrokerManager $activationBrokerManager)
     {
         $this->guard = config('admin-auth.defaults.guard');
         $this->activationBroker = config('admin-auth.defaults.activations');
@@ -67,7 +67,7 @@ class ActivationEmailController extends Controller
     {
         if (config('admin-auth.self_activation_form_enabled')) {
             if (!config('admin-auth.activation_enabled')) {
-                return $this->sendActivationLinkFailedResponse($request, Activation::ACTIVATION_DISABLED);
+                return $this->sendActivationLinkFailedResponse($request, ActivationBrokerContract::ACTIVATION_DISABLED);
             }
 
             $this->validateEmail($request);
@@ -75,22 +75,13 @@ class ActivationEmailController extends Controller
             // We will send the activation link to this user. Once we have attempted
             // to send the link, we will examine the response then see the message we
             // need to show to the user. Finally, we'll send out a proper response.
-            $response = $this->broker()->sendActivationLink(
-                $this->credentials($request),
-            );
+            $response = $this->activationBrokerManager->broker($this->activationBroker)
+                ->sendActivationLink($this->credentials($request));
 
             return $this->sendActivationLinkResponse($request, $response);
         } else {
             abort(404);
         }
-    }
-
-    /**
-     * Get the broker to be used during activation.
-     */
-    public function broker(): ActivationBrokerContract
-    {
-        return Activation::broker($this->activationBroker);
     }
 
     /**
@@ -123,7 +114,7 @@ class ActivationEmailController extends Controller
     protected function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
-        if ($response === Activation::ACTIVATION_DISABLED) {
+        if ($response === ActivationBrokerContract::ACTIVATION_DISABLED) {
             $message = trans('brackets/admin-auth::admin.activations.disabled');
         }
 

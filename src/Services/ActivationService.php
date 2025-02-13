@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Services;
 
+use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
 use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
-use Brackets\AdminAuth\Activation\Facades\Activation;
 use Illuminate\Support\Facades\Log;
 
 class ActivationService
@@ -16,7 +16,7 @@ class ActivationService
      */
     protected string $activationBroker = 'admin_users';
 
-    public function __construct()
+    public function __construct(public readonly ActivationBrokerManager $activationBrokerManager)
     {
         $this->activationBroker = config('admin-auth.defaults.activations');
     }
@@ -41,25 +41,16 @@ class ActivationService
         // We will send the activation link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
-        $response = $this->broker()->sendActivationLink(
-            $this->credentials($user),
-        );
+        $response = $this->activationBrokerManager->broker($this->activationBroker)
+            ->sendActivationLink($this->credentials($user));
 
-        if ($response === Activation::ACTIVATION_LINK_SENT) {
+        if ($response === ActivationBrokerContract::ACTIVATION_LINK_SENT) {
             Log::info('Activation e-mail has been send: ' . $response);
         } else {
             Log::error('Sending activation e-mail has failed: ' . $response);
         }
 
         return $response;
-    }
-
-    /**
-     * Get the broker to be used during activation.
-     */
-    public function broker(): ActivationBrokerContract
-    {
-        return Activation::broker($this->activationBroker);
     }
 
     /**

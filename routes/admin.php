@@ -35,10 +35,10 @@ Route::middleware(['web'])
             ->name('password/')
             ->group(static function (): void {
                 Route::get('/', [ForgotPasswordController::class, 'showLinkRequestForm'])
-                    ->name('showForgotForm');
+                    ->name('show-forgot-form');
                 Route::post('/send', [ForgotPasswordController::class, 'sendResetLinkEmail']);
                 Route::get('/{token}', [ResetPasswordController::class, 'showResetForm'])
-                    ->name('showResetForm');
+                    ->name('show-reset-form');
                 Route::post('/reset', [ResetPasswordController::class, 'reset']);
             });
 

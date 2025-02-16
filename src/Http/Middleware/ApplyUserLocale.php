@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Http\Middleware;
 
 use Closure;
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 
@@ -30,7 +31,7 @@ class ApplyUserLocale
     {
         if (Auth::guard($this->guard)->check()) {
             $user = Auth::guard($this->guard)->user();
-            if (property_exists($user, 'language') && $user->language !== null) {
+            if ($user instanceof Model && $user->hasAttribute('language') && $user->language !== null) {
                 app()->setLocale($user->language);
             }
         }

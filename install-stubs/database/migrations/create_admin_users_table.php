@@ -38,6 +38,7 @@ return new class extends Migration
             //phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
             Schema::table('admin_users', static function (Blueprint $table): void {
                 DB::statement(
+                    //phpcs:ignore: SlevomatCodingStandard.Files.LineLength.LineTooLong
                     'CREATE UNIQUE INDEX admin_users_email_null_deleted_at ON admin_users (email) WHERE deleted_at IS NULL;',
                 );
             });

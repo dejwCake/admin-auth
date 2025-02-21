@@ -9,7 +9,7 @@ use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Filesystem\Filesystem;
 
-class AdminAuthInstall extends Command
+final class AdminAuthInstall extends Command
 {
     /**
      * The name and signature of the console command.

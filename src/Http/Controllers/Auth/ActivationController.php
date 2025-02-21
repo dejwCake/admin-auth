@@ -4,41 +4,48 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
-use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
-use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
-use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
+use Brackets\AdminAuth\Activation\Contracts\ActivationBroker;
+use Brackets\AdminAuth\Activation\Contracts\ActivationBrokerFactory;
+use Brackets\AdminAuth\Activation\Contracts\CanActivate;
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\RedirectsUsers;
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Validation\ValidationException;
 
-class ActivationController extends Controller
+final class ActivationController extends Controller
 {
     use RedirectsUsers;
 
     /**
      * Guard used for admin user
      */
-    protected string $guard = 'admin';
+    private string $guard;
 
     /**
      * Where to redirect users after activating their accounts.
      */
-    protected string $redirectTo = '/';
+    private string $redirectTo;
 
     /**
      * Activation broker used for admin user
      */
-    protected string $activationBroker = 'admin_users';
+    private string $activationBroker;
 
-    public function __construct(public readonly ActivationBrokerManager $activationBrokerManager)
-    {
-        $this->guard = config('admin-auth.defaults.guard');
-        $this->activationBroker = config('admin-auth.defaults.activations');
-        $this->redirectTo = config('admin-auth.activation_redirect');
+    public function __construct(
+        private readonly ActivationBrokerFactory $activationBrokerFactory,
+        private readonly Config $config,
+        private readonly ViewFactory $viewFactory,
+        private readonly Redirector $redirector,
+    ) {
+        $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
+        $this->activationBroker = $this->config->get('admin-auth.defaults.activations', 'admin_users');
+        $this->redirectTo = $this->config->get('admin-auth.activation_redirect', '/');
         $this->middleware('guest.admin:' . $this->guard);
     }
 
@@ -49,8 +56,8 @@ class ActivationController extends Controller
      */
     public function activate(Request $request, string $token): RedirectResponse|View
     {
-        if (!config('admin-auth.activation_enabled')) {
-            return $this->sendActivationFailedResponse($request, ActivationBrokerContract::ACTIVATION_DISABLED);
+        if (!$this->config->get('admin-auth.activation_enabled')) {
+            return $this->sendActivationFailedResponse($request, ActivationBroker::ACTIVATION_DISABLED);
         }
 
         $this->validate($request, $this->rules(), $this->validationErrorMessages());
@@ -58,17 +65,19 @@ class ActivationController extends Controller
         // Here we will attempt to activate the user's account. If it is successful we
         // will update the activation flag on an actual user model and persist it to the
         // database. Otherwise, we will parse the error and return the response.
-        $response = $this->activationBrokerManager->broker($this->activationBroker)->activate(
-            $this->credentials($request, $token),
-            function ($user): void {
-                $this->activateUser($user);
-            },
-        );
+        $response = $this->activationBrokerFactory
+            ->broker($this->activationBroker)
+            ->activate(
+                $this->credentials($request, $token),
+                function ($user): void {
+                    $this->activateUser($user);
+                },
+            );
 
         // If the activation was successful, we will redirect the user back to
         // the application's home authenticated view. If there is an error we can
         // redirect them back to where they came from with their error message.
-        return $response === ActivationBrokerContract::ACTIVATED
+        return $response === ActivationBroker::ACTIVATED
             ? $this->sendActivationResponse($request, $response)
             : $this->sendActivationFailedResponse($request, $response);
     }
@@ -76,7 +85,7 @@ class ActivationController extends Controller
     /**
      * Get the activation validation rules.
      */
-    protected function rules(): array
+    private function rules(): array
     {
         return [];
     }
@@ -84,7 +93,7 @@ class ActivationController extends Controller
     /**
      * Get the activation validation error messages.
      */
-    protected function validationErrorMessages(): array
+    private function validationErrorMessages(): array
     {
         return [];
     }
@@ -95,7 +104,7 @@ class ActivationController extends Controller
      * @return array<string, string>
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    protected function credentials(Request $request, string $token): array
+    private function credentials(Request $request, string $token): array
     {
         return ['token' => $token];
     }
@@ -103,7 +112,7 @@ class ActivationController extends Controller
     /**
      * Activate the given user account.
      */
-    protected function activateUser(CanActivateContract&Model $user): void
+    private function activateUser(CanActivate&Model $user): void
     {
         $user->forceFill([
             'activated' => true,
@@ -115,41 +124,37 @@ class ActivationController extends Controller
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    protected function sendActivationResponse(Request $request, string $response): RedirectResponse
+    private function sendActivationResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
-        if ($response === ActivationBrokerContract::ACTIVATED) {
+        if ($response === ActivationBroker::ACTIVATED) {
             $message = trans('brackets/admin-auth::admin.activations.activated');
         }
 
-        return redirect($this->redirectPath())
+        return $this->redirector->to($this->redirectPath())
             ->with('status', $message);
     }
 
     /**
      * Get the response for a failed activation.
      */
-    protected function sendActivationFailedResponse(Request $request, string $response): RedirectResponse|View
+    private function sendActivationFailedResponse(Request $request, string $response): RedirectResponse|View
     {
         $message = trans($response);
-        if (
-            $response === ActivationBrokerContract::INVALID_USER
-            || $response === ActivationBrokerContract::INVALID_TOKEN
-        ) {
+        if ($response === ActivationBroker::INVALID_USER || $response === ActivationBroker::INVALID_TOKEN) {
             $message = trans('brackets/admin-auth::admin.activations.invalid_request');
         } else {
-            if ($response === ActivationBrokerContract::ACTIVATION_DISABLED) {
+            if ($response === ActivationBroker::ACTIVATION_DISABLED) {
                 $message = trans('brackets/admin-auth::admin.activations.disabled');
             }
         }
-        if (config('admin-auth.self_activation_form_enabled')) {
-            return redirect(route('brackets/admin-auth::admin/activation'))
+        if ($this->config->get('admin-auth.self_activation_form_enabled')) {
+            return $this->redirector->route('brackets/admin-auth::admin/activation')
                 ->withInput($request->only('email'))
                 ->withErrors(['token' => $message]);
         } else {
-            return view('brackets/admin-auth::admin.auth.activation.error')->withErrors(
-                ['token' => $message],
-            );
+            return $this->viewFactory->make('brackets/admin-auth::admin.auth.activation.error')
+                ->withErrors(['token' => $message]);
         }
     }
 }

@@ -28,10 +28,22 @@ parameters:
 			path: src/Activation/Providers/ActivationServiceProvider.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
+			message: '#^Call to function assert\(\) with true will always evaluate to true\.$#'
+			identifier: function.alreadyNarrowedType
 			count: 1
-			path: src/Http/Controllers/AdminHomepageController.php
+			path: src/AdminAuthServiceProvider.php
+
+		-
+			message: '#^Instanceof between Illuminate\\Config\\Repository and Illuminate\\Contracts\\Config\\Repository will always evaluate to true\.$#'
+			identifier: instanceof.alwaysTrue
+			count: 1
+			path: src/AdminAuthServiceProvider.php
+
+		-
+			message: '#^Call to function method_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\ActivationController\) and ''redirectTo'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: src/Http/Controllers/Auth/ActivationController.php
 
 		-
 			message: '#^Call to function property_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\ActivationController\) and ''redirectTo'' will always evaluate to true\.$#'
@@ -40,22 +52,28 @@ parameters:
 			path: src/Http/Controllers/Auth/ActivationController.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
+			message: '#^Call to function method_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\LoginController\) and ''redirectTo'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
 			count: 1
-			path: src/Http/Controllers/Auth/ActivationController.php
+			path: src/Http/Controllers/Auth/LoginController.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
+			message: '#^Call to function method_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\LoginController\) and ''redirectToAfterLogo…'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
 			count: 1
-			path: src/Http/Controllers/Auth/ActivationEmailController.php
+			path: src/Http/Controllers/Auth/LoginController.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
+			message: '#^Call to function property_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\LoginController\) and ''decayMinutes'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
 			count: 1
-			path: src/Http/Controllers/Auth/ForgotPasswordController.php
+			path: src/Http/Controllers/Auth/LoginController.php
+
+		-
+			message: '#^Call to function property_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\LoginController\) and ''maxAttempts'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
+			count: 1
+			path: src/Http/Controllers/Auth/LoginController.php
 
 		-
 			message: '#^Call to function property_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\LoginController\) and ''redirectTo'' will always evaluate to true\.$#'
@@ -64,10 +82,10 @@ parameters:
 			path: src/Http/Controllers/Auth/LoginController.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
+			message: '#^Call to function method_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\ResetPasswordController\) and ''redirectTo'' will always evaluate to false\.$#'
+			identifier: function.impossibleType
 			count: 1
-			path: src/Http/Controllers/Auth/LoginController.php
+			path: src/Http/Controllers/Auth/ResetPasswordController.php
 
 		-
 			message: '#^Call to function property_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\ResetPasswordController\) and ''redirectTo'' will always evaluate to true\.$#'
@@ -76,15 +94,15 @@ parameters:
 			path: src/Http/Controllers/Auth/ResetPasswordController.php
 
 		-
-			message: '#^Parameter \#1 \$view of function view expects view\-string\|null, string given\.$#'
-			identifier: argument.type
-			count: 1
-			path: src/Http/Controllers/Auth/ResetPasswordController.php
-
-		-
 			message: '#^Access to property \$language on an unknown class App\\Models\\User\.$#'
 			identifier: class.notFound
 			count: 2
+			path: src/Http/Middleware/ApplyUserLocale.php
+
+		-
+			message: '#^Call to method hasAttribute\(\) on an unknown class App\\Models\\User\.$#'
+			identifier: class.notFound
+			count: 1
 			path: src/Http/Middleware/ApplyUserLocale.php
 
 		-

@@ -6,14 +6,17 @@ namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\AuthenticatesUsers;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\StatefulGuard;
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
+use Illuminate\Routing\Redirector;
 
-class LoginController extends Controller
+final class LoginController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
@@ -30,24 +33,29 @@ class LoginController extends Controller
     /**
      * Where to redirect users after login.
      */
-    protected string $redirectTo = '/admin';
+    private string $redirectTo;
 
     /**
      * Where to redirect users after logout.
      */
-    protected string $redirectToAfterLogout = '/admin/login';
+    private string $redirectToAfterLogout;
 
     /**
      * Guard used for admin user
      */
-    protected string $guard = 'admin';
+    private string $guard;
 
-    public function __construct()
-    {
-        $this->guard = config('admin-auth.defaults.guard');
-        $this->redirectTo = config('admin-auth.login_redirect');
-        $this->redirectToAfterLogout = config('admin-auth.logout_redirect');
-        $this->middleware('guest.admin:' . $this->guard)->except('logout');
+    public function __construct(
+        private readonly Config $config,
+        private readonly ViewFactory $viewFactory,
+        private readonly Redirector $redirector,
+        private readonly AuthFactory $authFactory,
+    ) {
+        $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
+        $this->redirectTo = $this->config->get('admin-auth.login_redirect', '/admin');
+        $this->redirectToAfterLogout = $this->config->get('admin-auth.logout_redirect', '/admin/login');
+        $this->middleware('guest.admin:' . $this->guard)
+            ->except('logout');
     }
 
     /**
@@ -55,7 +63,7 @@ class LoginController extends Controller
      */
     public function showLoginForm(): View
     {
-        return view('brackets/admin-auth::admin.auth.login');
+        return $this->viewFactory->make('brackets/admin-auth::admin.auth.login');
     }
 
     /**
@@ -69,7 +77,7 @@ class LoginController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect($this->redirectToAfterLogout);
+        return $this->redirector->to($this->redirectToAfterLogout);
     }
 
     /**
@@ -89,7 +97,7 @@ class LoginController extends Controller
      *
      * @return array<string, string|bool>
      */
-    protected function credentials(Request $request): array
+    private function credentials(Request $request): array
     {
         $conditions = [];
         if (config('admin-auth.check_forbidden')) {
@@ -105,8 +113,8 @@ class LoginController extends Controller
     /**
      * Get the guard to be used during authentication.
      */
-    protected function guard(): Guard|StatefulGuard
+    private function guard(): Guard|StatefulGuard
     {
-        return Auth::guard($this->guard);
+        return $this->authFactory->guard($this->guard);
     }
 }

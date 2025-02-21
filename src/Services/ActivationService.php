@@ -4,36 +4,40 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Services;
 
-use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
-use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
-use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
-use Illuminate\Support\Facades\Log;
+use Brackets\AdminAuth\Activation\Contracts\ActivationBroker;
+use Brackets\AdminAuth\Activation\Contracts\ActivationBrokerFactory;
+use Brackets\AdminAuth\Activation\Contracts\CanActivate;
+use Illuminate\Contracts\Config\Repository as Config;
+use Psr\Log\LoggerInterface;
 
-class ActivationService
+final class ActivationService
 {
     /**
      * Activation broker used for admin user
      */
-    protected string $activationBroker = 'admin_users';
+    private string $activationBroker;
 
-    public function __construct(public readonly ActivationBrokerManager $activationBrokerManager)
-    {
-        $this->activationBroker = config('admin-auth.defaults.activations');
+    public function __construct(
+        private readonly ActivationBrokerFactory $activationBrokerFactory,
+        private readonly Config $config,
+        private readonly LoggerInterface $logger,
+    ) {
+        $this->activationBroker = $this->config->get('admin-auth.defaults.activations', 'admin_users');
     }
 
     /**
      * Handles activation creation after user created
      */
-    public function handle(CanActivateContract $user): bool|string
+    public function handle(CanActivate $user): bool|string
     {
-        if (!config('admin-auth.activation_enabled')) {
-            Log::info('Activation disabled.');
+        if (!$this->config->get('admin-auth.activation_enabled')) {
+            $this->logger->info('Activation disabled.');
 
             return false;
         }
 
         if (property_exists($user, 'activated') && $user->activated === true) {
-            Log::info('User is already activated.');
+            $this->logger->info('User is already activated.');
 
             return true;
         }
@@ -41,13 +45,13 @@ class ActivationService
         // We will send the activation link to this user. Once we have attempted
         // to send the link, we will examine the response then see the message we
         // need to show to the user. Finally, we'll send out a proper response.
-        $response = $this->activationBrokerManager->broker($this->activationBroker)
+        $response = $this->activationBrokerFactory->broker($this->activationBroker)
             ->sendActivationLink($this->credentials($user));
 
-        if ($response === ActivationBrokerContract::ACTIVATION_LINK_SENT) {
-            Log::info('Activation e-mail has been send: ' . $response);
+        if ($response === ActivationBroker::ACTIVATION_LINK_SENT) {
+            $this->logger->info('Activation e-mail has been send: ' . $response);
         } else {
-            Log::error('Sending activation e-mail has failed: ' . $response);
+            $this->logger->error('Sending activation e-mail has failed: ' . $response);
         }
 
         return $response;
@@ -58,7 +62,7 @@ class ActivationService
      *
      * @return array<string, string|bool>
      */
-    protected function credentials(CanActivateContract $user): array
+    protected function credentials(CanActivate $user): array
     {
         return ['email' => $user->getEmailForActivation(), 'activated' => false];
     }

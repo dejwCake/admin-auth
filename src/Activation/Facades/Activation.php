@@ -8,7 +8,7 @@ use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBroker
 use Illuminate\Support\Facades\Facade;
 
 /**
- * @see \Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager
+ * @see \Brackets\AdminAuth\Activation\Brokers\ActivationBrokerFactory
  * @method static ActivationBrokerContract broker(?string $name = null)
  * @deprecated We won't be using this facade in the future. Use the ActivationBrokerManager class instead.
  */

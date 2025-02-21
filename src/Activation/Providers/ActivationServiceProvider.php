@@ -4,7 +4,8 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Activation\Providers;
 
-use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
+use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerFactory;
+use Brackets\AdminAuth\Activation\Contracts\ActivationBrokerFactory as ActivationBrokerFactoryContract;
 use Brackets\AdminAuth\Activation\Facades\Activation;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Foundation\AliasLoader;
@@ -60,7 +61,8 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
      */
     protected function registerActivationBroker(): void
     {
-        $this->app->singleton('auth.activation', static fn ($app) => new ActivationBrokerManager($app));
+        $this->app->bind(ActivationBrokerFactoryContract::class, ActivationBrokerFactory::class);
+        $this->app->singleton('auth.activation', static fn ($app) => new ActivationBrokerFactory($app));
 
         $this->app->bind('auth.activation.broker', static fn ($app) => $app->make('auth.activation')->broker());
     }

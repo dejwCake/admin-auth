@@ -4,16 +4,19 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
-use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerManager;
-use Brackets\AdminAuth\Activation\Contracts\ActivationBroker as ActivationBrokerContract;
+use Brackets\AdminAuth\Activation\Contracts\ActivationBroker;
+use Brackets\AdminAuth\Activation\Contracts\ActivationBrokerFactory;
 use Brackets\AdminAuth\Http\Controllers\Controller;
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
-class ActivationEmailController extends Controller
+final class ActivationEmailController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
@@ -29,31 +32,35 @@ class ActivationEmailController extends Controller
     /**
      * Guard used for admin user
      */
-    protected string $guard = 'admin';
+    private string $guard;
 
     /**
      * Activation broker used for admin user
      */
-    protected string $activationBroker = 'admin_users';
+    private string $activationBroker;
 
-    public function __construct(public readonly ActivationBrokerManager $activationBrokerManager)
-    {
-        $this->guard = config('admin-auth.defaults.guard');
-        $this->activationBroker = config('admin-auth.defaults.activations');
+    public function __construct(
+        private readonly ActivationBrokerFactory $activationBrokerFactory,
+        private readonly Config $config,
+        private readonly ViewFactory $viewFactory,
+        private readonly Redirector $redirector,
+    ) {
+        $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
+        $this->activationBroker = $this->config->get('admin-auth.defaults.activations', 'admin_users');
         $this->middleware('guest.admin:' . $this->guard);
     }
 
     /**
-     * Display the form to request a activation link.
+     * Display the form to request an activation link.
      *
      * @throws NotFoundHttpException
      */
     public function showLinkRequestForm(): View
     {
-        if (config('admin-auth.self_activation_form_enabled')) {
-            return view('brackets/admin-auth::admin.auth.activation.email');
+        if ($this->config->get('admin-auth.self_activation_form_enabled')) {
+            return $this->viewFactory->make('brackets/admin-auth::admin.auth.activation.email');
         } else {
-            abort(404);
+            throw new NotFoundHttpException();
         }
     }
 
@@ -65,9 +72,9 @@ class ActivationEmailController extends Controller
      */
     public function sendActivationEmail(Request $request): RedirectResponse
     {
-        if (config('admin-auth.self_activation_form_enabled')) {
-            if (!config('admin-auth.activation_enabled')) {
-                return $this->sendActivationLinkFailedResponse($request, ActivationBrokerContract::ACTIVATION_DISABLED);
+        if ($this->config->get('admin-auth.self_activation_form_enabled')) {
+            if (!$this->config->get('admin-auth.activation_enabled')) {
+                return $this->sendActivationLinkFailedResponse($request, ActivationBroker::ACTIVATION_DISABLED);
             }
 
             $this->validateEmail($request);
@@ -75,12 +82,13 @@ class ActivationEmailController extends Controller
             // We will send the activation link to this user. Once we have attempted
             // to send the link, we will examine the response then see the message we
             // need to show to the user. Finally, we'll send out a proper response.
-            $response = $this->activationBrokerManager->broker($this->activationBroker)
+            $response = $this->activationBrokerFactory
+                ->broker($this->activationBroker)
                 ->sendActivationLink($this->credentials($request));
 
             return $this->sendActivationLinkResponse($request, $response);
         } else {
-            abort(404);
+            throw new NotFoundHttpException();
         }
     }
 
@@ -89,7 +97,7 @@ class ActivationEmailController extends Controller
      *
      * @throws ValidationException
      */
-    protected function validateEmail(Request $request): void
+    private function validateEmail(Request $request): void
     {
         $this->validate($request, ['email' => ['required', 'email']]);
     }
@@ -99,11 +107,12 @@ class ActivationEmailController extends Controller
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    protected function sendActivationLinkResponse(Request $request, string $response): RedirectResponse
+    private function sendActivationLinkResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans('brackets/admin-auth::admin.activations.sent');
 
-        return back()->with('status', $message);
+        return $this->redirector->back()
+            ->with('status', $message);
     }
 
     /**
@@ -111,16 +120,15 @@ class ActivationEmailController extends Controller
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    protected function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse
+    private function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
-        if ($response === ActivationBrokerContract::ACTIVATION_DISABLED) {
+        if ($response === ActivationBroker::ACTIVATION_DISABLED) {
             $message = trans('brackets/admin-auth::admin.activations.disabled');
         }
 
-        return back()->withErrors(
-            ['email' => $message],
-        );
+        return $this->redirector->back()
+            ->withErrors(['email' => $message]);
     }
 
     /**
@@ -128,7 +136,7 @@ class ActivationEmailController extends Controller
      *
      * @return array<string, string|bool>
      */
-    protected function credentials(Request $request): array
+    private function credentials(Request $request): array
     {
         $conditions = ['activated' => false];
 

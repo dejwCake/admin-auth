@@ -7,10 +7,10 @@ namespace Brackets\AdminAuth\Traits;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Http\Request;
-use Illuminate\Http\Response;
 use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Symfony\Component\HttpFoundation\Response;
 
 trait ThrottlesLogins
 {
@@ -35,10 +35,11 @@ trait ThrottlesLogins
      */
     protected function hasTooManyLoginAttempts(Request $request): bool
     {
-        return $this->limiter()->tooManyAttempts(
-            $this->throttleKey($request),
-            $this->maxAttempts(),
-        );
+        return $this->limiter()
+            ->tooManyAttempts(
+                $this->throttleKey($request),
+                $this->maxAttempts(),
+            );
     }
 
     /**
@@ -46,10 +47,11 @@ trait ThrottlesLogins
      */
     protected function incrementLoginAttempts(Request $request): void
     {
-        $this->limiter()->hit(
-            $this->throttleKey($request),
-            $this->decayMinutes() * 60,
-        );
+        $this->limiter()
+            ->hit(
+                $this->throttleKey($request),
+                $this->decayMinutes() * 60,
+            );
     }
 
     /**
@@ -59,9 +61,8 @@ trait ThrottlesLogins
      */
     protected function throwLockoutResponse(Request $request): void
     {
-        $seconds = $this->limiter()->availableIn(
-            $this->throttleKey($request),
-        );
+        $seconds = $this->limiter()
+            ->availableIn($this->throttleKey($request));
 
         throw ValidationException::withMessages([
             $this->username() => [Lang::get('auth.throttle', [

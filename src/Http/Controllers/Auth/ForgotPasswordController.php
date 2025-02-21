@@ -6,13 +6,16 @@ namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\SendsPasswordResetEmails;
-use Illuminate\Contracts\Auth\PasswordBroker as PasswordBrokerContract;
+use Illuminate\Contracts\Auth\PasswordBroker;
+use Illuminate\Contracts\Auth\PasswordBrokerFactory;
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
+use Illuminate\Routing\Redirector;
 
-class ForgotPasswordController extends Controller
+final class ForgotPasswordController extends Controller
 {
     /*
     |--------------------------------------------------------------------------
@@ -29,17 +32,21 @@ class ForgotPasswordController extends Controller
     /**
      * Guard used for admin user
      */
-    protected string $guard = 'admin';
+    private string $guard;
 
     /**
      * Password broker used for admin user
      */
-    protected string $passwordBroker = 'admin_users';
+    private string $passwordBroker;
 
-    public function __construct()
-    {
-        $this->guard = config('admin-auth.defaults.guard');
-        $this->passwordBroker = config('admin-auth.defaults.passwords');
+    public function __construct(
+        private readonly Config $config,
+        private readonly ViewFactory $viewFactory,
+        private readonly Redirector $redirector,
+        private readonly PasswordBrokerFactory $passwordBrokerFactory,
+    ) {
+        $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
+        $this->passwordBroker = $this->config->get('admin-auth.defaults.passwords', 'admin_users');
         $this->middleware('guest.admin:' . $this->guard);
     }
 
@@ -48,7 +55,7 @@ class ForgotPasswordController extends Controller
      */
     public function showLinkRequestForm(): View
     {
-        return view('brackets/admin-auth::admin.auth.passwords.email');
+        return $this->viewFactory->make('brackets/admin-auth::admin.auth.passwords.email');
     }
 
     /**
@@ -65,32 +72,9 @@ class ForgotPasswordController extends Controller
             $request->only('email'),
         );
 
-        return $response === Password::RESET_LINK_SENT
+        return $response === PasswordBroker::RESET_LINK_SENT
             ? $this->sendResetLinkResponse($request, $response)
             : $this->sendResetLinkFailedResponse($request, $response);
-    }
-
-    /**
-     * Get the broker to be used during password reset.
-     */
-    public function broker(): PasswordBrokerContract
-    {
-        return Password::broker($this->passwordBroker);
-    }
-
-    /**
-     * Get the response for a successful password reset link.
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
-     */
-    protected function sendResetLinkResponse(Request $request, string $response): RedirectResponse
-    {
-        $message = trans($response);
-        if ($response === Password::RESET_LINK_SENT) {
-            $message = trans('brackets/admin-auth::admin.passwords.sent');
-        }
-
-        return back()->with('status', $message);
     }
 
     /**
@@ -100,8 +84,32 @@ class ForgotPasswordController extends Controller
     {
         $message = trans($response);
 
-        return back()
+        return $this->redirector->back()
             ->withInput($request->only('email'))
             ->withErrors(['email' => $message]);
+    }
+
+    /**
+     * Get the broker to be used during password reset.
+     */
+    private function broker(): PasswordBroker
+    {
+        return $this->passwordBrokerFactory->broker($this->passwordBroker);
+    }
+
+    /**
+     * Get the response for a successful password reset link.
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
+     */
+    private function sendResetLinkResponse(Request $request, string $response): RedirectResponse
+    {
+        $message = trans($response);
+        if ($response === PasswordBroker::RESET_LINK_SENT) {
+            $message = trans('brackets/admin-auth::admin.passwords.sent');
+        }
+
+        return $this->redirector->back()
+            ->with('status', $message);
     }
 }

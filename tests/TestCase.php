@@ -24,7 +24,7 @@ abstract class TestCase extends Orchestra
     {
         parent::setUp();
 
-        $this->getEnvironmentSetUp($this->app);
+        $this->defineEnvironment($this->app);
         $this->setUpDatabase($this->app);
 
         File::copyDirectory(__DIR__ . '/fixtures/resources/views', resource_path('views'));
@@ -47,7 +47,7 @@ abstract class TestCase extends Orchestra
      * @param Application $app
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
-    protected function getEnvironmentSetUp($app): void
+    protected function defineEnvironment($app): void
     {
         if (env('DB_CONNECTION') === 'pgsql') {
             $app['config']->set('database.default', 'pgsql');

@@ -28,8 +28,8 @@
     ],
     "require": {
         "php": "^8.1",
-        "dejwcake/admin-ui": "dev-main",
-        "dejwcake/craftable-media": "dev-main",
+        "dejwcake/admin-ui": "^0.9",
+        "dejwcake/craftable-media": "^0.9",
         "illuminate/support": "^10.0",
         "spatie/laravel-permission": "^5.0"
     },

@@ -20,7 +20,7 @@ parameters:
 
 		-
 			message: '''
-				#^Fetching class constant class of deprecated class Brackets\\AdminAuth\\Activation\\Facades\\Activation\:
+				#^Access to constant on deprecated class Brackets\\AdminAuth\\Activation\\Facades\\Activation\:
 				We won't be using this facade in the future\. Use the ActivationBrokerManager class instead\.$#
 			'''
 			identifier: classConstant.deprecatedClass

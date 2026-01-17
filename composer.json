@@ -42,8 +42,7 @@
     "autoload": {
         "psr-4": {
             "Brackets\\AdminAuth\\": "src/"
-        },
-        "classmap": []
+        }
     },
     "autoload-dev": {
         "psr-4": {

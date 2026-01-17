@@ -1,33 +1,41 @@
 # Admin Auth
 
-This package handles authentication into Admin UI interface for our [Craftable](https://github.com/BRACKETS-by-TRIAD/craftable) (`brackets/craftable`) package. It provides these features:
-- User authentication
-- Reset password
-- Account activation
+Admin Auth is a Laravel package that handles authentication for the Craftable admin interface in your application. It supports:
+- Authenticating admin users (login and logout)
+- Handling admin password resets
+- Activating new admin accounts
 
-Provided functionality is ready to use - package exposes a set of routes, it has controllers and views (based on `brackets/admin-ui` admin template).
+Provided functionality is ready to use – package exposes a set of routes, it has controllers and views (based on `dejwCake/admin-ui` admin template).
 
 ![Admin login form](https://docs.getcraftable.com/assets/login-form.png "Admin login form")
 
+This package is part of [Craftable](https://github.com/dejwCake/craftable) (`dejwCake/craftable`), an administration starter kit for Laravel 12. Forked from [Craftable](https://github.com/BRACKETS-by-TRIAD/craftable) (`brackets/craftable`).
+
 You can find full documentation at https://docs.getcraftable.com/#/admin-auth
 
-## Composer
+## Issues
+Where do I report issues?
+If something is not working as expected, please open an issue in the main repository https://github.com/dejwCake/craftable.
 
-To develop this package, you need to have composer installed. To run composer command use:
+## How to develop this project
+
+### Composer
+
+Update dependencies:
 ```shell
-  docker compose run -it --rm test composer update
+docker compose run -it --rm test composer update
 ```
 
-For composer normalization:
+Composer normalization:
 ```shell
-  docker compose run -it --rm php-qa composer normalize
+docker compose run -it --rm php-qa composer normalize
 ```
 
-## Run tests
+### Run tests
 
-To run tests use this docker environment.
+Run tests with pcov:
 ```shell
-  docker compose run -it --rm test vendor/bin/phpunit -d pcov.enabled=1
+docker compose run -it --rm test ./vendor/bin/phpunit -d pcov.enabled=1
 ```
 
 To switch between postgresql and mariadb change in `docker-compose.yml` DB_CONNECTION environmental variable:
@@ -36,35 +44,29 @@ To switch between postgresql and mariadb change in `docker-compose.yml` DB_CONNE
 + DB_CONNECTION: mysql
 ```
 
-## Run code analysis tools
+### Run code analysis tools (php-qa)
 
-To be sure, that your code is clean, you can run code analysis tools. To do this, run:
-
-For php compatibility:
+PHP compatibility:
 ```shell
-  docker compose run -it --rm php-qa phpcs --standard=.phpcs.compatibility.xml --cache=.phpcs.cache
+docker compose run -it --rm php-qa phpcs --standard=.phpcs.compatibility.xml --cache=.phpcs.cache
 ```
 
-For code style:
+Code style:
 ```shell
-  docker compose run -it --rm php-qa phpcs -s --colors --extensions=php
+docker compose run -it --rm php-qa phpcs -s --colors --extensions=php
 ```
 
-or to fix issues:
+Fix style issues:
 ```shell
-  docker compose run -it --rm php-qa phpcbf -s --colors --extensions=php
+docker compose run -it --rm php-qa phpcbf -s --colors --extensions=php
 ```
 
-For static analysis:
+Static analysis (phpstan):
 ```shell
-  docker compose run -it --rm php-qa phpstan analyse --configuration=phpstan.neon
+docker compose run -it --rm php-qa phpstan analyse --configuration=phpstan.neon
 ```
 
-For mess detector:
+Mess detector (phpmd):
 ```shell
-  docker compose run -it --rm php-qa phpmd ./src,./install-stubs,./lang,./resources,./routes,./tests ansi phpmd.xml --suffixes php --baseline-file phpmd.baseline.xml
+docker compose run -it --rm php-qa phpmd ./src,./install-stubs,./lang,./resources,./routes,./tests ansi phpmd.xml --suffixes php --baseline-file phpmd.baseline.xml
 ```
-
-## Issues
-Where do I report issues?
-If something is not working as expected, please open an issue in the main repository https://github.com/BRACKETS-by-TRIAD/craftable.

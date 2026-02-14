@@ -10,6 +10,7 @@ use Brackets\AdminAuth\Http\Controllers\Controller;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -70,7 +71,7 @@ final class ActivationEmailController extends Controller
      * @throws ValidationException
      * @throws NotFoundHttpException
      */
-    public function sendActivationEmail(Request $request): RedirectResponse
+    public function sendActivationEmail(Request $request): RedirectResponse|JsonResponse
     {
         if ($this->config->get('admin-auth.self_activation_form_enabled')) {
             if (!$this->config->get('admin-auth.activation_enabled')) {
@@ -86,7 +87,9 @@ final class ActivationEmailController extends Controller
                 ->broker($this->activationBroker)
                 ->sendActivationLink($this->credentials($request));
 
-            return $this->sendActivationLinkResponse($request, $response);
+            return $response === ActivationBroker::ACTIVATION_LINK_SENT
+                ? $this->sendActivationLinkResponse($request, $response)
+                : $this->sendActivationLinkFailedResponse($request, $response);
         } else {
             throw new NotFoundHttpException();
         }
@@ -107,9 +110,13 @@ final class ActivationEmailController extends Controller
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function sendActivationLinkResponse(Request $request, string $response): RedirectResponse
+    private function sendActivationLinkResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
         $message = trans('brackets/admin-auth::admin.activations.sent');
+
+        if ($request->wantsJson()) {
+            return new JsonResponse(['message' => $message], 200);
+        }
 
         return $this->redirector->back()
             ->with('status', $message);
@@ -120,11 +127,21 @@ final class ActivationEmailController extends Controller
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse
+    private function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
         $message = trans($response);
         if ($response === ActivationBroker::ACTIVATION_DISABLED) {
             $message = trans('brackets/admin-auth::admin.activations.disabled');
+        }
+        if ($response === ActivationBroker::INVALID_USER) {
+            $message = trans('brackets/admin-auth::admin.activations.invalid_user');
+        }
+        if ($response === ActivationBroker::INVALID_TOKEN) {
+            $message = trans('brackets/admin-auth::admin.activations.invalid_token');
+        }
+
+        if ($request->wantsJson()) {
+            throw ValidationException::withMessages(['email' => $message]);
         }
 
         return $this->redirector->back()

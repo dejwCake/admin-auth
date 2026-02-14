@@ -11,9 +11,11 @@ use Illuminate\Contracts\Auth\PasswordBrokerFactory;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Validation\ValidationException;
 
 final class ForgotPasswordController extends Controller
 {
@@ -61,7 +63,7 @@ final class ForgotPasswordController extends Controller
     /**
      * Send a reset link to the given user.
      */
-    public function sendResetLinkEmail(Request $request): RedirectResponse
+    public function sendResetLinkEmail(Request $request): RedirectResponse|JsonResponse
     {
         $this->validateEmail($request);
 
@@ -79,10 +81,16 @@ final class ForgotPasswordController extends Controller
 
     /**
      * Get the response for a failed password reset link.
+     *
+     * @throws ValidationException
      */
-    protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse
+    protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
         $message = trans($response);
+
+        if ($request->wantsJson()) {
+            throw ValidationException::withMessages(['email' => $message]);
+        }
 
         return $this->redirector->back()
             ->withInput($request->only('email'))
@@ -99,14 +107,16 @@ final class ForgotPasswordController extends Controller
 
     /**
      * Get the response for a successful password reset link.
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function sendResetLinkResponse(Request $request, string $response): RedirectResponse
+    private function sendResetLinkResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
         $message = trans($response);
         if ($response === PasswordBroker::RESET_LINK_SENT) {
             $message = trans('brackets/admin-auth::admin.passwords.sent');
+        }
+
+        if ($request->wantsJson()) {
+            return new JsonResponse(['message' => $message], 200);
         }
 
         return $this->redirector->back()

@@ -17,6 +17,7 @@ use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -81,7 +82,7 @@ final class ResetPasswordController extends Controller
      *
      * @throws ValidationException
      */
-    public function reset(Request $request): RedirectResponse
+    public function reset(Request $request): RedirectResponse|JsonResponse
     {
         $this->validate($request, $this->rules(), $this->validationErrorMessages());
 
@@ -130,14 +131,16 @@ final class ResetPasswordController extends Controller
 
     /**
      * Get the response for a successful password reset.
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function sendResetResponse(Request $request, string $response): RedirectResponse
+    private function sendResetResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
         $message = trans($response);
         if ($response === PasswordBroker::PASSWORD_RESET) {
             $message = trans('brackets/admin-auth::admin.passwords.reset');
+        }
+
+        if ($request->wantsJson()) {
+            return new JsonResponse(['redirect' => $this->redirectPath()], 200);
         }
 
         return $this->redirector->to($this->redirectPath())
@@ -146,8 +149,10 @@ final class ResetPasswordController extends Controller
 
     /**
      * Get the response for a failed password reset.
+     *
+     * @throws ValidationException
      */
-    private function sendResetFailedResponse(Request $request, string $response): RedirectResponse
+    private function sendResetFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
         if ($response === PasswordBroker::INVALID_TOKEN) {
             $message = trans('brackets/admin-auth::admin.passwords.invalid_token');
@@ -155,6 +160,10 @@ final class ResetPasswordController extends Controller
             $message = $response === PasswordBroker::INVALID_USER
                 ? trans('brackets/admin-auth::admin.passwords.invalid_user')
                 : trans('brackets/admin-auth::admin.passwords.invalid_user');
+        }
+
+        if ($request->wantsJson()) {
+            throw ValidationException::withMessages(['email' => $message]);
         }
 
         return $this->redirector->back()

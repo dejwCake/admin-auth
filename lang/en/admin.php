@@ -39,6 +39,8 @@ return [
         'activated' => 'Your account was activated!',
         'invalid_request' => 'The request failed.',
         'disabled' => 'Activation is disabled.',
+        'invalid_token' => 'The activation token is invalid.',
+        'invalid_user' => "We can't find a user with this e-mail address.",
     ],
 
     'passwords' => [

@@ -54,10 +54,6 @@ class AdminAuthServiceProvider extends ServiceProvider
                 ->name('register');
         }
 
-        $this->publishes([
-            __DIR__ . '/../resources/js/components' => resource_path('js/admin/auth'),
-        ], 'admin-auth-vue-components');
-
         if ($this->app->runningInConsole()) {
             $this->publish();
         }

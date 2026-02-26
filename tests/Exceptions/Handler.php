@@ -70,7 +70,7 @@ class Handler extends ExceptionHandler
         AuthenticationException $exception,
     ): JsonResponse|RedirectResponse|Response {
         if ($request->expectsJson()) {
-            return response()->json(['error' => 'Unauthenticated.'], 401);
+            return new JsonResponse(['error' => 'Unauthenticated.'], 401);
         }
 
         return redirect()->guest(route('login'));

@@ -88,7 +88,7 @@ class AdminAuthServiceProvider extends ServiceProvider
             __DIR__ . '/../lang' => $this->app->langPath('vendor/brackets/admin-auth'),
         ], 'lang');
 
-        if (!glob($this->app->basePath('database/migrations/*_create_admin_activations_table.php'))) {
+        if (!glob($this->app->databasePath('migrations/*_create_admin_activations_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_activations_table.php'
                 => $this->app->databasePath('migrations')
@@ -96,7 +96,7 @@ class AdminAuthServiceProvider extends ServiceProvider
             ], 'migrations');
         }
 
-        if (!glob($this->app->basePath('database/migrations/*_create_admin_password_resets_table.php'))) {
+        if (!glob($this->app->databasePath('migrations/*_create_admin_password_resets_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_password_resets_table.php'
                 => $this->app->databasePath('migrations')
@@ -104,7 +104,7 @@ class AdminAuthServiceProvider extends ServiceProvider
             ], 'migrations');
         }
 
-        if (!glob($this->app->basePath('database/migrations/*_create_admin_users_table.php'))) {
+        if (!glob($this->app->databasePath('migrations/*_create_admin_users_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_users_table.php'
                 => $this->app->databasePath('migrations') . '/2025_01_01_' . $time . '_create_admin_users_table.php',
@@ -112,10 +112,10 @@ class AdminAuthServiceProvider extends ServiceProvider
         }
 
         $time = date('His', time() + 1);
-        if (!glob($this->app->basePath('database/migrations/*_add_last_login_at_timestamp_to_admin_users_table.php'))) {
+        if (!glob($this->app->databasePath('migrations/*_add_last_login_at_timestamp_to_admin_users_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/add_last_login_at_timestamp_to_admin_users_table.php'
-                => $this->app->databasePath('migrations',)
+                => $this->app->databasePath('migrations')
                     . '/2025_01_01_' . $time . '_add_last_login_at_timestamp_to_admin_users_table.php',
             ], 'migrations');
         }

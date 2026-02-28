@@ -19,17 +19,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
     public function boot(): void
     {
         if ($this->app->runningInConsole()) {
-            $time = date('His', time());
-            $this->publishes([
-                __DIR__ . '/../../../install-stubs/config/activation.php' => config_path('activation.php'),
-            ], 'config');
-
-            if (!glob(base_path('database/migrations/*_create_activations_table.php'))) {
-                $this->publishes([
-                    __DIR__ . '/../../../install-stubs/database/migrations/create_activations_table.php'
-                    => database_path('migrations') . '/2025_01_01_' . $time . '_create_activations_table.php',
-                ], 'migrations');
-            }
+            $this->publish();
         }
     }
 
@@ -38,7 +28,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
      */
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../../../install-stubs/config/activation.php', 'activation');
+        $this->mergeConfigFrom(__DIR__ . '/../../../config/activation.php', 'activation');
 
         $this->registerActivationBroker();
 
@@ -65,5 +55,20 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
         $this->app->singleton('auth.activation', static fn ($app) => new ActivationBrokerFactory($app));
 
         $this->app->bind('auth.activation.broker', static fn ($app) => $app->make('auth.activation')->broker());
+    }
+
+    private function publish(): void
+    {
+        $time = date('His', time());
+        $this->publishes([
+            __DIR__ . '/../../../config/activation.php' => $this->app->configPath('activation.php'),
+        ], 'config');
+
+        if (!glob($this->app->basePath('database/migrations/*_create_activations_table.php'))) {
+            $this->publishes([
+                __DIR__ . '/../../../database/migrations/create_activations_table.php' =>
+                    $this->app->databasePath('migrations') . '/2025_01_01_' . $time . '_create_activations_table.php',
+            ], 'migrations');
+        }
     }
 }

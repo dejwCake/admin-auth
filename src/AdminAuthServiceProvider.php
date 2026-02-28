@@ -61,7 +61,7 @@ class AdminAuthServiceProvider extends ServiceProvider
 
     public function register(): void
     {
-        $this->mergeConfigFrom(__DIR__ . '/../install-stubs/config/admin-auth.php', 'admin-auth');
+        $this->mergeConfigFrom(__DIR__ . '/../config/admin-auth.php', 'admin-auth');
 
         $this->app->register(ActivationServiceProvider::class);
         $this->app->register(EventServiceProvider::class);
@@ -81,42 +81,43 @@ class AdminAuthServiceProvider extends ServiceProvider
     {
         $time = date('His', time());
         $this->publishes([
-            __DIR__ . '/../install-stubs/config/admin-auth.php' => config_path('admin-auth.php'),
+            __DIR__ . '/../config/admin-auth.php' => $this->app->configPath('admin-auth.php'),
         ], 'config');
 
-        if (!glob(base_path('database/migrations/*_create_admin_activations_table.php'))) {
+        $this->publishes([
+            __DIR__ . '/../lang' => $this->app->langPath('vendor/brackets/admin-auth'),
+        ], 'lang');
+
+        if (!glob($this->app->basePath('database/migrations/*_create_admin_activations_table.php'))) {
             $this->publishes([
-                __DIR__ . '/../install-stubs/database/migrations/create_admin_activations_table.php'
-                => database_path('migrations') . '/2025_01_01_' . $time . '_create_admin_activations_table.php',
+                __DIR__ . '/../database/migrations/create_admin_activations_table.php'
+                => $this->app->databasePath('migrations')
+                    . '/2025_01_01_' . $time . '_create_admin_activations_table.php',
             ], 'migrations');
         }
 
-        if (!glob(base_path('database/migrations/*_create_admin_password_resets_table.php'))) {
+        if (!glob($this->app->basePath('database/migrations/*_create_admin_password_resets_table.php'))) {
             $this->publishes([
-                __DIR__ . '/../install-stubs/database/migrations/create_admin_password_resets_table.php'
-                => database_path('migrations') . '/2025_01_01_' . $time . '_create_admin_password_resets_table.php',
+                __DIR__ . '/../database/migrations/create_admin_password_resets_table.php'
+                => $this->app->databasePath('migrations')
+                    . '/2025_01_01_' . $time . '_create_admin_password_resets_table.php',
             ], 'migrations');
         }
 
-        if (!glob(base_path('database/migrations/*_create_admin_users_table.php'))) {
+        if (!glob($this->app->basePath('database/migrations/*_create_admin_users_table.php'))) {
             $this->publishes([
-                __DIR__ . '/../install-stubs/database/migrations/create_admin_users_table.php'
-                => database_path('migrations') . '/2025_01_01_' . $time . '_create_admin_users_table.php',
+                __DIR__ . '/../database/migrations/create_admin_users_table.php'
+                => $this->app->databasePath('migrations') . '/2025_01_01_' . $time . '_create_admin_users_table.php',
             ], 'migrations');
         }
 
         $time = date('His', time() + 1);
-        if (!glob(base_path('database/migrations/*_add_last_login_at_timestamp_to_admin_users_table.php'))) {
+        if (!glob($this->app->basePath('database/migrations/*_add_last_login_at_timestamp_to_admin_users_table.php'))) {
             $this->publishes([
-                __DIR__
-                . '/../install-stubs/database/migrations/add_last_login_at_timestamp_to_admin_users_table.php'
-                => database_path('migrations',)
+                __DIR__ . '/../database/migrations/add_last_login_at_timestamp_to_admin_users_table.php'
+                => $this->app->databasePath('migrations',)
                     . '/2025_01_01_' . $time . '_add_last_login_at_timestamp_to_admin_users_table.php',
             ], 'migrations');
         }
-
-        $this->publishes([
-            __DIR__ . '/../install-stubs/lang' => lang_path('vendor/admin-auth'),
-        ], 'lang');
     }
 }

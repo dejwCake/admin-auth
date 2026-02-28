@@ -152,7 +152,7 @@ final class ResetPasswordController extends Controller
      *
      * @throws ValidationException
      */
-    private function sendResetFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
+    private function sendResetFailedResponse(Request $request, string $response): RedirectResponse
     {
         if ($response === PasswordBroker::INVALID_TOKEN) {
             $message = trans('brackets/admin-auth::admin.passwords.invalid_token');

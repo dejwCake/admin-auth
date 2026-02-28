@@ -7,7 +7,8 @@
 
     <config name="php_version" value="80200" />
 
-    <file>install-stubs/</file>
+    <file>config/</file>
+    <file>database/</file>
     <file>lang/</file>
     <file>resources/</file>
     <file>routes/</file>
@@ -34,7 +35,7 @@
     </rule>
 
     <rule ref="SlevomatCodingStandard.Files.LineLength.LineTooLong">
-        <exclude-pattern>install-stubs/database/migrations/create_admin_users_table.php</exclude-pattern>
+        <exclude-pattern>database/migrations/create_admin_users_table.php</exclude-pattern>
         <exclude-pattern>src/Console/Commands/AdminAuthInstall.php</exclude-pattern>
     </rule>
     <rule ref="SlevomatCodingStandard.Classes.TraitUseSpacing.IncorrectLinesCountAfterLastUse">

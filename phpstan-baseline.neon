@@ -4,7 +4,7 @@ parameters:
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
 			identifier: larastan.noEnvCallsOutsideOfConfig
 			count: 2
-			path: install-stubs/config/admin-auth.php
+			path: config/admin-auth.php
 
 		-
 			message: '#^Out of 10 possible constant types, only 0 \- 0\.0 %% actually have it\. Add more constant types to get over 75 %%$#'

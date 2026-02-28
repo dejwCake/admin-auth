@@ -124,10 +124,8 @@ final class ActivationEmailController extends Controller
 
     /**
      * Get the response for a failed activation link.
-     *
-     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
+    private function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
         if ($response === ActivationBroker::ACTIVATION_DISABLED) {

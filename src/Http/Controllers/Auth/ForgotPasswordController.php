@@ -84,7 +84,7 @@ final class ForgotPasswordController extends Controller
      *
      * @throws ValidationException
      */
-    protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
+    protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans($response);
 

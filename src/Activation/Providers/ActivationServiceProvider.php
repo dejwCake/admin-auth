@@ -31,9 +31,6 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
         $this->mergeConfigFrom(__DIR__ . '/../../../config/activation.php', 'activation');
 
         $this->registerActivationBroker();
-
-        $loader = AliasLoader::getInstance();
-        $loader->alias('Activation', Activation::class);
     }
 
     /**

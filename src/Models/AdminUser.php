@@ -72,15 +72,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
      * @var array<int, string>
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
      */
-    protected $appends = ['full_name', 'resource_url'];
-
-    /**
-     * Resource url to generate edit
-     */
-    public function getResourceUrlAttribute(): string
-    {
-        return url('/admin/admin-users/' . $this->getKey());
-    }
+    protected $appends = ['full_name'];
 
     /**
      * Full name for admin user

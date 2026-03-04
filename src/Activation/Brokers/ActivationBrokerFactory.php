@@ -76,7 +76,7 @@ class ActivationBrokerFactory implements FactoryContract
         $config = $this->getConfig($name);
 
         if ($config === null) {
-            throw new InvalidArgumentException("Activationer [{$name}] is not defined.");
+            throw new InvalidArgumentException("Activation broker [{$name}] is not defined.");
         }
 
         // The password broker uses a token repository to validate tokens and send user

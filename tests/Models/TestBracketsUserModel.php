@@ -64,6 +64,7 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
     /**
      * @return array<string>
      */
+    #[\Override]
     protected function casts(): array
     {
         return [
@@ -96,6 +97,7 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
      * @param string $token
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
+    #[\Override]
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(app(ResetPassword::class, ['token' => $token]));
@@ -104,6 +106,7 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
     /**
      * Send the password reset notification.
      */
+    #[\Override]
     public function sendActivationNotification(string $token): void
     {
         $this->notify(app(ActivationNotification::class, ['token' => $token]));

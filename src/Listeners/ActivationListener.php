@@ -32,7 +32,7 @@ class ActivationListener
      */
     public function subscribe(Dispatcher $events): void
     {
-        $activationBrokerConfig = $this->config->get("activation.activations.{$this->activationBroker}");
+        $activationBrokerConfig = $this->config->get('activation.activations.' . $this->activationBroker);
         if ($this->authManager->createUserProvider($activationBrokerConfig['provider']) !== null) {
             try {
                 $userClass = $this->activationBrokerFactory->broker($this->activationBroker)

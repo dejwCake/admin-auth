@@ -58,7 +58,9 @@ trait AuthenticatesUsers
                 $this->incrementLoginAttempts($request);
             }
 
-            $this->throwFailedLogin();
+            throw ValidationException::withMessages([
+                $this->username() => [trans('auth.failed')],
+            ]);
         }
 
         return $this->sendLoginResponse($request);
@@ -148,18 +150,6 @@ trait AuthenticatesUsers
         if ($user instanceof Model && app('db.schema')->hasColumn($user->getTable(), 'last_login_at')) {
             $user->update(['last_login_at' => CarbonImmutable::now()]);
         }
-    }
-
-    /**
-     * Get the failed login response instance.
-     *
-     * @throws ValidationException
-     */
-    protected function throwFailedLogin(): void
-    {
-        throw ValidationException::withMessages([
-            $this->username() => [trans('auth.failed')],
-        ]);
     }
 
     /**

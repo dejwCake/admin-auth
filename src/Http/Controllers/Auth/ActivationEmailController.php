@@ -160,6 +160,6 @@ final class ActivationEmailController extends Controller
     {
         $conditions = ['activated' => false];
 
-        return array_merge($request->only('email'), $conditions);
+        return [...$request->only('email'), ...$conditions];
     }
 }

@@ -113,7 +113,7 @@ final class LoginController extends Controller
             $conditions['activated'] = true;
         }
 
-        return array_merge($request->only($this->username(), 'password'), $conditions);
+        return [...$request->only($this->username(), 'password'), ...$conditions];
     }
 
     /**

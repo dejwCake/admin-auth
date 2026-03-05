@@ -8,6 +8,7 @@ use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerFactory;
 use Brackets\AdminAuth\Activation\Contracts\ActivationBrokerFactory as ActivationBrokerFactoryContract;
 use Illuminate\Contracts\Support\DeferrableProvider;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 class ActivationServiceProvider extends ServiceProvider implements DeferrableProvider
 {
@@ -24,6 +25,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
     /**
      * Register the service provider.
      */
+    #[Override]
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../../../config/activation.php', 'activation');
@@ -36,6 +38,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
      *
      * @return array<string>
      */
+    #[Override]
     public function provides(): array
     {
         return ['auth.activation', 'auth.activation.broker'];

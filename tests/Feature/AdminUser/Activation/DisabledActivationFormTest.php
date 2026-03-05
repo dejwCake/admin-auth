@@ -11,6 +11,7 @@ class DisabledActivationFormTest extends BracketsTestCase
 {
     use DatabaseMigrations;
 
+    #[\Override]
     public function setUp(): void
     {
         parent::setUp();

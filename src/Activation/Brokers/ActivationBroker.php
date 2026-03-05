@@ -10,6 +10,7 @@ use Brackets\AdminAuth\Activation\Repositories\TokenRepositoryInterface;
 use Closure;
 use Illuminate\Contracts\Auth\UserProvider;
 use Illuminate\Support\Arr;
+use Override;
 use UnexpectedValueException;
 
 class ActivationBroker implements ActivationBrokerContract
@@ -25,6 +26,7 @@ class ActivationBroker implements ActivationBrokerContract
      *
      * @param array<string, string> $credentials
      */
+    #[Override]
     public function sendActivationLink(array $credentials): string
     {
         // First we will check to see if we found a user at the given credentials and
@@ -51,6 +53,7 @@ class ActivationBroker implements ActivationBrokerContract
      *
      * @param array<string, string> $credentials
      */
+    #[Override]
     public function activate(array $credentials, Closure $callback): string
     {
         // If the responses from the validate method is not a user instance, we will
@@ -125,6 +128,7 @@ class ActivationBroker implements ActivationBrokerContract
     /**
      * Get the user model class implementation.
      */
+    #[Override]
     public function getUserModelClass(): ?string
     {
         return method_exists($this->users, 'getModel') ? $this->users->getModel() : null;

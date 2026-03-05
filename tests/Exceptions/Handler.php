@@ -42,6 +42,7 @@ class Handler extends ExceptionHandler
      *
      * @throws Throwable
      */
+    #[\Override]
     public function report(Throwable $e): void
     {
         parent::report($e);
@@ -53,6 +54,7 @@ class Handler extends ExceptionHandler
      * @param Request $request
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
+    #[\Override]
     public function render($request, Throwable $e): SymfonyResponse
     {
         return parent::render($request, $e);
@@ -65,6 +67,7 @@ class Handler extends ExceptionHandler
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
+    #[\Override]
     protected function unauthenticated(
         $request,
         AuthenticationException $exception,

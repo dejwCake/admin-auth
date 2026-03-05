@@ -20,6 +20,7 @@ abstract class TestCase extends Orchestra
 
     protected string $adminAuthGuard;
 
+    #[\Override]
     public function setUp(): void
     {
         parent::setUp();
@@ -35,6 +36,7 @@ abstract class TestCase extends Orchestra
      * @param Application $app
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
+    #[\Override]
     protected function getPackageProviders($app): array
     {
         return [
@@ -47,6 +49,7 @@ abstract class TestCase extends Orchestra
      * @param Application $app
      * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
+    #[\Override]
     protected function defineEnvironment($app): void
     {
         if (env('DB_CONNECTION') === 'pgsql') {

@@ -11,27 +11,27 @@ interface ActivationBroker
     /**
      * Constant representing a successfully sent reminder.
      */
-    public const ACTIVATION_LINK_SENT = 'sent';
+    public const string ACTIVATION_LINK_SENT = 'sent';
 
     /**
      * Constant representing a successfully reset password.
      */
-    public const ACTIVATED = 'activated';
+    public const string ACTIVATED = 'activated';
 
     /**
      * Constant representing the user not found response.
      */
-    public const INVALID_USER = 'invalid-user';
+    public const string INVALID_USER = 'invalid-user';
 
     /**
      * Constant representing an invalid token.
      */
-    public const INVALID_TOKEN = 'invalid-token';
+    public const string INVALID_TOKEN = 'invalid-token';
 
     /**
      * Constant representing a disabled activation.
      */
-    public const ACTIVATION_DISABLED = 'disabled';
+    public const string ACTIVATION_DISABLED = 'disabled';
 
     /**
      * Send activation link to a user.

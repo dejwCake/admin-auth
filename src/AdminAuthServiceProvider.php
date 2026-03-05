@@ -16,6 +16,7 @@ use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Routing\Router;
 use Illuminate\Support\ServiceProvider;
+use Override;
 
 class AdminAuthServiceProvider extends ServiceProvider
 {
@@ -54,6 +55,7 @@ class AdminAuthServiceProvider extends ServiceProvider
         }
     }
 
+    #[Override]
     public function register(): void
     {
         $this->mergeConfigFrom(__DIR__ . '/../config/admin-auth.php', 'admin-auth');

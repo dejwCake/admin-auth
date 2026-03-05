@@ -16,6 +16,7 @@ class ResetPasswordTest extends StandardTestCase
 
     protected string $token = '123456aabbcc';
 
+    #[\Override]
     public function setUp(): void
     {
         parent::setUp();

@@ -6,6 +6,7 @@ namespace Brackets\AdminAuth\Tests;
 
 abstract class StandardTestCase extends TestCase
 {
+    #[\Override]
     public function setUp(): void
     {
         parent::setUp();

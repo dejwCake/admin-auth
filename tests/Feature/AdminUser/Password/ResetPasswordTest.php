@@ -18,6 +18,7 @@ class ResetPasswordTest extends BracketsTestCase
 
     protected string $token = '123456aabbcc';
 
+    #[\Override]
     public function setUp(): void
     {
         parent::setUp();

@@ -10,6 +10,7 @@ use Brackets\AdminAuth\Activation\Repositories\DatabaseTokenRepository;
 use Illuminate\Foundation\Application;
 use Illuminate\Support\Str;
 use InvalidArgumentException;
+use Override;
 
 class ActivationBrokerFactory implements FactoryContract
 {
@@ -43,6 +44,7 @@ class ActivationBrokerFactory implements FactoryContract
     /**
      * Attempt to get the broker from the local cache.
      */
+    #[Override]
     public function broker(?string $name = null): ActivationBrokerContract
     {
         $name = $name ?: $this->getDefaultDriver();

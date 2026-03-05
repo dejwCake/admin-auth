@@ -58,7 +58,7 @@ trait ThrottlesLogins
      *
      * @throws ValidationException
      */
-    protected function throwLockoutResponse(Request $request): void
+    protected function throwLockoutResponse(Request $request): never
     {
         $seconds = $this->limiter()
             ->availableIn($this->throttleKey($request));

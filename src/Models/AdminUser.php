@@ -168,6 +168,8 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
             'updated_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
             'deleted_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
             'last_login_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
+            'activated' => 'boolean',
+            'forbidden' => 'boolean',
         ];
     }
 }

@@ -34,7 +34,6 @@ abstract class TestCase extends Orchestra
     /**
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      * @param Application $app
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     #[\Override]
     protected function getPackageProviders($app): array
@@ -47,7 +46,6 @@ abstract class TestCase extends Orchestra
 
     /**
      * @param Application $app
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     #[\Override]
     protected function defineEnvironment($app): void

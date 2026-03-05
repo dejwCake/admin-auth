@@ -13,7 +13,6 @@ use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
@@ -127,7 +126,7 @@ final class ActivationController extends Controller
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function sendActivationResponse(Request $request, string $response): RedirectResponse|JsonResponse
+    private function sendActivationResponse(Request $request, string $response): RedirectResponse
     {
         $message = trans('brackets/admin-auth::admin.activations.activated');
 

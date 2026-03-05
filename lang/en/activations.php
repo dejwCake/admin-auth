@@ -27,7 +27,8 @@ return [
         'action' => 'Activate your account',
         'notRequested' => 'If you did not request an activation, no further action is required.',
         'salutation' => 'Regards',
-        'subcopy' => 'If you\'re having trouble clicking the ":actionText" button, copy and paste the URL below into your web browser: [:actionUrl](:actionUrl)',
+        'subcopy' => 'If you\'re having trouble clicking the ":actionText" button, '
+            . 'copy and paste the URL below into your web browser: [:actionUrl](:actionUrl)',
     ],
 
 ];

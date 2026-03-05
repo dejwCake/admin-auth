@@ -7,39 +7,6 @@ parameters:
 			path: config/admin-auth.php
 
 		-
-			message: '#^Out of 10 possible constant types, only 0 \- 0\.0 %% actually have it\. Add more constant types to get over 75 %%$#'
-			identifier: typeCoverage.constantTypeCoverage
-			count: 5
-			path: src/Activation/Contracts/ActivationBroker.php
-
-		-
-			message: '#^Out of 10 possible constant types, only 0 \- 0\.0 %% actually have it\. Add more constant types to get over 75 %%$#'
-			identifier: typeCoverage.constantTypeCoverage
-			count: 5
-			path: src/Activation/Facades/Activation.php
-
-		-
-			message: '''
-				#^Access to constant on deprecated class Brackets\\AdminAuth\\Activation\\Facades\\Activation\:
-				We won't be using this facade in the future\. Use the ActivationBrokerManager class instead\.$#
-			'''
-			identifier: classConstant.deprecatedClass
-			count: 1
-			path: src/Activation/Providers/ActivationServiceProvider.php
-
-		-
-			message: '#^Call to function assert\(\) with true will always evaluate to true\.$#'
-			identifier: function.alreadyNarrowedType
-			count: 1
-			path: src/AdminAuthServiceProvider.php
-
-		-
-			message: '#^Instanceof between Illuminate\\Config\\Repository and Illuminate\\Contracts\\Config\\Repository will always evaluate to true\.$#'
-			identifier: instanceof.alwaysTrue
-			count: 1
-			path: src/AdminAuthServiceProvider.php
-
-		-
 			message: '#^Call to function method_exists\(\) with \$this\(Brackets\\AdminAuth\\Http\\Controllers\\Auth\\ActivationController\) and ''redirectTo'' will always evaluate to false\.$#'
 			identifier: function.impossibleType
 			count: 1

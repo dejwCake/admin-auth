@@ -17,7 +17,8 @@ return [
         'action' => 'Resetovať heslo',
         'notRequested' => 'Ak ste nepožiadali o resetovanie hesla môžete túto správu ignorovať.',
         'salutation' => 'S pozdravom',
-        'subcopy' => 'Ak máte problém kliknúť na tlačidlo ":actionText", skopírujte a vložte URL adresu nižšie do vášho webového prehliadača: [:actionUrl](:actionUrl)',
+        'subcopy' => 'Ak máte problém kliknúť na tlačidlo ":actionText", skopírujte a vložte '
+            . 'URL adresu nižšie do vášho webového prehliadača: [:actionUrl](:actionUrl)',
     ],
 
 ];

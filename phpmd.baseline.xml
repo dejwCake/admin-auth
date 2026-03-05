@@ -1,4 +1,7 @@
 <?xml version="1.0"?>
 <phpmd-baseline>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Http/Controllers/Auth/ActivationEmailController.php"/>
+  <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Http/Controllers/Auth/ForgotPasswordController.php"/>
   <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Http/Controllers/Auth/ResetPasswordController.php"/>
+  <violation rule="PHPMD\Rule\Design\LongParameterList" file="src/Http/Controllers/Auth/ResetPasswordController.php" method="__construct"/>
 </phpmd-baseline>

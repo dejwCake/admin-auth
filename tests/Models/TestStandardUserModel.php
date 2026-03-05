@@ -43,7 +43,6 @@ class TestStandardUserModel extends Authenticatable implements CanActivateContra
      * Send the password reset notification.
      *
      * @param string $token
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     #[\Override]
     public function sendPasswordResetNotification($token): void

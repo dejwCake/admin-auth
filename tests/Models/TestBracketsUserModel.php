@@ -72,6 +72,8 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
             'updated_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
             'deleted_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
             'last_login_at' => 'date:' . CarbonInterface::DEFAULT_TO_STRING_FORMAT,
+            'activated' => 'boolean',
+            'forbidden' => 'boolean',
         ];
     }
 
@@ -95,7 +97,6 @@ class TestBracketsUserModel extends Authenticatable implements CanActivateContra
      * Send the password reset notification.
      *
      * @param string $token
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     #[\Override]
     public function sendPasswordResetNotification($token): void

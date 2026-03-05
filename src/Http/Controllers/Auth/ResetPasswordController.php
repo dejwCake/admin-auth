@@ -142,6 +142,8 @@ final class ResetPasswordController extends Controller
 
     /**
      * Get the response for a successful password reset.
+     *
+     * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
     private function sendResetResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {

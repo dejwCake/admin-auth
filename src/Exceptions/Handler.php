@@ -17,7 +17,6 @@ class Handler extends ParentHandler
 {
     /**
      * @param Request $request
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.ParameterTypeHint.MissingNativeTypeHint
      */
     #[Override]
     protected function unauthenticated($request, AuthenticationException $exception,): JsonResponse|RedirectResponse

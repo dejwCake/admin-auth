@@ -4,7 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Tests\Feature\StandardUser\Activation;
 
-use Brackets\AdminAuth\Notifications\ActivationNotification;
+use Brackets\AdminAuth\Activation\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Tests\Models\TestStandardUserModel;
 use Brackets\AdminAuth\Tests\StandardTestCase;
 use Illuminate\Foundation\Testing\DatabaseMigrations;

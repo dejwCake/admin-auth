@@ -18,8 +18,10 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['web'])
     ->prefix('/admin/activation')
+    ->name('brackets/admin-auth::admin/activation/')
     ->group(static function (): void {
         Route::get('/', [ActivationEmailController::class, 'showLinkRequestForm'])
-            ->name('brackets/admin-auth::admin/activation');
-        Route::post('/send', [ActivationEmailController::class, 'sendActivationEmail']);
+            ->name('show');
+        Route::post('/send', [ActivationEmailController::class, 'sendActivationEmail'])
+            ->name('send');
     });

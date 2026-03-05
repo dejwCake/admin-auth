@@ -4,14 +4,14 @@
 
 @section('auth-content')
 	<activation-form
-		:action="'{{ url('/admin/activation/send') }}'"
+		:action="'{{ $action }}'"
 		:translations="{{ json_encode([
 			'title' => trans('brackets/admin-auth::admin.activation_form.title'),
 			'note' => trans('brackets/admin-auth::admin.activation_form.note'),
 			'email' => trans('brackets/admin-auth::admin.auth_global.email'),
 			'button' => trans('brackets/admin-auth::admin.activation_form.button'),
 		]) }}"
-		:status-message="'{{ session('status', '') }}'"
+		:status-message="'{{ $statusMessage }}'"
 		:server-errors="{{ json_encode($errors->all()) }}"
 	></activation-form>
 @endsection

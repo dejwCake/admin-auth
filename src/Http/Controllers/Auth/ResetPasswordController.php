@@ -6,6 +6,7 @@ namespace Brackets\AdminAuth\Http\Controllers\Auth;
 
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Brackets\AdminAuth\Traits\ResetsPasswords;
+use Illuminate\Auth\Events\PasswordReset;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
@@ -14,6 +15,9 @@ use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\Auth\PasswordBrokerFactory;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\Events\Dispatcher;
+use Illuminate\Contracts\Hashing\Hasher;
+use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
@@ -21,8 +25,10 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Session\SessionManager;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
+use Psr\Log\LoggerInterface;
 
 final class ResetPasswordController extends Controller
 {
@@ -59,6 +65,11 @@ final class ResetPasswordController extends Controller
         private readonly Redirector $redirector,
         private readonly AuthFactory $authFactory,
         private readonly PasswordBrokerFactory $passwordBrokerFactory,
+        private readonly Hasher $hasher,
+        private readonly UrlGenerator $urlGenerator,
+        private readonly SessionManager $sessionManager,
+        private readonly Dispatcher $dispatcher,
+        private readonly LoggerInterface $logger,
     ) {
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->passwordBroker = $this->config->get('admin-auth.defaults.passwords', 'admin_users');
@@ -73,8 +84,14 @@ final class ResetPasswordController extends Controller
      */
     public function showResetForm(Request $request, ?string $token = null): View
     {
-        return $this->viewFactory->make('brackets/admin-auth::admin.auth.passwords.reset')
-            ->with(['token' => $token, 'email' => $request->email]);
+        return $this->viewFactory->make('brackets/admin-auth::admin.auth.passwords.reset', [
+            'token' => $token,
+            'email' => $request->email,
+            'action' => $this->urlGenerator->route('brackets/admin-auth::admin/password/reset'),
+            'redirectUrl' => $this->redirectTo,
+            'loginUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/show-login-form'),
+            'statusMessage' => $this->sessionManager->get('status', ''),
+        ]);
     }
 
     /**
@@ -84,9 +101,9 @@ final class ResetPasswordController extends Controller
      */
     public function reset(Request $request): RedirectResponse|JsonResponse
     {
-        $this->validate($request, $this->rules(), $this->validationErrorMessages());
+        $request->validate($this->rules(), $this->validationErrorMessages());
 
-        // Here we will attempt to reset the user's password. If it is successful we
+        // Here we will attempt to reset the user's password. If it is successful, we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise, we will parse the error and return the response.
         $response = $this->broker()
@@ -98,19 +115,11 @@ final class ResetPasswordController extends Controller
             );
 
         // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
+        // the application's home authenticated view. If there is an error, we can
         // redirect them back to where they came from with their error message.
         return $response === PasswordBroker::PASSWORD_RESET
             ? $this->sendResetResponse($request, $response)
             : $this->sendResetFailedResponse($request, $response);
-    }
-
-    /**
-     * Get the broker to be used during password reset.
-     */
-    private function broker(): PasswordBroker
-    {
-        return $this->passwordBrokerFactory->broker($this->passwordBroker);
     }
 
     /**
@@ -119,9 +128,11 @@ final class ResetPasswordController extends Controller
     private function resetPassword(CanResetPassword&Authenticatable&Model $user, string $password): void
     {
         $user->forceFill([
-            'password' => bcrypt($password),
+            'password' => $this->hasher->make($password),
             'remember_token' => Str::random(60),
         ])->save();
+
+        $this->dispatcher->dispatch(new PasswordReset($user));
 
         if ($this->loginCheck($user)) {
             $this->guard()
@@ -134,13 +145,13 @@ final class ResetPasswordController extends Controller
      */
     private function sendResetResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
-        $message = trans($response);
-        if ($response === PasswordBroker::PASSWORD_RESET) {
-            $message = trans('brackets/admin-auth::admin.passwords.reset');
-        }
+        $message = trans('brackets/admin-auth::admin.passwords.reset');
 
         if ($request->wantsJson()) {
-            return new JsonResponse(['redirect' => $this->redirectPath()], 200);
+            return new JsonResponse([
+                'message' => $message,
+                'redirect' => $this->redirectPath(),
+            ], 200);
         }
 
         return $this->redirector->to($this->redirectPath())
@@ -154,13 +165,8 @@ final class ResetPasswordController extends Controller
      */
     private function sendResetFailedResponse(Request $request, string $response): RedirectResponse
     {
-        if ($response === PasswordBroker::INVALID_TOKEN) {
-            $message = trans('brackets/admin-auth::admin.passwords.invalid_token');
-        } else {
-            $message = $response === PasswordBroker::INVALID_USER
-                ? trans('brackets/admin-auth::admin.passwords.invalid_user')
-                : trans('brackets/admin-auth::admin.passwords.invalid_user');
-        }
+        $this->logger->error('Password reset failed: ' . $response);
+        $message = trans('brackets/admin-auth::admin.passwords.invalid_token');
 
         if ($request->wantsJson()) {
             throw ValidationException::withMessages(['email' => $message]);
@@ -173,13 +179,21 @@ final class ResetPasswordController extends Controller
 
     /**
      * Get the password reset validation rules.
+     *
+     * @return array<string, array<string>>
      */
     private function rules(): array
     {
         return [
-            'token' => 'required',
-            'email' => 'required|email|string',
-            'password' => 'required|confirmed|min:8|regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9]).*$/|string',
+            'token' => ['required'],
+            'email' => ['required', 'email', 'string'],
+            'password' => [
+                'required',
+                'confirmed',
+                'min:8',
+                'regex:/^.*(?=.{3,})(?=.*[a-zA-Z])(?=.*[0-9]).*$/',
+                'string',
+            ],
         ];
     }
 
@@ -198,5 +212,13 @@ final class ResetPasswordController extends Controller
     private function guard(): Guard|StatefulGuard
     {
         return $this->authFactory->guard($this->guard);
+    }
+
+    /**
+     * Get the broker to be used during password reset.
+     */
+    private function broker(): PasswordBroker
+    {
+        return $this->passwordBrokerFactory->broker($this->passwordBroker);
     }
 }

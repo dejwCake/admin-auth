@@ -13,10 +13,12 @@ use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
 use Illuminate\Validation\ValidationException;
+use Psr\Log\LoggerInterface;
 
 final class ActivationController extends Controller
 {
@@ -42,6 +44,7 @@ final class ActivationController extends Controller
         private readonly Config $config,
         private readonly ViewFactory $viewFactory,
         private readonly Redirector $redirector,
+        private readonly LoggerInterface $logger,
     ) {
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->activationBroker = $this->config->get('admin-auth.defaults.activations', 'admin_users');
@@ -124,12 +127,9 @@ final class ActivationController extends Controller
      *
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      */
-    private function sendActivationResponse(Request $request, string $response): RedirectResponse
+    private function sendActivationResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
-        $message = trans($response);
-        if ($response === ActivationBroker::ACTIVATED) {
-            $message = trans('brackets/admin-auth::admin.activations.activated');
-        }
+        $message = trans('brackets/admin-auth::admin.activations.activated');
 
         return $this->redirector->to($this->redirectPath())
             ->with('status', $message);
@@ -140,16 +140,13 @@ final class ActivationController extends Controller
      */
     private function sendActivationFailedResponse(Request $request, string $response): RedirectResponse|View
     {
-        $message = trans($response);
-        if ($response === ActivationBroker::INVALID_USER || $response === ActivationBroker::INVALID_TOKEN) {
-            $message = trans('brackets/admin-auth::admin.activations.invalid_request');
-        } else {
-            if ($response === ActivationBroker::ACTIVATION_DISABLED) {
-                $message = trans('brackets/admin-auth::admin.activations.disabled');
-            }
+        $this->logger->error('Activation failed: ' . $response);
+        $message = trans('brackets/admin-auth::admin.activations.invalid_request');
+        if ($response === ActivationBroker::ACTIVATION_DISABLED) {
+            $message = trans('brackets/admin-auth::admin.activations.disabled');
         }
         if ($this->config->get('admin-auth.self_activation_form_enabled')) {
-            return $this->redirector->route('brackets/admin-auth::admin/activation')
+            return $this->redirector->route('brackets/admin-auth::admin/activation/show')
                 ->withInput($request->only('email'))
                 ->withErrors(['token' => $message]);
         } else {

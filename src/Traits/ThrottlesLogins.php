@@ -7,7 +7,6 @@ namespace Brackets\AdminAuth\Traits;
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Lang;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
@@ -65,7 +64,7 @@ trait ThrottlesLogins
             ->availableIn($this->throttleKey($request));
 
         throw ValidationException::withMessages([
-            $this->username() => [Lang::get('auth.throttle', [
+            $this->username() => [trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ])],

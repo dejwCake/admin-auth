@@ -14,6 +14,6 @@ final class MissingRoutesController extends Controller
      */
     public function redirect(Redirector $redirector): RedirectResponse
     {
-        return $redirector->route('brackets/admin-auth::admin/login');
+        return $redirector->route('brackets/admin-auth::admin/show-login-form');
     }
 }

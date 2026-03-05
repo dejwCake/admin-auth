@@ -9,7 +9,7 @@ use Illuminate\Notifications\Notification;
 
 class ResetPassword extends Notification
 {
-    public function __construct(private string $token)
+    public function __construct(private readonly string $token)
     {
     }
 
@@ -31,13 +31,10 @@ class ResetPassword extends Notification
      */
     public function toMail(object $notifiable): MailMessage
     {
-        //TODO change to template?
         return (new MailMessage())
-            ->line(trans('brackets/admin-auth::resets.email.line'))
-            ->action(
-                trans('brackets/admin-auth::resets.email.action'),
-                route('brackets/admin-auth::admin/password/show-reset-form', $this->token),
-            )
-            ->line(trans('brackets/admin-auth::resets.email.notRequested'));
+            ->subject(trans('brackets/admin-auth::resets.email.action'))
+            ->markdown('brackets/admin-auth::admin.auth.emails.reset-password', [
+                'actionUrl' => route('brackets/admin-auth::admin/password/show-reset-form', $this->token),
+            ]);
     }
 }

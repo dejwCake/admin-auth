@@ -20,12 +20,14 @@ return [
         'title' => 'Reset Password',
         'note' => 'Reset forgotten password',
         'button' => 'Reset password',
+        'back_to_login' => 'Back to login',
     ],
 
     'forgot_password' => [
         'title' => 'Reset Password',
         'note' => 'Send password reset e-mail',
         'button' => 'Send Password Reset Link',
+        'back_to_login' => 'Back to login',
     ],
 
     'activation_form' => [

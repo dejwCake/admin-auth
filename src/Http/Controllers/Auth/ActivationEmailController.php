@@ -8,13 +8,16 @@ use Brackets\AdminAuth\Activation\Contracts\ActivationBroker;
 use Brackets\AdminAuth\Activation\Contracts\ActivationBrokerFactory;
 use Brackets\AdminAuth\Http\Controllers\Controller;
 use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Routing\Redirector;
+use Illuminate\Session\SessionManager;
 use Illuminate\Validation\ValidationException;
+use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class ActivationEmailController extends Controller
@@ -45,6 +48,9 @@ final class ActivationEmailController extends Controller
         private readonly Config $config,
         private readonly ViewFactory $viewFactory,
         private readonly Redirector $redirector,
+        private readonly UrlGenerator $urlGenerator,
+        private readonly SessionManager $sessionManager,
+        private readonly LoggerInterface $logger,
     ) {
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->activationBroker = $this->config->get('admin-auth.defaults.activations', 'admin_users');
@@ -59,7 +65,10 @@ final class ActivationEmailController extends Controller
     public function showLinkRequestForm(): View
     {
         if ($this->config->get('admin-auth.self_activation_form_enabled')) {
-            return $this->viewFactory->make('brackets/admin-auth::admin.auth.activation.email');
+            return $this->viewFactory->make('brackets/admin-auth::admin.auth.activation.email', [
+                'action' => $this->urlGenerator->route('brackets/admin-auth::admin/activation/send'),
+                'statusMessage' => $this->sessionManager->get('status', ''),
+            ]);
         } else {
             throw new NotFoundHttpException();
         }
@@ -125,25 +134,21 @@ final class ActivationEmailController extends Controller
     /**
      * Get the response for a failed activation link.
      */
-    private function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse
+    private function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
-        $message = trans($response);
+        $this->logger->error('Activation link failed: ' . $response);
         if ($response === ActivationBroker::ACTIVATION_DISABLED) {
             $message = trans('brackets/admin-auth::admin.activations.disabled');
-        }
-        if ($response === ActivationBroker::INVALID_USER) {
-            $message = trans('brackets/admin-auth::admin.activations.invalid_user');
-        }
-        if ($response === ActivationBroker::INVALID_TOKEN) {
-            $message = trans('brackets/admin-auth::admin.activations.invalid_token');
+
+            if ($request->wantsJson()) {
+                throw ValidationException::withMessages(['email' => $message]);
+            }
+
+            return $this->redirector->back()
+                ->withErrors(['email' => $message]);
         }
 
-        if ($request->wantsJson()) {
-            throw ValidationException::withMessages(['email' => $message]);
-        }
-
-        return $this->redirector->back()
-            ->withErrors(['email' => $message]);
+        return $this->sendActivationLinkResponse($request, $response);
     }
 
     /**

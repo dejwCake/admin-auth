@@ -6,9 +6,7 @@ namespace Brackets\AdminAuth\Activation\Providers;
 
 use Brackets\AdminAuth\Activation\Brokers\ActivationBrokerFactory;
 use Brackets\AdminAuth\Activation\Contracts\ActivationBrokerFactory as ActivationBrokerFactoryContract;
-use Brackets\AdminAuth\Activation\Facades\Activation;
 use Illuminate\Contracts\Support\DeferrableProvider;
-use Illuminate\Foundation\AliasLoader;
 use Illuminate\Support\ServiceProvider;
 
 class ActivationServiceProvider extends ServiceProvider implements DeferrableProvider
@@ -56,7 +54,8 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
 
     private function publish(): void
     {
-        $time = date('His', time());
+        $timestamp = date('Y_m_d') . '_000000';
+
         $this->publishes([
             __DIR__ . '/../../../config/activation.php' => $this->app->configPath('activation.php'),
         ], 'config');
@@ -64,7 +63,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
         if (!glob($this->app->basePath('database/migrations/*_create_activations_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../../../database/migrations/create_activations_table.php' =>
-                    $this->app->databasePath('migrations') . '/2025_01_01_' . $time . '_create_activations_table.php',
+                    $this->app->databasePath('migrations') . '/' . $timestamp . '_create_activations_table.php',
             ], 'migrations');
         }
     }

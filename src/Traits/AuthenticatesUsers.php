@@ -13,8 +13,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Schema;
 use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -147,7 +145,7 @@ trait AuthenticatesUsers
      */
     protected function authenticated(?Authenticatable $user): void
     {
-        if ($user instanceof Model && Schema::hasColumn($user->getTable(), 'last_login_at')) {
+        if ($user instanceof Model && app('db.schema')->hasColumn($user->getTable(), 'last_login_at')) {
             $user->update(['last_login_at' => CarbonImmutable::now()]);
         }
     }
@@ -179,6 +177,6 @@ trait AuthenticatesUsers
      */
     protected function guard(): Guard|StatefulGuard
     {
-        return Auth::guard();
+        return app('auth')->guard();
     }
 }

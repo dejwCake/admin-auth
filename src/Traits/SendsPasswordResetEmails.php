@@ -9,7 +9,6 @@ use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Validation\ValidationException;
 
 trait SendsPasswordResetEmails
@@ -36,17 +35,39 @@ trait SendsPasswordResetEmails
             $this->credentials($request),
         );
 
-        return $response === Password::RESET_LINK_SENT
+        return $response === PasswordBroker::RESET_LINK_SENT
             ? $this->sendResetLinkResponse($request, $response)
             : $this->sendResetLinkFailedResponse($request, $response);
     }
 
     /**
+     * Get the response for a successful password reset link.
+     */
+    protected function sendResetLinkResponse(Request $request, string $response): JsonResponse|RedirectResponse
+    {
+        return $request->wantsJson()
+            ? new JsonResponse(['message' => trans($response)], 200)
+            : back()->with('status', trans($response));
+    }
+
+    /**
+     * Get the response for a failed password reset link.
+     *
+     * @throws ValidationException
+     */
+    protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
+    {
+        return $request->wantsJson()
+            ? throw ValidationException::withMessages(['email' => [trans($response)]])
+            : back()->withInput($request->only('email'))->withErrors(['email' => trans($response)]);
+    }
+
+    /**
      * Get the broker to be used during password reset.
      */
-    public function broker(): PasswordBroker
+    protected function broker(): PasswordBroker
     {
-        return Password::broker();
+        return app('auth.password')->broker();
     }
 
     /**
@@ -65,27 +86,5 @@ trait SendsPasswordResetEmails
     protected function credentials(Request $request): array
     {
         return $request->only('email');
-    }
-
-    /**
-     * Get the response for a successful password reset link.
-     */
-    protected function sendResetLinkResponse(Request $request, string $response): JsonResponse|RedirectResponse
-    {
-        return $request->wantsJson()
-            ? new JsonResponse(['message' => trans($response)], 200)
-            : back()->with('status', trans($response));
-    }
-
-    /**
-     * Get the response for a failed password reset link.
-     *
-     * @throws ValidationException
-     */
-    protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse
-    {
-        return $request->wantsJson()
-            ? throw ValidationException::withMessages(['email' => [trans($response)]])
-            : back()->withInput($request->only('email'))->withErrors(['email' => trans($response)]);
     }
 }

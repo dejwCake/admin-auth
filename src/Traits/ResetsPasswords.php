@@ -15,9 +15,6 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Password;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
 use RuntimeException;
@@ -45,20 +42,21 @@ trait ResetsPasswords
     {
         $request->validate($this->rules(), $this->validationErrorMessages());
 
-        // Here we will attempt to reset the user's password. If it is successful we
+        // Here we will attempt to reset the user's password. If it is successful, we
         // will update the password on an actual user model and persist it to the
         // database. Otherwise, we will parse the error and return the response.
-        $response = $this->broker()->reset(
-            $this->credentials($request),
-            function (CanResetPassword&Authenticatable&Model $user, string $password): void {
-                $this->resetPassword($user, $password);
-            },
-        );
+        $response = $this->broker()
+            ->reset(
+                $this->credentials($request),
+                function (CanResetPassword&Authenticatable&Model $user, string $password): void {
+                    $this->resetPassword($user, $password);
+                },
+            );
 
         // If the password was successfully reset, we will redirect the user back to
-        // the application's home authenticated view. If there is an error we can
+        // the application's home authenticated view. If there is an error, we can
         // redirect them back to where they came from with their error message.
-        return $response === Password::PASSWORD_RESET
+        return $response === PasswordBroker::PASSWORD_RESET
             ? $this->sendResetResponse($request, $response)
             : $this->sendResetFailedResponse($request, $response);
     }
@@ -68,7 +66,51 @@ trait ResetsPasswords
      */
     public function broker(): PasswordBroker
     {
-        return Password::broker();
+        return app('auth.password')->broker();
+    }
+
+    /**
+     * Reset the given user's password.
+     */
+    protected function resetPassword(CanResetPassword&Authenticatable&Model $user, string $password): void
+    {
+        $this->setUserPassword($user, $password);
+
+        $user->setRememberToken(Str::random(60));
+
+        $user->save();
+
+        event(new PasswordReset($user));
+
+        $this->guard()->login($user);
+    }
+
+    /**
+     * Get the response for a successful password reset.
+     */
+    protected function sendResetResponse(Request $request, string $response): RedirectResponse|JsonResponse
+    {
+        return $request->wantsJson()
+            ? new JsonResponse(['message' => trans($response)], 200)
+            : redirect($this->redirectPath())->with('status', trans($response));
+    }
+
+    /**
+     * Get the response for a failed password reset.
+     *
+     * @throws ValidationException
+     */
+    protected function sendResetFailedResponse(Request $request, string $response): RedirectResponse
+    {
+        if ($request->wantsJson()) {
+            throw ValidationException::withMessages([
+                'email' => [trans($response)],
+            ]);
+        }
+
+        return redirect()->back()
+            ->withInput($request->only('email'))
+            ->withErrors(['email' => trans($response)]);
     }
 
     /**
@@ -104,22 +146,6 @@ trait ResetsPasswords
     }
 
     /**
-     * Reset the given user's password.
-     */
-    protected function resetPassword(CanResetPassword&Authenticatable&Model $user, string $password): void
-    {
-        $this->setUserPassword($user, $password);
-
-        $user->setRememberToken(Str::random(60));
-
-        $user->save();
-
-        event(new PasswordReset($user));
-
-        $this->guard()->login($user);
-    }
-
-    /**
      * Set the user's password.
      */
     protected function setUserPassword(CanResetPassword&Model $user, string $password): void
@@ -127,35 +153,7 @@ trait ResetsPasswords
         if (!$user->hasAttribute('password')) {
             throw new RuntimeException('User must have a password property for password reset.');
         }
-        $user->fill(['password' => Hash::make($password)]);
-    }
-
-    /**
-     * Get the response for a successful password reset.
-     */
-    protected function sendResetResponse(Request $request, string $response): RedirectResponse|JsonResponse
-    {
-        return $request->wantsJson()
-            ? new JsonResponse(['message' => trans($response)], 200)
-            : redirect($this->redirectPath())->with('status', trans($response));
-    }
-
-    /**
-     * Get the response for a failed password reset.
-     *
-     * @throws ValidationException
-     */
-    protected function sendResetFailedResponse(Request $request, string $response): RedirectResponse
-    {
-        if ($request->wantsJson()) {
-            throw ValidationException::withMessages([
-                'email' => [trans($response)],
-            ]);
-        }
-
-        return redirect()->back()
-            ->withInput($request->only('email'))
-            ->withErrors(['email' => trans($response)]);
+        $user->fill(['password' => app('hash')->make($password)]);
     }
 
     /**
@@ -163,6 +161,6 @@ trait ResetsPasswords
      */
     protected function guard(): Guard|StatefulGuard
     {
-        return Auth::guard();
+        return app('auth')->guard();
     }
 }

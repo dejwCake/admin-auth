@@ -25,8 +25,9 @@ Route::middleware(['web'])
     ->name('brackets/admin-auth::admin/')
     ->group(static function (): void {
         Route::get('/login', [LoginController::class, 'showLoginForm'])
+            ->name('show-login-form');
+        Route::post('/login', [LoginController::class, 'login'])
             ->name('login');
-        Route::post('/login', [LoginController::class, 'login']);
 
         Route::any('/logout', [LoginController::class, 'logout'])
             ->name('logout');
@@ -36,10 +37,12 @@ Route::middleware(['web'])
             ->group(static function (): void {
                 Route::get('/', [ForgotPasswordController::class, 'showLinkRequestForm'])
                     ->name('show-forgot-form');
-                Route::post('/send', [ForgotPasswordController::class, 'sendResetLinkEmail']);
+                Route::post('/send', [ForgotPasswordController::class, 'sendResetLinkEmail'])
+                    ->name('send');
                 Route::get('/{token}', [ResetPasswordController::class, 'showResetForm'])
                     ->name('show-reset-form');
-                Route::post('/reset', [ResetPasswordController::class, 'reset']);
+                Route::post('/reset', [ResetPasswordController::class, 'reset'])
+                    ->name('reset');
             });
 
         Route::get('/admin/activation/{token}', [ActivationController::class, 'activate'])

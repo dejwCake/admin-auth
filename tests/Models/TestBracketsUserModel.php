@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Tests\Models;
 
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
+use Brackets\AdminAuth\Activation\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Activation\Traits\CanActivate;
-use Brackets\AdminAuth\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Notifications\ResetPassword;
 use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;

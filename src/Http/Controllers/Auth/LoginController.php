@@ -10,6 +10,7 @@ use Illuminate\Contracts\Auth\Factory as AuthFactory;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\RedirectResponse;
@@ -50,6 +51,7 @@ final class LoginController extends Controller
         private readonly ViewFactory $viewFactory,
         private readonly Redirector $redirector,
         private readonly AuthFactory $authFactory,
+        private readonly UrlGenerator $urlGenerator,
     ) {
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->redirectTo = $this->config->get('admin-auth.login_redirect', '/admin');
@@ -63,7 +65,11 @@ final class LoginController extends Controller
      */
     public function showLoginForm(): View
     {
-        return $this->viewFactory->make('brackets/admin-auth::admin.auth.login');
+        return $this->viewFactory->make('brackets/admin-auth::admin.auth.login', [
+            'action' => $this->urlGenerator->route('brackets/admin-auth::admin/login'),
+            'redirectUrl' => $this->redirectTo,
+            'passwordResetUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/password/show-forgot-form'),
+        ]);
     }
 
     /**
@@ -100,10 +106,10 @@ final class LoginController extends Controller
     private function credentials(Request $request): array
     {
         $conditions = [];
-        if (config('admin-auth.check_forbidden')) {
+        if ($this->config->get('admin-auth.check_forbidden')) {
             $conditions['forbidden'] = false;
         }
-        if (config('admin-auth.activation_enabled')) {
+        if ($this->config->get('admin-auth.activation_enabled')) {
             $conditions['activated'] = true;
         }
 

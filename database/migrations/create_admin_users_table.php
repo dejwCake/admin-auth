@@ -26,6 +26,7 @@ return new class extends Migration
             $table->boolean('forbidden')->default(false);
             $table->string('language', 2)->default('en');
 
+            $table->timestamp('last_login_at')->nullable();
             $table->softDeletes();
             $table->timestamps();
 

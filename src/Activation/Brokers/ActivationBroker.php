@@ -14,8 +14,10 @@ use UnexpectedValueException;
 
 class ActivationBroker implements ActivationBrokerContract
 {
-    public function __construct(protected TokenRepositoryInterface $tokens, protected UserProvider $users)
-    {
+    public function __construct(
+        protected readonly TokenRepositoryInterface $tokens,
+        protected readonly UserProvider $users,
+    ) {
     }
 
     /**

@@ -24,8 +24,7 @@ class AdminAuthServiceProvider extends ServiceProvider
         $this->loadTranslationsFrom(__DIR__ . '/../lang', 'brackets/admin-auth');
         $this->loadViewsFrom(__DIR__ . '/../resources/views', 'brackets/admin-auth');
 
-        $config = app(Config::class);
-        assert($config instanceof Config);
+        $config = $this->app->make(Config::class);
 
         if ($config->get('admin-auth.use_routes', true)) {
             $this->loadRoutesFrom(__DIR__ . '/../routes/admin.php');
@@ -38,16 +37,12 @@ class AdminAuthServiceProvider extends ServiceProvider
             $this->loadRoutesFrom(__DIR__ . '/../routes/activation-form.php');
         }
 
-        $router = app(Router::class);
-        //This is just because laravel does not provide it by default,
-        // however expect in AuthenticationException that it exists
+        $router = $this->app->make(Router::class);
         if (!$router->has('login')) {
             $router->get('/login', [MissingRoutesController::class, 'redirect'])
                 ->middleware(['web'])
                 ->name('login');
         }
-        //This is just because in welcome.blade.php someone was lazy to check
-        // if also register route exists and ask only for login
         if (!$router->has('register')) {
             $router->get('/register', [MissingRoutesController::class, 'redirect'])
                 ->middleware(['web'])
@@ -68,9 +63,10 @@ class AdminAuthServiceProvider extends ServiceProvider
 
         $this->app->bind(ExceptionHandler::class, Handler::class);
 
-        app(Router::class)->pushMiddlewareToGroup('admin', CanAdmin::class);
-        app(Router::class)->pushMiddlewareToGroup('admin', ApplyUserLocale::class);
-        app(Router::class)->aliasMiddleware('guest.admin', RedirectIfAuthenticated::class);
+        $router = $this->app->make(Router::class);
+        $router->pushMiddlewareToGroup('admin', CanAdmin::class);
+        $router->pushMiddlewareToGroup('admin', ApplyUserLocale::class);
+        $router->aliasMiddleware('guest.admin', RedirectIfAuthenticated::class);
 
         $this->commands([
             AdminAuthInstall::class,
@@ -79,7 +75,8 @@ class AdminAuthServiceProvider extends ServiceProvider
 
     private function publish(): void
     {
-        $time = date('His', time());
+        $timestamp = date('Y_m_d') . '_000000';
+
         $this->publishes([
             __DIR__ . '/../config/admin-auth.php' => $this->app->configPath('admin-auth.php'),
         ], 'config');
@@ -92,7 +89,7 @@ class AdminAuthServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_activations_table.php'
                 => $this->app->databasePath('migrations')
-                    . '/2025_01_01_' . $time . '_create_admin_activations_table.php',
+                    . '/' . $timestamp . '_create_admin_activations_table.php',
             ], 'migrations');
         }
 
@@ -100,23 +97,14 @@ class AdminAuthServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_password_resets_table.php'
                 => $this->app->databasePath('migrations')
-                    . '/2025_01_01_' . $time . '_create_admin_password_resets_table.php',
+                    . '/' . $timestamp . '_create_admin_password_resets_table.php',
             ], 'migrations');
         }
 
         if (!glob($this->app->databasePath('migrations/*_create_admin_users_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_users_table.php'
-                => $this->app->databasePath('migrations') . '/2025_01_01_' . $time . '_create_admin_users_table.php',
-            ], 'migrations');
-        }
-
-        $time = date('His', time() + 1);
-        if (!glob($this->app->databasePath('migrations/*_add_last_login_at_timestamp_to_admin_users_table.php'))) {
-            $this->publishes([
-                __DIR__ . '/../database/migrations/add_last_login_at_timestamp_to_admin_users_table.php'
-                => $this->app->databasePath('migrations')
-                    . '/2025_01_01_' . $time . '_add_last_login_at_timestamp_to_admin_users_table.php',
+                => $this->app->databasePath('migrations') . '/' . $timestamp . '_create_admin_users_table.php',
             ], 'migrations');
         }
     }

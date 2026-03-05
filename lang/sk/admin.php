@@ -20,12 +20,14 @@ return [
         'title' => 'Obnova hesla',
         'note' => 'Obnoviť zabudnuté heslo',
         'button' => 'Obnoviť heslo',
+        'back_to_login' => 'Späť na prihlásenie',
     ],
 
     'forgot_password' => [
         'title' => 'Obnova hesla',
         'note' => 'Odoslať e-mail na obnovu hesla',
         'button' => 'Odoslať link na obnovu hesla',
+        'back_to_login' => 'Späť na prihlásenie',
     ],
 
     'activation_form' => [

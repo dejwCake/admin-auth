@@ -22,9 +22,12 @@ return [
     'disabled' => 'Activation is disabled.',
 
     'email' => [
+        'greeting' => 'Hello!',
         'line' => 'You are receiving this email because we received an activation request for your account.',
         'action' => 'Activate your account',
         'notRequested' => 'If you did not request an activation, no further action is required.',
+        'salutation' => 'Regards',
+        'subcopy' => 'If you\'re having trouble clicking the ":actionText" button, copy and paste the URL below into your web browser: [:actionUrl](:actionUrl)',
     ],
 
 ];

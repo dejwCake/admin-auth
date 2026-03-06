@@ -26,5 +26,9 @@ docker-compose.override.yml
 # Logs
 *.log
 
+# AI tools
+.claude
+CLAUDE.md
+
 # Other
 TODO.md

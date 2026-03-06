@@ -7,6 +7,7 @@ namespace Brackets\AdminAuth\Console\Commands;
 use Brackets\AdminAuth\Models\AdminUser;
 use Illuminate\Console\Command;
 use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Filesystem\Filesystem;
 
 final class AdminAuthInstall extends Command
@@ -27,8 +28,11 @@ final class AdminAuthInstall extends Command
      */
     protected $description = 'Install a brackets/admin-auth package';
 
-    public function __construct(private readonly Filesystem $filesystem, private readonly Config $config)
-    {
+    public function __construct(
+        private readonly Filesystem $filesystem,
+        private readonly Config $config,
+        private readonly Application $app,
+    ) {
         parent::__construct();
     }
 
@@ -52,7 +56,7 @@ final class AdminAuthInstall extends Command
         ]);
 
         $this->strReplaceInFile(
-            resource_path('views/admin/layout/profile-dropdown.blade.php'),
+            $this->app->resourcePath('views/admin/layout/profile-dropdown.blade.php'),
             '{{-- Do not delete me :) I\'m used for auto-generation menu items --}}',
             '{{-- Do not delete me :) I\'m used for auto-generation menu items --}}
     <a href="{{ url(\'admin/logout\') }}" class="dropdown-item"><i class="fa fa-lock"></i> {{ trans(\'brackets/admin-auth::admin.profile_dropdown.logout\') }}</a>',
@@ -88,7 +92,7 @@ final class AdminAuthInstall extends Command
         $auth = $this->config->get('auth');
 
         $this->strReplaceInFile(
-            config_path('auth.php'),
+            $this->app->configPath('auth.php'),
             '\'guards\' => [',
             '\'guards\' => [
         \'admin\' => [
@@ -107,7 +111,7 @@ final class AdminAuthInstall extends Command
         ];
 
         $this->strReplaceInFile(
-            config_path('auth.php'),
+            $this->app->configPath('auth.php'),
             '\'providers\' => [',
             '\'providers\' => [
         \'admin_users\' => [
@@ -127,7 +131,7 @@ final class AdminAuthInstall extends Command
         ];
 
         $this->strReplaceInFile(
-            config_path('auth.php'),
+            $this->app->configPath('auth.php'),
             '\'passwords\' => [',
             '\'passwords\' => [
         \'admin_users\' => [

@@ -56,7 +56,7 @@ final class LoginController extends Controller
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->redirectTo = $this->config->get('admin-auth.login_redirect', '/admin');
         $this->redirectToAfterLogout = $this->config->get('admin-auth.logout_redirect', '/admin/login');
-        $this->middleware('guest.admin:' . $this->guard)
+        $this->middleware(sprintf('guest.admin:%s', $this->guard))
             ->except('logout');
     }
 

@@ -74,7 +74,7 @@ final class ResetPasswordController extends Controller
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->passwordBroker = $this->config->get('admin-auth.defaults.passwords', 'admin_users');
         $this->redirectTo = $this->config->get('admin-auth.password_reset_redirect', '/');
-        $this->middleware('guest.admin:' . $this->guard);
+        $this->middleware(sprintf('guest.admin:%s', $this->guard));
     }
 
     /**
@@ -167,7 +167,7 @@ final class ResetPasswordController extends Controller
      */
     private function sendResetFailedResponse(Request $request, string $response): RedirectResponse
     {
-        $this->logger->error('Password reset failed: ' . $response);
+        $this->logger->error(sprintf('Password reset failed: %s', $response));
         $message = trans('brackets/admin-auth::admin.passwords.invalid_token');
 
         if ($request->wantsJson()) {

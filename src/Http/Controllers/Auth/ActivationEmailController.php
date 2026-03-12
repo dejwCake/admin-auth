@@ -54,7 +54,7 @@ final class ActivationEmailController extends Controller
     ) {
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->activationBroker = $this->config->get('admin-auth.defaults.activations', 'admin_users');
-        $this->middleware('guest.admin:' . $this->guard);
+        $this->middleware(sprintf('guest.admin:%s', $this->guard));
     }
 
     /**
@@ -136,7 +136,7 @@ final class ActivationEmailController extends Controller
      */
     private function sendActivationLinkFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
-        $this->logger->error('Activation link failed: ' . $response);
+        $this->logger->error(sprintf('Activation link failed: %s', $response));
         if ($response === ActivationBroker::ACTIVATION_DISABLED) {
             $message = trans('brackets/admin-auth::admin.activations.disabled');
 

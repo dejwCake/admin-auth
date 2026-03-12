@@ -48,7 +48,7 @@ final class ActivationController extends Controller
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->activationBroker = $this->config->get('admin-auth.defaults.activations', 'admin_users');
         $this->redirectTo = $this->config->get('admin-auth.activation_redirect', '/');
-        $this->middleware('guest.admin:' . $this->guard);
+        $this->middleware(sprintf('guest.admin:%s', $this->guard));
     }
 
     /**
@@ -139,7 +139,7 @@ final class ActivationController extends Controller
      */
     private function sendActivationFailedResponse(Request $request, string $response): RedirectResponse|View
     {
-        $this->logger->error('Activation failed: ' . $response);
+        $this->logger->error(sprintf('Activation failed: %s', $response));
         $message = trans('brackets/admin-auth::admin.activations.invalid_request');
         if ($response === ActivationBroker::ACTIVATION_DISABLED) {
             $message = trans('brackets/admin-auth::admin.activations.disabled');

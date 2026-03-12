@@ -55,7 +55,7 @@ final class ForgotPasswordController extends Controller
     ) {
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
         $this->passwordBroker = $this->config->get('admin-auth.defaults.passwords', 'admin_users');
-        $this->middleware('guest.admin:' . $this->guard);
+        $this->middleware(sprintf('guest.admin:%s', $this->guard));
     }
 
     /**
@@ -96,7 +96,7 @@ final class ForgotPasswordController extends Controller
      */
     protected function sendResetLinkFailedResponse(Request $request, string $response): RedirectResponse|JsonResponse
     {
-        $this->logger->error('Forgot password failed: ' . $response);
+        $this->logger->error(sprintf('Forgot password failed: %s', $response));
 
         return $this->sendResetLinkResponse($request, $response);
     }

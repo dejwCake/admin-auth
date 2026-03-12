@@ -49,9 +49,9 @@ final class ActivationService
             ->sendActivationLink($this->credentials($user));
 
         if ($response === ActivationBroker::ACTIVATION_LINK_SENT) {
-            $this->logger->info('Activation e-mail has been send: ' . $response);
+            $this->logger->info(sprintf('Activation e-mail has been send: %s', $response));
         } else {
-            $this->logger->error('Sending activation e-mail has failed: ' . $response);
+            $this->logger->error(sprintf('Sending activation e-mail has failed: %s', $response));
         }
 
         return $response;

@@ -57,7 +57,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
 
     private function publish(): void
     {
-        $timestamp = date('Y_m_d') . '_000000';
+        $timestamp = sprintf('%s_000000', date('Y_m_d'));
 
         $this->publishes([
             __DIR__ . '/../../../config/activation.php' => $this->app->configPath('activation.php'),
@@ -66,7 +66,7 @@ class ActivationServiceProvider extends ServiceProvider implements DeferrablePro
         if (!glob($this->app->basePath('database/migrations/*_create_activations_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../../../database/migrations/create_activations_table.php' =>
-                    $this->app->databasePath('migrations') . '/' . $timestamp . '_create_activations_table.php',
+                    sprintf('%s/%s_create_activations_table.php', $this->app->databasePath('migrations'), $timestamp),
             ], 'migrations');
         }
     }

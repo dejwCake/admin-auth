@@ -45,7 +45,7 @@ return new class extends Migration
         });
 
         $connection = $this->config->get('database.default');
-        $driver = $this->config->get("database.connections.{$connection}.driver");
+        $driver = $this->config->get(sprintf('database.connections.%s.driver', $connection));
         if ($driver === 'pgsql') {
             //phpcs:ignore SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
             Schema::table('admin_users', function (Blueprint $table): void {

@@ -77,7 +77,7 @@ class AdminAuthServiceProvider extends ServiceProvider
 
     private function publish(): void
     {
-        $timestamp = date('Y_m_d') . '_000000';
+        $timestamp = sprintf('%s_000000', date('Y_m_d'));
 
         $this->publishes([
             __DIR__ . '/../config/admin-auth.php' => $this->app->configPath('admin-auth.php'),
@@ -90,23 +90,29 @@ class AdminAuthServiceProvider extends ServiceProvider
         if (!glob($this->app->databasePath('migrations/*_create_admin_activations_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_activations_table.php'
-                => $this->app->databasePath('migrations')
-                    . '/' . $timestamp . '_create_admin_activations_table.php',
+                => sprintf(
+                    '%s/%s_create_admin_activations_table.php',
+                    $this->app->databasePath('migrations'),
+                    $timestamp,
+                ),
             ], 'migrations');
         }
 
         if (!glob($this->app->databasePath('migrations/*_create_admin_password_resets_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_password_resets_table.php'
-                => $this->app->databasePath('migrations')
-                    . '/' . $timestamp . '_create_admin_password_resets_table.php',
+                => sprintf(
+                    '%s/%s_create_admin_password_resets_table.php',
+                    $this->app->databasePath('migrations'),
+                    $timestamp,
+                ),
             ], 'migrations');
         }
 
         if (!glob($this->app->databasePath('migrations/*_create_admin_users_table.php'))) {
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_users_table.php'
-                => $this->app->databasePath('migrations') . '/' . $timestamp . '_create_admin_users_table.php',
+                => sprintf('%s/%s_create_admin_users_table.php', $this->app->databasePath('migrations'), $timestamp),
             ], 'migrations');
         }
     }

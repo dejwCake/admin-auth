@@ -78,7 +78,7 @@ class ActivationBrokerFactory implements FactoryContract
         $config = $this->getConfig($name);
 
         if ($config === null) {
-            throw new InvalidArgumentException("Activation broker [{$name}] is not defined.");
+            throw new InvalidArgumentException(sprintf('Activation broker [%s] is not defined.', $name));
         }
 
         // The password broker uses a token repository to validate tokens and send user
@@ -125,6 +125,6 @@ class ActivationBrokerFactory implements FactoryContract
      */
     protected function getConfig(string $name): ?array
     {
-        return $this->app['config']["activation.activations.{$name}"];
+        return $this->app['config'][sprintf('activation.activations.%s', $name)];
     }
 }

@@ -32,7 +32,7 @@ class ActivationListener
      */
     public function subscribe(Dispatcher $events): void
     {
-        $activationBrokerConfig = $this->config->get('activation.activations.' . $this->activationBroker);
+        $activationBrokerConfig = $this->config->get(sprintf('activation.activations.%s', $this->activationBroker));
         if ($this->authManager->createUserProvider($activationBrokerConfig['provider']) !== null) {
             try {
                 $userClass = $this->activationBrokerFactory->broker($this->activationBroker)
@@ -43,7 +43,7 @@ class ActivationListener
 
                 $interfaces = class_implements($userClass);
                 if ($interfaces && in_array(CanActivate::class, $interfaces, true)) {
-                    $events->listen('eloquent.created: ' . $userClass, ActivationService::class);
+                    $events->listen(sprintf('eloquent.created: %s', $userClass), ActivationService::class);
                 }
             } catch (Throwable) {
                 //do nothing

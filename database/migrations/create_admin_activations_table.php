@@ -26,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::drop('admin_activations');
+        Schema::dropIfExists('admin_activations');
     }
 };

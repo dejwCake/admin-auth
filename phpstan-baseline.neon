@@ -100,37 +100,37 @@ parameters:
 			message: '#^Access to property \$last_login_at on an unknown class App\\Models\\User\.$#'
 			identifier: class.notFound
 			count: 1
-			path: tests/Feature/AdminUser/Auth/LoginBracketsTest.php
+			path: tests/Feature/Http/Controllers/Auth/LoginController/LoginAdminUserTest.php
 
 		-
-			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestBracketsUserModel\:\:\$appends is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$appends\.$#'
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestAdminUserModel\:\:\$appends is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$appends\.$#'
 			identifier: property.phpDocType
 			count: 1
-			path: tests/Models/TestBracketsUserModel.php
+			path: tests/Models/TestAdminUserModel.php
 
 		-
-			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestBracketsUserModel\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestAdminUserModel\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
 			identifier: property.phpDocType
 			count: 1
-			path: tests/Models/TestBracketsUserModel.php
+			path: tests/Models/TestAdminUserModel.php
 
 		-
-			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestBracketsUserModel\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestAdminUserModel\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
 			identifier: property.phpDocType
 			count: 1
-			path: tests/Models/TestBracketsUserModel.php
+			path: tests/Models/TestAdminUserModel.php
 
 		-
-			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestStandardUserModel\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestUserModel\:\:\$fillable is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$fillable\.$#'
 			identifier: property.phpDocType
 			count: 1
-			path: tests/Models/TestStandardUserModel.php
+			path: tests/Models/TestUserModel.php
 
 		-
-			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestStandardUserModel\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
+			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestUserModel\:\:\$hidden is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$hidden\.$#'
 			identifier: property.phpDocType
 			count: 1
-			path: tests/Models/TestStandardUserModel.php
+			path: tests/Models/TestUserModel.php
 
 		-
 			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'

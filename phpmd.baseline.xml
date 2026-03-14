@@ -4,4 +4,5 @@
   <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Http/Controllers/Auth/ForgotPasswordController.php"/>
   <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Http/Controllers/Auth/ResetPasswordController.php"/>
   <violation rule="PHPMD\Rule\Design\LongParameterList" file="src/Http/Controllers/Auth/ResetPasswordController.php" method="__construct"/>
+  <violation rule="PHPMD\Rule\Design\NumberOfChildren" file="tests/AdminUserTestCase.php"/>
 </phpmd-baseline>

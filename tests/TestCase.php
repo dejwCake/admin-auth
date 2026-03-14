@@ -5,8 +5,8 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Tests;
 
 use Brackets\AdminAuth\AdminAuthServiceProvider;
-use Brackets\AdminAuth\Tests\Models\TestBracketsUserModel;
-use Brackets\AdminAuth\Tests\Models\TestStandardUserModel;
+use Brackets\AdminAuth\Tests\Models\TestAdminUserModel;
+use Brackets\AdminAuth\Tests\Models\TestUserModel;
 use Brackets\AdminUI\AdminUIServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Foundation\Application;
@@ -98,7 +98,7 @@ abstract class TestCase extends Orchestra
         //Set admin_users provider
         $app['config']->set('auth.providers.admin_users', [
             'driver' => 'eloquent',
-            'model' => TestBracketsUserModel::class,
+            'model' => TestAdminUserModel::class,
         ]);
 
         //Set admin_users passwords
@@ -109,7 +109,7 @@ abstract class TestCase extends Orchestra
         ]);
 
         //Set test user model as auth provider
-        $app['config']->set('auth.providers.users.model', TestStandardUserModel::class);
+        $app['config']->set('auth.providers.users.model', TestUserModel::class);
 
         //Sets the forbidden check
         $app['config']->set('admin-auth.check_forbidden', true);

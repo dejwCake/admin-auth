@@ -5,12 +5,12 @@
 | Dependency | v1 | v2 |
 |---|---|---|
 | PHP | ^8.2 | ^8.5 |
-| Laravel | ^12.0 | ^12.0 |
+| Laravel | ^12.0 | ^13.0 |
 | dejwcake/admin-ui | ^1.0 | ^2.0 |
 | dejwcake/craftable-media | ^1.0 | ^2.0 |
 | spatie/laravel-permission | ^6.15 | ^7.0 |
 | phpunit/phpunit | ^11.5 | ^13.0 |
-| orchestra/testbench | ^10.0 | ^10.9 |
+| orchestra/testbench | ^10.0 | ^11.0 |
 
 Update your `composer.json`:
 

@@ -9,7 +9,7 @@ Provided functionality is ready to use – package exposes a set of routes, it h
 
 ![Admin login form](https://docs.getcraftable.com/assets/login-form.png "Admin login form")
 
-This package is part of [Craftable](https://github.com/dejwCake/craftable) (`dejwCake/craftable`), an administration starter kit for Laravel 12. Forked from [Craftable](https://github.com/BRACKETS-by-TRIAD/craftable) (`brackets/craftable`).
+This package is part of [Craftable](https://github.com/dejwCake/craftable) (`dejwCake/craftable`), an administration starter kit for Laravel 13. Forked from [Craftable](https://github.com/BRACKETS-by-TRIAD/craftable) (`brackets/craftable`).
 
 You can find full documentation at https://docs.getcraftable.com/#/admin-auth
 

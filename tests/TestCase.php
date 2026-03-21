@@ -25,6 +25,8 @@ abstract class TestCase extends Orchestra
     {
         parent::setUp();
 
+        $this->withoutVite();
+
         $this->defineEnvironment($this->app);
         $this->setUpDatabase($this->app);
 

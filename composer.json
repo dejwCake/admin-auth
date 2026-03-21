@@ -2,7 +2,7 @@
     "name": "dejwcake/admin-auth",
     "description": "Authentication interface for brackets/admin-ui",
     "license": "MIT",
-    "type": "project",
+    "type": "library",
     "keywords": [
         "auth",
         "authentication",
@@ -52,7 +52,7 @@
     },
     "extra": {
         "branch-alias": {
-            "dev-main": "1.0-dev",
+            "dev-main": "2.0-dev",
             "dev-v2-dev": "2.0-dev"
         },
         "laravel": {

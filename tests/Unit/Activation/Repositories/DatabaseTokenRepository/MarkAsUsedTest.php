@@ -8,6 +8,7 @@ use Brackets\AdminAuth\Activation\Repositories\DatabaseTokenRepository;
 use Brackets\AdminAuth\Tests\Models\TestAdminUserModel;
 use Brackets\AdminAuth\Tests\TestCase;
 use Illuminate\Support\Facades\Notification;
+use Override;
 
 class MarkAsUsedTest extends TestCase
 {
@@ -15,7 +16,7 @@ class MarkAsUsedTest extends TestCase
 
     private DatabaseTokenRepository $repository;
 
-    #[\Override]
+    #[Override]
     public function setUp(): void
     {
         parent::setUp();

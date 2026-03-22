@@ -13,6 +13,7 @@ use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Orchestra\Testbench\TestCase as Orchestra;
+use Override;
 
 abstract class TestCase extends Orchestra
 {
@@ -20,7 +21,7 @@ abstract class TestCase extends Orchestra
 
     protected string $adminAuthGuard;
 
-    #[\Override]
+    #[Override]
     public function setUp(): void
     {
         parent::setUp();
@@ -37,7 +38,7 @@ abstract class TestCase extends Orchestra
      * @phpcsSuppress SlevomatCodingStandard.Functions.UnusedParameter.UnusedParameter
      * @param Application $app
      */
-    #[\Override]
+    #[Override]
     protected function getPackageProviders($app): array
     {
         return [
@@ -49,7 +50,7 @@ abstract class TestCase extends Orchestra
     /**
      * @param Application $app
      */
-    #[\Override]
+    #[Override]
     protected function defineEnvironment($app): void
     {
         if (env('DB_CONNECTION') === 'pgsql') {

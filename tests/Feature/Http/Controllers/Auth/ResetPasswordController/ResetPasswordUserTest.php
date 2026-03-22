@@ -8,12 +8,13 @@ use Brackets\AdminAuth\Tests\Models\TestUserModel;
 use Brackets\AdminAuth\Tests\UserTestCase;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Hash;
+use Override;
 
 class ResetPasswordUserTest extends UserTestCase
 {
     protected string $token = '123456aabbcc';
 
-    #[\Override]
+    #[Override]
     public function setUp(): void
     {
         parent::setUp();

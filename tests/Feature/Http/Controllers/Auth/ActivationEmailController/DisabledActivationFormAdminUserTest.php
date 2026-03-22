@@ -5,10 +5,11 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Tests\Feature\Http\Controllers\Auth\ActivationEmailController;
 
 use Brackets\AdminAuth\Tests\AdminUserTestCase;
+use Override;
 
 class DisabledActivationFormAdminUserTest extends AdminUserTestCase
 {
-    #[\Override]
+    #[Override]
     public function setUp(): void
     {
         parent::setUp();

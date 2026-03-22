@@ -9,6 +9,7 @@ use Brackets\AdminAuth\Tests\Models\TestAdminUserModel;
 use Brackets\AdminAuth\Tests\TestCase;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Notification;
+use Override;
 
 class ExistsTest extends TestCase
 {
@@ -16,7 +17,7 @@ class ExistsTest extends TestCase
 
     private DatabaseTokenRepository $repository;
 
-    #[\Override]
+    #[Override]
     public function setUp(): void
     {
         parent::setUp();

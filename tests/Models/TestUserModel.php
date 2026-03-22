@@ -9,6 +9,7 @@ use Brackets\AdminAuth\Activation\Traits\CanActivate;
 use Brackets\AdminAuth\Notifications\ResetPassword;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Override;
 
 /**
  * @property string $name
@@ -50,7 +51,7 @@ class TestUserModel extends Authenticatable implements CanActivateContract
      *
      * @param string $token
      */
-    #[\Override]
+    #[Override]
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(app(ResetPassword::class, ['token' => $token]));

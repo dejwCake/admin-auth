@@ -12,6 +12,7 @@ use Carbon\CarbonInterface;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
+use Override;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
@@ -70,7 +71,7 @@ class TestAdminUserModel extends Authenticatable implements CanActivateContract
     /**
      * @return array<string>
      */
-    #[\Override]
+    #[Override]
     protected function casts(): array
     {
         return [
@@ -104,7 +105,7 @@ class TestAdminUserModel extends Authenticatable implements CanActivateContract
      *
      * @param string $token
      */
-    #[\Override]
+    #[Override]
     public function sendPasswordResetNotification($token): void
     {
         $this->notify(app(ResetPassword::class, ['token' => $token]));
@@ -113,7 +114,7 @@ class TestAdminUserModel extends Authenticatable implements CanActivateContract
     /**
      * Send the password reset notification.
      */
-    #[\Override]
+    #[Override]
     public function sendActivationNotification(string $token): void
     {
         $this->notify(app(ActivationNotification::class, ['token' => $token]));

@@ -10,12 +10,13 @@ use Brackets\AdminAuth\Tests\Models\TestAdminUserModel;
 use Carbon\CarbonImmutable;
 use Carbon\CarbonInterface;
 use Illuminate\Support\Facades\Notification;
+use Override;
 
 class ActivateAdminUserTest extends AdminUserTestCase
 {
     protected string $token = '123456aabbcc';
 
-    #[\Override]
+    #[Override]
     public function setUp(): void
     {
         parent::setUp();

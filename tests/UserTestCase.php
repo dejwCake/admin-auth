@@ -4,9 +4,11 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Tests;
 
+use Override;
+
 abstract class UserTestCase extends TestCase
 {
-    #[\Override]
+    #[Override]
     public function setUp(): void
     {
         parent::setUp();

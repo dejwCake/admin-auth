@@ -203,7 +203,7 @@ Failed password reset and activation responses no longer expose specific error d
 'brackets/admin-auth::admin/activation'
 
 // v2
-'brackets/admin-auth::admin/activation/show'
+'brackets/admin-auth::admin/activation/activate'
 ```
 
 **Action required:** Update any references to this route name.
@@ -234,6 +234,6 @@ Internal change, but if you override `credentials()` methods in controllers and 
 4. Replace any `Activation` facade usage with dependency injection
 5. Update `ActivationNotification` import path
 6. Update published auth Blade templates to use Vue components (or re-publish with `php artisan vendor:publish --tag=views --provider="Brackets\AdminAuth\AdminAuthServiceProvider" --force`)
-7. Update any route references from `brackets/admin-auth::admin/activation` to `brackets/admin-auth::admin/activation/show`
+7. Update any route references from `brackets/admin-auth::admin/activation` to `brackets/admin-auth::admin/activation/activate`
 8. Update any class extensions that override removed/changed methods
 9. Ensure `@dejwcake/craftable` frontend package is installed and Vue auth components are registered

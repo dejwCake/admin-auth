@@ -23,13 +23,18 @@ use Spatie\MediaLibrary\MediaCollections\Models\Media;
 use Spatie\Permission\Traits\HasRoles;
 
 /**
- * @property string $email
- * @property string $password
+ * @property int $id
  * @property string $first_name
  * @property string $last_name
+ * @property string $email
+ * @property string $password
+ * @property string $remember_token
  * @property bool $activated
  * @property bool $forbidden
  * @property string $language
+ * @property ?CarbonInterface $deleted_at
+ * @property CarbonInterface $created_at
+ * @property CarbonInterface $updated_at
  * @property ?CarbonInterface $last_login_at
  */
 class AdminUser extends Authenticatable implements CanActivateContract, HasMedia

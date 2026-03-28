@@ -114,6 +114,8 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
     public function registerMediaCollections(): void
     {
         $this->addMediaCollection('avatar')
+            ->maxFilesize(10 * 1024 * 1024)
+            ->maxNumberOfFiles(1)
             ->accepts('image/*');
     }
 
@@ -127,20 +129,20 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
         $this->autoRegisterThumb200();
 
         $this->addMediaConversion('thumb_75')
-            ->performOnCollections('avatar')
-            ->nonQueued()
             ->width(75)
             ->height(75)
-            ->fit(Fit::Crop, 75, 75)
-            ->optimize();
+            ->crop(75, 75)
+            ->performOnCollections('avatar')
+            ->optimize()
+            ->nonQueued();
 
         $this->addMediaConversion('thumb_150')
-            ->performOnCollections('avatar')
-            ->nonQueued()
             ->width(150)
             ->height(150)
-            ->fit(Fit::Crop, 150, 150)
-            ->optimize();
+            ->crop(150, 150)
+            ->performOnCollections('avatar')
+            ->optimize()
+            ->nonQueued();
     }
 
     /**

@@ -79,6 +79,12 @@ parameters:
 			path: src/Http/Middleware/CanAdmin.php
 
 		-
+			message: '#^Call to an undefined method Spatie\\Image\\Drivers\\ImageDriver\:\:performOnCollections\(\)\.$#'
+			identifier: method.notFound
+			count: 2
+			path: src/Models/AdminUser.php
+
+		-
 			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Models\\AdminUser\:\:\$appends is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$appends\.$#'
 			identifier: property.phpDocType
 			count: 1

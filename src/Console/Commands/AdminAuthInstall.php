@@ -93,6 +93,15 @@ final class AdminAuthInstall extends Command
 
         $this->strReplaceInFile(
             $this->app->configPath('auth.php'),
+            'return [',
+            'use Brackets\AdminAuth\Models\AdminUser;
+
+return [',
+            '|use\s+Brackets\\\\AdminAuth\\\\Models\\\\AdminUser;|',
+        );
+
+        $this->strReplaceInFile(
+            $this->app->configPath('auth.php'),
             '\'guards\' => [',
             '\'guards\' => [
         \'admin\' => [
@@ -116,7 +125,7 @@ final class AdminAuthInstall extends Command
             '\'providers\' => [
         \'admin_users\' => [
             \'driver\' => \'eloquent\',
-            \'model\' => Brackets\AdminAuth\Models\AdminUser::class,
+            \'model\' => AdminUser::class,
         ], 
         ',
             '|    \'providers\' => \[

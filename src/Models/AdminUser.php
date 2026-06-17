@@ -13,6 +13,9 @@ use Brackets\Media\HasMedia\HasMediaThumbsTrait;
 use Brackets\Media\HasMedia\MediaCollection;
 use Brackets\Media\HasMedia\ProcessMediaTrait;
 use Carbon\CarbonInterface;
+use Illuminate\Database\Eloquent\Attributes\Appends;
+use Illuminate\Database\Eloquent\Attributes\Fillable;
+use Illuminate\Database\Eloquent\Attributes\Hidden;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
@@ -37,47 +40,32 @@ use Spatie\Permission\Traits\HasRoles;
  * @property CarbonInterface $updated_at
  * @property ?CarbonInterface $last_login_at
  */
+#[Appends(['full_name'])]
+#[Fillable([
+    'email',
+    'password',
+    'first_name',
+    'last_name',
+    'activated',
+    'forbidden',
+    'language',
+    'last_login_at',
+])]
+#[Hidden([
+    'password',
+    'remember_token',
+])]
 class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
 {
-    use Notifiable;
-    use CanActivate;
-    use SoftDeletes;
-    use HasRoles;
     use AutoProcessMediaTrait;
+    use CanActivate;
+    use HasFactory;
     use HasMediaCollectionsTrait;
     use HasMediaThumbsTrait;
+    use HasRoles;
+    use Notifiable;
     use ProcessMediaTrait;
-    use HasFactory;
-
-    /**
-     * @var array<int, string>
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
-     */
-    protected $fillable = [
-        'email',
-        'password',
-        'first_name',
-        'last_name',
-        'activated',
-        'forbidden',
-        'language',
-        'last_login_at',
-    ];
-
-    /**
-     * @var array<int, string>
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
-     */
-    protected $hidden = [
-        'password',
-        'remember_token',
-    ];
-
-    /**
-     * @var array<int, string>
-     * @phpcsSuppress SlevomatCodingStandard.TypeHints.PropertyTypeHint.MissingNativeTypeHint
-     */
-    protected $appends = ['full_name'];
+    use SoftDeletes;
 
     /**
      * Full name for admin user

@@ -18,8 +18,8 @@ use Override;
  */
 class TestUserModel extends Authenticatable implements CanActivateContract
 {
-    use Notifiable;
     use CanActivate;
+    use Notifiable;
 
     /**
      * @var string

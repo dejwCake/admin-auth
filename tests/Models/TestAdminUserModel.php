@@ -27,10 +27,10 @@ use Spatie\Permission\Traits\HasRoles;
  */
 class TestAdminUserModel extends Authenticatable implements CanActivateContract
 {
-    use Notifiable;
     use CanActivate;
-    use SoftDeletes;
     use HasRoles;
+    use Notifiable;
+    use SoftDeletes;
 
     /**
      * @var string

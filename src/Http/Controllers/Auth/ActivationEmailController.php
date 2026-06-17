@@ -77,8 +77,8 @@ final class ActivationEmailController extends Controller
     /**
      * Send an activation link to the given user.
      *
-     * @throws ValidationException
      * @throws NotFoundHttpException
+     * @throws ValidationException
      */
     public function sendActivationEmail(Request $request): RedirectResponse|JsonResponse
     {

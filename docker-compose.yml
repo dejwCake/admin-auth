@@ -1,6 +1,6 @@
 services:
   test:
-    image: dejwcake/php8.5:1
+    image: dejwcake/php8.5:2
     environment:
       DB_CONNECTION: mysql
     volumes:
@@ -18,7 +18,7 @@ services:
       PGPASSWORD: "${DB_PASSWORD:-bestsecret}"
 
   mysql:
-    image: dejwcake/mariadb12.1:1
+    image: dejwcake/mariadb12.2:1
     environment:
       MYSQL_DATABASE: "${DB_DATABASE:-laravel}"
       MYSQL_USER: "${DB_USERNAME:-root}"

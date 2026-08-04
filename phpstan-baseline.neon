@@ -138,9 +138,3 @@ parameters:
 			count: 1
 			path: tests/Models/TestUserModel.php
 
-		-
-			message: '#^Called ''env'' outside of the config directory which returns null when the config is cached, use ''config''\.$#'
-			identifier: larastan.noEnvCallsOutsideOfConfig
-			count: 8
-			path: tests/TestCase.php
-

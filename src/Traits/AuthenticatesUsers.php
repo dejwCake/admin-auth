@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Traits;
 
 use Carbon\CarbonImmutable;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\StatefulGuard;
@@ -147,7 +148,13 @@ trait AuthenticatesUsers
      */
     protected function authenticated(?Authenticatable $user): void
     {
-        if ($user instanceof Model && app('db.schema')->hasColumn($user->getTable(), 'last_login_at')) {
+        if (!$user instanceof Model) {
+            return;
+        }
+
+        $schema = Container::getInstance()->make('db.schema');
+
+        if ($schema->hasColumn($user->getTable(), 'last_login_at')) {
             $user->update(['last_login_at' => CarbonImmutable::now()]);
         }
     }
@@ -167,6 +174,6 @@ trait AuthenticatesUsers
      */
     protected function guard(): Guard|StatefulGuard
     {
-        return app('auth')->guard();
+        return Container::getInstance()->make('auth')->guard();
     }
 }

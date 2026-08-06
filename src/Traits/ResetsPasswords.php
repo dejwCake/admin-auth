@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Traits;
 
 use Illuminate\Auth\Events\PasswordReset;
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\CanResetPassword;
 use Illuminate\Contracts\Auth\Guard;
@@ -66,7 +67,7 @@ trait ResetsPasswords
      */
     public function broker(): PasswordBroker
     {
-        return app('auth.password')->broker();
+        return Container::getInstance()->make('auth.password')->broker();
     }
 
     /**
@@ -153,7 +154,7 @@ trait ResetsPasswords
         if (!$user->hasAttribute('password')) {
             throw new RuntimeException('User must have a password property for password reset.');
         }
-        $user->fill(['password' => app('hash')->make($password)]);
+        $user->fill(['password' => Container::getInstance()->make('hash')->make($password)]);
     }
 
     /**
@@ -161,6 +162,6 @@ trait ResetsPasswords
      */
     protected function guard(): Guard|StatefulGuard
     {
-        return app('auth')->guard();
+        return Container::getInstance()->make('auth')->guard();
     }
 }

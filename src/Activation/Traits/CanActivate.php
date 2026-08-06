@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Activation\Traits;
 
 use Brackets\AdminAuth\Activation\Notifications\ActivationNotification;
+use Illuminate\Container\Container;
 
 trait CanActivate
 {
@@ -21,6 +22,6 @@ trait CanActivate
      */
     public function sendActivationNotification(string $token): void
     {
-        $this->notify(app(ActivationNotification::class, ['token' => $token]));
+        $this->notify(Container::getInstance()->make(ActivationNotification::class, ['token' => $token]));
     }
 }

@@ -6,6 +6,7 @@ namespace Brackets\AdminAuth\Traits;
 
 use Illuminate\Auth\Events\Lockout;
 use Illuminate\Cache\RateLimiter;
+use Illuminate\Container\Container;
 use Illuminate\Http\Request;
 use Illuminate\Support\Str;
 use Illuminate\Validation\ValidationException;
@@ -100,6 +101,6 @@ trait ThrottlesLogins
      */
     protected function limiter(): RateLimiter
     {
-        return app(RateLimiter::class);
+        return Container::getInstance()->make(RateLimiter::class);
     }
 }

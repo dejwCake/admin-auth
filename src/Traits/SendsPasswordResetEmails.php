@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Traits;
 
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\PasswordBroker;
 use Illuminate\Contracts\View\View;
 use Illuminate\Http\JsonResponse;
@@ -67,7 +68,7 @@ trait SendsPasswordResetEmails
      */
     protected function broker(): PasswordBroker
     {
-        return app('auth.password')->broker();
+        return Container::getInstance()->make('auth.password')->broker();
     }
 
     /**

@@ -9,6 +9,7 @@ use Brackets\AdminAuth\Activation\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Activation\Traits\CanActivate;
 use Brackets\AdminAuth\Notifications\ResetPassword;
 use Carbon\CarbonInterface;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -108,7 +109,7 @@ class TestAdminUserModel extends Authenticatable implements CanActivateContract
     #[Override]
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(app(ResetPassword::class, ['token' => $token]));
+        $this->notify(Container::getInstance()->make(ResetPassword::class, ['token' => $token]));
     }
 
     /**
@@ -117,6 +118,6 @@ class TestAdminUserModel extends Authenticatable implements CanActivateContract
     #[Override]
     public function sendActivationNotification(string $token): void
     {
-        $this->notify(app(ActivationNotification::class, ['token' => $token]));
+        $this->notify(Container::getInstance()->make(ActivationNotification::class, ['token' => $token]));
     }
 }

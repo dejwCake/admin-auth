@@ -2,6 +2,7 @@
 
 declare(strict_types=1);
 
+use Illuminate\Container\Container;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Migrations\Migration;
@@ -15,9 +16,9 @@ return new class extends Migration
 
     public function __construct()
     {
-        $app = app();
-        $this->config = $app->make(Config::class);
-        $this->db = $app->make(DatabaseManager::class);
+        $container = Container::getInstance();
+        $this->config = $container->make(Config::class);
+        $this->db = $container->make(DatabaseManager::class);
     }
 
     /**

@@ -13,6 +13,7 @@ use Brackets\Media\HasMedia\HasMediaThumbsTrait;
 use Brackets\Media\HasMedia\MediaCollection;
 use Brackets\Media\HasMedia\ProcessMediaTrait;
 use Carbon\CarbonInterface;
+use Illuminate\Container\Container;
 use Illuminate\Database\Eloquent\Attributes\Appends;
 use Illuminate\Database\Eloquent\Attributes\Fillable;
 use Illuminate\Database\Eloquent\Attributes\Hidden;
@@ -91,7 +92,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
      */
     public function sendPasswordResetNotification($token): void
     {
-        $this->notify(app(ResetPassword::class, ['token' => $token]));
+        $this->notify(Container::getInstance()->make(ResetPassword::class, ['token' => $token]));
     }
 
     /* ************************ MEDIA ************************ */

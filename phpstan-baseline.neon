@@ -91,12 +91,6 @@ parameters:
 			path: src/Models/AdminUser.php
 
 		-
-			message: '#^Access to property \$last_login_at on an unknown class App\\Models\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: tests/Feature/Http/Controllers/Auth/LoginController/LoginAdminUserTest.php
-
-		-
 			message: '#^PHPDoc type array\<int, string\> of property Brackets\\AdminAuth\\Tests\\Models\\TestAdminUserModel\:\:\$appends is not covariant with PHPDoc type list\<string\> of overridden property Illuminate\\Database\\Eloquent\\Model\:\:\$appends\.$#'
 			identifier: property.phpDocType
 			count: 1

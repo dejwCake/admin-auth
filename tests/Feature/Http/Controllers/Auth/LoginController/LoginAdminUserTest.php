@@ -50,7 +50,7 @@ class LoginAdminUserTest extends AdminUserTestCase
         $response->assertStatus(302);
 
         self::assertNotEmpty(Auth::guard($this->adminAuthGuard)->user());
-        self::assertNotNull(Auth::guard($this->adminAuthGuard)->user()->last_login_at);
+        self::assertNotNull($user->fresh()?->last_login_at);
     }
 
     public function testUserWithWrongCredentialsCannotLogIn(): void

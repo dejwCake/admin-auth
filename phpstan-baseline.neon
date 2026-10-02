@@ -61,18 +61,6 @@ parameters:
 			path: src/Http/Controllers/Auth/ResetPasswordController.php
 
 		-
-			message: '#^Access to property \$language on an unknown class App\\Models\\User\.$#'
-			identifier: class.notFound
-			count: 2
-			path: src/Http/Middleware/ApplyUserLocale.php
-
-		-
-			message: '#^Call to method hasAttribute\(\) on an unknown class App\\Models\\User\.$#'
-			identifier: class.notFound
-			count: 1
-			path: src/Http/Middleware/ApplyUserLocale.php
-
-		-
 			message: '#^Call to method can\(\) on an unknown class App\\Models\\User\.$#'
 			identifier: class.notFound
 			count: 1

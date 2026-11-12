@@ -15,6 +15,7 @@ use Brackets\AdminAuth\Providers\EventServiceProvider;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Routing\Router;
+use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -50,6 +51,11 @@ class AdminAuthServiceProvider extends ServiceProvider
                 ->name('register');
         }
 
+        // App routes load during the boot phase, so only after it is it known whether the app has its own profile.
+        $this->app->booted(function (): void {
+            $this->loadProfileRoutes();
+        });
+
         if ($this->app->runningInConsole()) {
             $this->publish();
         }
@@ -68,11 +74,45 @@ class AdminAuthServiceProvider extends ServiceProvider
         $router = $this->app->make(Router::class);
         $router->pushMiddlewareToGroup('admin', CanAdmin::class);
         $router->pushMiddlewareToGroup('admin', ApplyUserLocale::class);
+        // Ends the admin's other sessions once their password changes.
+        $router->pushMiddlewareToGroup('admin', AuthenticateSession::class);
         $router->aliasMiddleware('guest.admin', RedirectIfAuthenticated::class);
 
         $this->commands([
             AdminAuthInstall::class,
         ]);
+    }
+
+    private function loadProfileRoutes(): void
+    {
+        if ($this->app->routesAreCached()) {
+            return;
+        }
+
+        $config = $this->app->make(Config::class);
+        if (!$config->get('admin-auth.use_routes', true)) {
+            return;
+        }
+
+        // true / false (also as 'true', 'false', '1', '0', …); anything else counts as 'auto'
+        $enabled = filter_var(
+            $config->get('admin-auth.profile.enabled', 'auto'),
+            FILTER_VALIDATE_BOOL,
+            FILTER_NULL_ON_FAILURE,
+        );
+        if ($enabled === false) {
+            return;
+        }
+
+        if ($enabled === null) {
+            $router = $this->app->make(Router::class);
+            $router->getRoutes()->refreshNameLookups();
+            if ($router->has('admin/edit-profile')) {
+                return;
+            }
+        }
+
+        $this->loadRoutesFrom(__DIR__ . '/../routes/profile.php');
     }
 
     private function publish(): void
@@ -86,6 +126,10 @@ class AdminAuthServiceProvider extends ServiceProvider
         $this->publishes([
             __DIR__ . '/../lang' => $this->app->langPath('vendor/brackets/admin-auth'),
         ], 'lang');
+
+        $this->publishes([
+            __DIR__ . '/../resources/views' => $this->app->resourcePath('views/vendor/brackets/admin-auth'),
+        ], 'views');
 
         if (!glob($this->app->databasePath('migrations/*_create_admin_activations_table.php'))) {
             $this->publishes([

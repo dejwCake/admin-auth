@@ -58,4 +58,27 @@ return [
         'password' => 'Password',
         'logout' => 'Logout',
     ],
+
+    'profile' => [
+        'title' => 'Edit profile',
+        'columns' => [
+            'first_name' => 'First name',
+            'last_name' => 'Last name',
+            'email' => 'E-mail',
+            'language' => 'Language',
+            'current_password' => 'Current password',
+        ],
+        'select_an_option' => 'Select an option',
+        'saved' => 'Your profile has been saved.',
+    ],
+
+    'password_change' => [
+        'title' => 'Change password',
+        'columns' => [
+            'current_password' => 'Current password',
+            'password' => 'New password',
+            'password_repeat' => 'New password confirmation',
+        ],
+        'saved' => 'Your password has been changed. Your other sessions have been logged out.',
+    ],
 ];

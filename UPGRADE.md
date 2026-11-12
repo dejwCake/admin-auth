@@ -1,3 +1,66 @@
+# Upgrading within v2
+
+## Next v2 minor (unreleased)
+
+Update `dejwcake/admin-auth` and `@dejwcake/craftable` together: the new pages mount components
+that ship with the matching `@dejwcake/craftable` version.
+
+### Profile and password pages
+
+admin-auth now ships the "My profile" (`/admin/profile`) and "Change password" (`/admin/password`)
+pages, with the URLs and route names of the generated ones.
+
+- **Nothing to do to keep your generated profile.** The default `ADMIN_AUTH_PROFILE=auto` sees the
+  application's `admin/edit-profile` route and registers no package pages.
+- **No config merge needed.** A published `config/admin-auth.php` without the `profile` block falls
+  back to the package default (`auto`). Adding the block is optional:
+
+  ```php
+  'profile' => [
+      'enabled' => env('ADMIN_AUTH_PROFILE', 'auto'),
+  ],
+  ```
+
+- **Renamed generated routes** are not detected by `auto` — both profiles would be registered on the
+  same URLs and the package one wins. Set `ADMIN_AUTH_PROFILE=false` to keep yours, or delete it.
+
+To switch to the package pages:
+
+1. Delete `app/Http/Controllers/Admin/ProfileController.php`, `routes/admin/profile.php`,
+   `resources/views/admin/profile/`, `resources/js/admin/profile-edit-profile/` and
+   `resources/js/admin/profile-edit-password/`.
+2. In `resources/js/admin/admin.js`, remove the registrations of `ProfileEditProfileForm` and
+   `ProfileEditPasswordForm` and register the package components:
+
+   ```js
+   import ProfileForm from '@craftable/account/ProfileForm.vue';
+   import PasswordChangeForm from '@craftable/account/PasswordChangeForm.vue';
+
+   app.component('ProfileForm', ProfileForm);
+   app.component('PasswordChangeForm', PasswordChangeForm);
+   ```
+
+3. Rebuild the assets. The profile dropdown links keep working (same URLs).
+
+Project-specific `admin_users` columns on the generated form are not on the package form. Keep the
+generated profile for them, or publish the views and override the component (README →
+"Customising pages").
+
+### Other sessions end on a password change
+
+The package adds Laravel's `Illuminate\Session\Middleware\AuthenticateSession` to the `admin`
+middleware group. When an admin's password changes — on the password page, through the
+forgot-password e-mail or anywhere else — their other sessions are logged out on their next
+request. Nobody is logged out by the deploy itself: existing sessions store their password hash on
+their next request.
+
+### Publishable views
+
+`vendor:publish --provider="Brackets\AdminAuth\AdminAuthServiceProvider" --tag=views` copies the
+views to `resources/views/vendor/brackets/admin-auth/`. See README → "Customising pages".
+
+---
+
 # Upgrade Guide: v1 to v2
 
 ## Requirements

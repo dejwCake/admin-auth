@@ -55,6 +55,8 @@ final class AdminAuthInstall extends Command
             '--provider' => "Brackets\\AdminAuth\\Activation\\Providers\\ActivationServiceProvider",
         ]);
 
+        $this->addProfileDropdownLinks();
+
         $this->strReplaceInFile(
             $this->app->resourcePath('views/admin/layout/profile-dropdown.blade.php'),
             '{{-- Do not delete me :) I\'m used for auto-generation menu items --}}',
@@ -68,6 +70,39 @@ final class AdminAuthInstall extends Command
         $this->call('migrate');
 
         $this->info('Package brackets/admin-auth installed');
+    }
+
+    /**
+     * Links to the profile and password pages, before the auto-generation marker (as the generator adds them).
+     */
+    private function addProfileDropdownLinks(): void
+    {
+        $dropdown = $this->app->resourcePath('views/admin/layout/profile-dropdown.blade.php');
+        $marker = '{{-- Do not delete me :) I\'m used for auto-generation menu items --}}';
+
+        $this->strReplaceInFile(
+            $dropdown,
+            $marker,
+            sprintf(
+                '<a href="{{ url(\'admin/profile\') }}" class="dropdown-item"><i class="fa fa-user"></i>  %s</a>
+    %s',
+                '{{ trans(\'brackets/admin-auth::admin.profile_dropdown.profile\') }}',
+                $marker,
+            ),
+            '|url\(\'admin\/profile\'\)|',
+        );
+
+        $this->strReplaceInFile(
+            $dropdown,
+            $marker,
+            sprintf(
+                '<a href="{{ url(\'admin/password\') }}" class="dropdown-item"><i class="fa fa-key"></i>  %s</a>
+    %s',
+                '{{ trans(\'brackets/admin-auth::admin.profile_dropdown.password\') }}',
+                $marker,
+            ),
+            '|url\(\'admin\/password\'\)|',
+        );
     }
 
     private function strReplaceInFile(

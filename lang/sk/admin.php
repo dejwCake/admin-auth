@@ -56,4 +56,27 @@ return [
         'password' => 'Heslo',
         'logout' => 'Odhlásiť sa',
     ],
+
+    'profile' => [
+        'title' => 'Upraviť profil',
+        'columns' => [
+            'first_name' => 'Meno',
+            'last_name' => 'Priezvisko',
+            'email' => 'E-mail',
+            'language' => 'Jazyk',
+            'current_password' => 'Súčasné heslo',
+        ],
+        'select_an_option' => 'Vyberte možnosť',
+        'saved' => 'Váš profil bol uložený.',
+    ],
+
+    'password_change' => [
+        'title' => 'Zmeniť heslo',
+        'columns' => [
+            'current_password' => 'Súčasné heslo',
+            'password' => 'Nové heslo',
+            'password_repeat' => 'Potvrdenie nového hesla',
+        ],
+        'saved' => 'Vaše heslo bolo zmenené. Ostatné prihlásenia boli odhlásené.',
+    ],
 ];

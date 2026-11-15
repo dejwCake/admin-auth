@@ -31,7 +31,8 @@ class EditProfileAvatarTest extends AdminUserTestCase
         self::assertSame('avatar.pdf', $media->first()['name']);
         $response->assertSee('&quot;collection&quot;:&quot;avatar&quot;', false);
         $response->assertSee('&quot;maxNumberOfFiles&quot;:1', false);
-        $response->assertSee('&quot;maxFileSizeInMb&quot;:5.0', false);
+        // json_encode() writes the float 5.0 as 5.
+        $response->assertSee('&quot;maxFileSizeInMb&quot;:5,', false);
         $response->assertSee('&quot;url&quot;:&quot;http:\/\/localhost\/upload&quot;', false);
     }
 

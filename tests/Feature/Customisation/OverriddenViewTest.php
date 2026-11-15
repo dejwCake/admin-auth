@@ -57,6 +57,7 @@ class OverriddenViewTest extends AdminUserTestCase
 
     private static function overridePath(): string
     {
-        return default_skeleton_path('resources/views/vendor/brackets/admin-auth');
+        // default_skeleton_path() with a path returns false while the folder does not exist yet.
+        return sprintf('%s/resources/views/vendor/brackets/admin-auth', default_skeleton_path());
     }
 }

@@ -124,6 +124,19 @@ abstract class TestCase extends Orchestra
 
     protected function setUpDatabase(Application $app): void
     {
+        // MariaDB commits DDL implicitly, so RefreshDatabase's transaction can't roll the tables back.
+        foreach (
+            [
+                'test_standard_user_models',
+                'test_brackets_user_models',
+                'password_reset_tokens',
+                'admin_password_resets',
+                'admin_activations',
+            ] as $table
+        ) {
+            $app['db']->connection()->getSchemaBuilder()->dropIfExists($table);
+        }
+
         $app['db']->connection()->getSchemaBuilder()->create(
             'test_standard_user_models',
             static function (Blueprint $table): void {

@@ -1,6 +1,6 @@
 # Upgrading within v2
 
-## Next v2 minor (unreleased)
+## 2.2.0 (unreleased)
 
 Update `dejwcake/admin-auth` and `@dejwcake/craftable` together: the new pages mount components
 that ship with the matching `@dejwcake/craftable` version.
@@ -53,6 +53,53 @@ middleware group. When an admin's password changes — on the password page, thr
 forgot-password e-mail or anywhere else — their other sessions are logged out on their next
 request. Nobody is logged out by the deploy itself: existing sessions store their password hash on
 their next request.
+
+### Two-factor authentication
+
+Every admin can now turn on two-factor authentication (TOTP) at `/admin/two-factor`; an enrolled
+admin is asked for a code after the password login. See README → "Two-factor authentication".
+
+1. **Publish and run the migration — required.** It adds `two_factor_secret`,
+   `two_factor_recovery_codes` and `two_factor_confirmed_at` to `admin_users`:
+
+   ```shell
+   php artisan vendor:publish --provider="Brackets\AdminAuth\AdminAuthServiceProvider" --tag=migrations
+   php artisan migrate
+   ```
+
+   Until it runs nothing breaks: admin pages keep working, every admin counts as not enrolled and the
+   two-factor page shows a "run the migration" notice instead of enrolment.
+2. **Register the components** in `resources/js/admin/admin.js` (`@dejwcake/craftable` of the same
+   release):
+
+   ```js
+   import TwoFactorSettings from '@craftable/account/TwoFactorSettings.vue';
+   import TwoFactorChallengeForm from '@craftable/auth/TwoFactorChallengeForm.vue';
+
+   app.component('TwoFactorSettings', TwoFactorSettings);
+   app.component('TwoFactorChallengeForm', TwoFactorChallengeForm);
+   ```
+
+3. **Add the dropdown link** to `resources/views/admin/layout/profile-dropdown.blade.php` (or run
+   `php artisan admin-auth:install` again, which adds it once):
+
+   ```blade
+   <a href="{{ url('admin/two-factor') }}" class="dropdown-item"><i class="fa fa-shield-halved"></i>  {{ trans('brackets/admin-auth::admin.profile_dropdown.two_factor') }}</a>
+   ```
+
+4. **Rebuild the assets.**
+
+- **No config merge needed.** A published `config/admin-auth.php` without the `two_factor` block
+  falls back to the package default (optional for everyone). To require two-factor, set
+  `ADMIN_TWO_FACTOR_REQUIRED=true`, optionally with `ADMIN_TWO_FACTOR_REQUIRED_ROLES`.
+- **Own admin model.** If the `admin_users` provider points at your own model, implement
+  `Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable` with the
+  `Brackets\AdminAuth\TwoFactor\Traits\TwoFactorAuthenticatable` trait; without it the admin counts
+  as not enrolled and the page shows the notice.
+- **Impersonal login** from a generated admin-users listing keeps working without regenerating.
+- **Admin-users CRUD.** Regenerating it is optional; admin-generator never puts the two-factor
+  columns into generated code.
+- New composer dependencies: `pragmarx/google2fa`, `bacon/bacon-qr-code`.
 
 ### Publishable views
 

@@ -114,4 +114,27 @@ return [
     'profile' => [
         'enabled' => env('ADMIN_AUTH_PROFILE', 'auto'),
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Two-factor authentication
+    |--------------------------------------------------------------------------
+    |
+    | Every admin can turn on two-factor authentication (TOTP) at
+    | /admin/two-factor. These options only decide whether it is required:
+    |   required       - when true, admins must enrol before using the admin
+    |   required_roles - limits "required" to admins with one of these roles
+    |                    (comma-separated in the env); empty = every admin
+    |   issuer         - the name shown in the authenticator app; null = app.name
+    |
+    */
+
+    'two_factor' => [
+        'required' => (bool) env('ADMIN_TWO_FACTOR_REQUIRED', false),
+        'required_roles' => array_values(array_filter(
+            array_map('trim', explode(',', (string) env('ADMIN_TWO_FACTOR_REQUIRED_ROLES', ''))),
+            static fn (string $role): bool => $role !== '',
+        )),
+        'issuer' => null,
+    ],
 ];

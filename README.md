@@ -44,6 +44,65 @@ Nothing is registered when `admin-auth.use_routes` is `false`. The pages mount t
 and `PasswordChangeForm` components from `@dejwcake/craftable`, which `admin.js` has to register
 (the admin-ui install stub does).
 
+## Two-factor authentication
+
+Every admin can protect their account with a time-based one-time password (TOTP, RFC 6238 — Google
+Authenticator, Authy, 1Password, …) on the "Two-factor authentication" page at `/admin/two-factor`
+(route `brackets/admin-auth::admin/two-factor`). It is always available whenever the package routes
+are on; there is no switch to turn the feature off, and by default it is optional.
+
+- **Enrolment.** The admin scans a QR code (or types the key), confirms with a code and gets 8
+  single-use recovery codes, shown once (copy / download). Starting again replaces an unconfirmed
+  key. The secret is stored encrypted, recovery codes only as hashes.
+- **Login.** After the password login (also one restored from the "remember me" cookie), an
+  enrolled admin is sent to `/admin/two-factor/challenge` from every admin page until they enter a
+  code or a recovery code; then they continue to the page they asked for. A code is accepted once,
+  a recovery code is used up, and 5 failed attempts per minute lock the challenge for the rest of
+  the minute. Admin AJAX calls made before that get a 403 with the challenge URL, which
+  `@dejwcake/craftable`'s `useAdmin` follows.
+- **Changes.** Regenerating the recovery codes and disabling two-factor ask for the current
+  password; disabling is refused while two-factor is required for the admin.
+- **Impersonal login.** When an admin whose session passed two-factor uses impersonal login from
+  the admin-users listing, the session stays verified for the impersonated admin: no challenge, no
+  forced enrolment. A password login always starts unverified.
+
+To require it, set:
+
+| Env | Config (`admin-auth.two_factor.…`) | |
+|---|---|---|
+| `ADMIN_TWO_FACTOR_REQUIRED=true` | `required` | admins without two-factor are held on `/admin/two-factor` until they enrol |
+| `ADMIN_TWO_FACTOR_REQUIRED_ROLES=Administrator,Editor` | `required_roles` | limits `required` to admins with one of these roles; empty = every admin |
+
+The name shown in the authenticator app is `admin-auth.two_factor.issuer`, `app.name` by default.
+
+The feature needs the `two_factor_*` columns on `admin_users` (publish and run the migrations).
+Without them admin pages keep working, every admin counts as not enrolled and the page says which
+migration to run; with two-factor required, admins are held on that notice. The admin model needs
+`Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable` and its trait
+(`Brackets\AdminAuth\Models\AdminUser` has both).
+
+Operations:
+
+- **APP_KEY.** Secrets are encrypted with it. Rotate it with `APP_PREVIOUS_KEYS`, or every admin
+  loses two-factor: a secret that cannot be decrypted counts as "no two-factor" (logged as an error).
+- **Clock.** Codes are accepted 30 seconds either side; phones and servers must keep their time
+  synchronised.
+- **Cache.** Used codes are remembered in the cache for 150 seconds. Several servers must share the
+  cache (as they already do for sessions and login throttling), or a code could be replayed on
+  another one.
+- **Lost device and recovery codes.** Turn two-factor off for that admin on the server:
+
+  ```shell
+  php artisan admin-auth:two-factor-reset admin@example.com
+  ```
+
+  It asks for confirmation unless `--force` is given, works even when two-factor is required (the
+  admin is then asked to enrol again on their next page) and leaves open sessions logged in.
+
+The pages mount the `TwoFactorSettings` and `TwoFactorChallengeForm` components from
+`@dejwcake/craftable`, which `admin.js` has to register (the admin-ui install stub does). The
+admin-auth install command adds the "Two-factor authentication" link to the profile dropdown.
+
 ## Customising pages
 
 Every page of this package can be changed in the project without forking it.
@@ -78,6 +137,8 @@ the package version when you upgrade.
 | Activation | `admin.auth.activation.email`, `admin.auth.activation.error` | `auth/ActivationForm.vue`, `auth/ActivationError.vue` |
 | My profile | `admin.profile.edit-profile` | `account/ProfileForm.vue` |
 | Change password | `admin.profile.edit-password` | `account/PasswordChangeForm.vue` |
+| Two-factor authentication | `admin.two-factor.settings` | `account/TwoFactorSettings.vue` |
+| Two-factor challenge | `admin.two-factor.challenge` | `auth/TwoFactorChallengeForm.vue` |
 
 ## Issues
 Where do I report issues?

@@ -7,6 +7,8 @@ namespace Brackets\AdminAuth\Models;
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
 use Brackets\AdminAuth\Activation\Traits\CanActivate;
 use Brackets\AdminAuth\Notifications\ResetPassword;
+use Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable as TwoFactorAuthenticatableContract;
+use Brackets\AdminAuth\TwoFactor\Traits\TwoFactorAuthenticatable;
 use Brackets\Media\HasMedia\AutoProcessMediaTrait;
 use Brackets\Media\HasMedia\HasMediaCollectionsTrait;
 use Brackets\Media\HasMedia\HasMediaThumbsTrait;
@@ -36,6 +38,9 @@ use Spatie\Permission\Traits\HasRoles;
  * @property bool $activated
  * @property bool $forbidden
  * @property string $language
+ * @property ?string $two_factor_secret
+ * @property ?array<int, string> $two_factor_recovery_codes
+ * @property ?CarbonInterface $two_factor_confirmed_at
  * @property ?CarbonInterface $deleted_at
  * @property CarbonInterface $created_at
  * @property CarbonInterface $updated_at
@@ -55,8 +60,11 @@ use Spatie\Permission\Traits\HasRoles;
 #[Hidden([
     'password',
     'remember_token',
+    'two_factor_secret',
+    'two_factor_recovery_codes',
+    'two_factor_confirmed_at',
 ])]
-class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
+class AdminUser extends Authenticatable implements CanActivateContract, HasMedia, TwoFactorAuthenticatableContract
 {
     use AutoProcessMediaTrait;
     use CanActivate;
@@ -67,6 +75,7 @@ class AdminUser extends Authenticatable implements CanActivateContract, HasMedia
     use Notifiable;
     use ProcessMediaTrait;
     use SoftDeletes;
+    use TwoFactorAuthenticatable;
 
     /**
      * Full name for admin user

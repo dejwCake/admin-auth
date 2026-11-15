@@ -6,16 +6,14 @@ namespace Brackets\AdminAuth;
 
 use Brackets\AdminAuth\Activation\Providers\ActivationServiceProvider;
 use Brackets\AdminAuth\Console\Commands\AdminAuthInstall;
+use Brackets\AdminAuth\Console\Commands\TwoFactorResetCommand;
 use Brackets\AdminAuth\Exceptions\Handler;
 use Brackets\AdminAuth\Http\Controllers\MissingRoutesController;
-use Brackets\AdminAuth\Http\Middleware\ApplyUserLocale;
-use Brackets\AdminAuth\Http\Middleware\CanAdmin;
-use Brackets\AdminAuth\Http\Middleware\RedirectIfAuthenticated;
 use Brackets\AdminAuth\Providers\EventServiceProvider;
+use Brackets\AdminAuth\Providers\MiddlewareServiceProvider;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Routing\Router;
-use Illuminate\Session\Middleware\AuthenticateSession;
 use Illuminate\Support\ServiceProvider;
 use Override;
 
@@ -30,6 +28,7 @@ class AdminAuthServiceProvider extends ServiceProvider
 
         if ($config->get('admin-auth.use_routes', true)) {
             $this->loadRoutesFrom(__DIR__ . '/../routes/admin.php');
+            $this->loadRoutesFrom(__DIR__ . '/../routes/two-factor.php');
         }
 
         if (
@@ -68,18 +67,14 @@ class AdminAuthServiceProvider extends ServiceProvider
 
         $this->app->register(ActivationServiceProvider::class);
         $this->app->register(EventServiceProvider::class);
+        $this->app->register(MiddlewareServiceProvider::class);
 
         $this->app->bind(ExceptionHandler::class, Handler::class);
 
-        $router = $this->app->make(Router::class);
-        $router->pushMiddlewareToGroup('admin', CanAdmin::class);
-        $router->pushMiddlewareToGroup('admin', ApplyUserLocale::class);
-        // Ends the admin's other sessions once their password changes.
-        $router->pushMiddlewareToGroup('admin', AuthenticateSession::class);
-        $router->aliasMiddleware('guest.admin', RedirectIfAuthenticated::class);
 
         $this->commands([
             AdminAuthInstall::class,
+            TwoFactorResetCommand::class,
         ]);
     }
 
@@ -157,6 +152,19 @@ class AdminAuthServiceProvider extends ServiceProvider
             $this->publishes([
                 __DIR__ . '/../database/migrations/create_admin_users_table.php'
                 => sprintf('%s/%s_create_admin_users_table.php', $this->app->databasePath('migrations'), $timestamp),
+            ], 'migrations');
+        }
+
+        if (!glob($this->app->databasePath('migrations/*_add_two_factor_columns_to_admin_users_table.php'))) {
+            // On a fresh install it is published together with create_admin_users_table (same date); with the
+            // same 000000 time "add_…" would sort before "create_…", so 000001 keeps it after the table is created.
+            $this->publishes([
+                __DIR__ . '/../database/migrations/add_two_factor_columns_to_admin_users_table.php'
+                => sprintf(
+                    '%s/%s_000001_add_two_factor_columns_to_admin_users_table.php',
+                    $this->app->databasePath('migrations'),
+                    date('Y_m_d'),
+                ),
             ], 'migrations');
         }
     }

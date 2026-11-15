@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Traits;
 
+use Brackets\AdminAuth\TwoFactor\TwoFactorSession;
 use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Authenticatable;
@@ -135,6 +136,9 @@ trait AuthenticatesUsers
         $request->session()->regenerate();
 
         $this->clearLoginAttempts($request);
+
+        // A password login always starts unverified: the two-factor challenge follows.
+        Container::getInstance()->make(TwoFactorSession::class)->forget($request->session());
 
         $this->authenticated($this->guard()->user());
 

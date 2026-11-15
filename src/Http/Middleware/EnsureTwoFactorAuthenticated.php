@@ -1,0 +1,109 @@
+<?php
+
+declare(strict_types=1);
+
+namespace Brackets\AdminAuth\Http\Middleware;
+
+use Brackets\AdminAuth\Services\TwoFactorService;
+use Brackets\AdminAuth\TwoFactor\TwoFactorSession;
+use Closure;
+use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Contracts\Config\Repository as Config;
+use Illuminate\Contracts\Routing\UrlGenerator;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Routing\Redirector;
+use Symfony\Component\HttpFoundation\Response;
+
+/**
+ * Holds an admin on the two-factor challenge until the session is verified, and a forced admin
+ * without two-factor on the settings page until they enrol.
+ */
+final class EnsureTwoFactorAuthenticated
+{
+    public const string SETTINGS_ROUTE = 'brackets/admin-auth::admin/two-factor';
+    public const string CHALLENGE_ROUTE = 'brackets/admin-auth::admin/two-factor/challenge';
+
+    /**
+     * Routes an enrolled admin can reach before passing the challenge.
+     */
+    private const array CHALLENGE_ROUTES = [
+        self::CHALLENGE_ROUTE,
+        'brackets/admin-auth::admin/two-factor/verify',
+    ];
+
+    /**
+     * Routes a forced admin without two-factor can reach before enrolling.
+     */
+    private const array ENROLMENT_ROUTES = [
+        self::SETTINGS_ROUTE,
+        'brackets/admin-auth::admin/two-factor/enable',
+        'brackets/admin-auth::admin/two-factor/confirm',
+    ];
+
+    private string $guard;
+
+    public function __construct(
+        private readonly Config $config,
+        private readonly AuthFactory $authFactory,
+        private readonly TwoFactorService $twoFactorService,
+        private readonly TwoFactorSession $twoFactorSession,
+        private readonly Redirector $redirector,
+        private readonly UrlGenerator $urlGenerator,
+    ) {
+        $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
+    }
+
+    public function handle(Request $request, Closure $next): mixed
+    {
+        $user = $this->authFactory->guard($this->guard)->user();
+        if ($user === null || !$request->hasSession()) {
+            return $next($request);
+        }
+
+        $session = $request->session();
+        // A verified admin who impersonates another admin keeps the verification for them.
+        if ($this->twoFactorSession->isImpersonated($session, $user)) {
+            return $next($request);
+        }
+
+        $routeName = $request->route()?->getName();
+
+        if ($this->twoFactorService->isEnabledFor($user)) {
+            if (
+                $this->twoFactorSession->isVerified($session, $user)
+                || in_array($routeName, self::CHALLENGE_ROUTES, true)
+            ) {
+                return $next($request);
+            }
+
+            return $this->deny($request, self::CHALLENGE_ROUTE);
+        }
+
+        if ($this->twoFactorService->isRequiredFor($user) && !in_array($routeName, self::ENROLMENT_ROUTES, true)) {
+            return $this->deny($request, self::SETTINGS_ROUTE);
+        }
+
+        return $next($request);
+    }
+
+    private function deny(Request $request, string $routeName): JsonResponse|RedirectResponse
+    {
+        $url = $this->urlGenerator->route($routeName);
+
+        if ($request->expectsJson()) {
+            return new JsonResponse([
+                'message' => trans($routeName === self::CHALLENGE_ROUTE
+                    ? 'brackets/admin-auth::admin.two_factor.challenge_required'
+                    : 'brackets/admin-auth::admin.two_factor.enrolment_required'),
+                'redirect' => $url,
+            ], Response::HTTP_FORBIDDEN);
+        }
+
+        // Only a page the admin can open again is kept as the intended URL.
+        return $request->isMethod('GET')
+            ? $this->redirector->guest($url)
+            : $this->redirector->to($url);
+    }
+}

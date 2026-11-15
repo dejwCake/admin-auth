@@ -6,9 +6,12 @@ account activation for the `admin` guard. Composer `dejwcake/admin-auth`, namesp
 
 ## Layout
 
-- `src/AdminAuthServiceProvider.php` — config, views, translations, routes; adds `CanAdmin` +
-  `ApplyUserLocale` to the `admin` middleware group and the `guest.admin` alias; binds the custom
-  exception handler.
+- `src/AdminAuthServiceProvider.php` — config, views, translations, routes, commands; binds the
+  custom exception handler. `src/Providers/MiddlewareServiceProvider.php` fills the `admin`
+  middleware group (`CanAdmin`, `ApplyUserLocale`, `AuthenticateSession`,
+  `EnsureTwoFactorAuthenticated`) and adds the `guest.admin` alias.
+- `src/TwoFactor/`, `src/Services/TwoFactorService.php` — two-factor (TOTP): model contract and
+  trait, QR rendering, verification, recovery codes, session verification; `routes/two-factor.php`.
 - `src/Http/Controllers/Auth/` — login, forgot/reset password, activation, activation e-mail.
 - `src/Traits/` — admin-guard versions of Laravel's auth traits (`AuthenticatesUsers`,
   `ResetsPasswords`, `ThrottlesLogins`, …).

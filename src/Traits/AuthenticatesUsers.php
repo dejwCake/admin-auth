@@ -4,14 +4,13 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Traits;
 
+use Brackets\AdminAuth\Services\LastLoginRecorder;
 use Brackets\AdminAuth\TwoFactor\TwoFactorSession;
-use Carbon\CarbonImmutable;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Auth\Guard;
 use Illuminate\Contracts\Auth\StatefulGuard;
 use Illuminate\Contracts\View\View;
-use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -152,15 +151,7 @@ trait AuthenticatesUsers
      */
     protected function authenticated(?Authenticatable $user): void
     {
-        if (!$user instanceof Model) {
-            return;
-        }
-
-        $schema = Container::getInstance()->make('db.schema');
-
-        if ($schema->hasColumn($user->getTable(), 'last_login_at')) {
-            $user->update(['last_login_at' => CarbonImmutable::now()]);
-        }
+        Container::getInstance()->make(LastLoginRecorder::class)->record($user);
     }
 
     /**

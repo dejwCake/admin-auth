@@ -6,6 +6,10 @@
 	<two-factor-challenge-form
 		:action="'{{ $action }}'"
 		:redirect-url="'{{ $redirectUrl }}'"
+		:has-totp="{{ json_encode($hasTotp ?? true) }}"
+		:has-passkeys="{{ json_encode($hasPasskeys ?? false) }}"
+		:passkey-options-url="'{{ $passkeyOptionsUrl ?? '' }}'"
+		:passkey-url="'{{ $passkeyUrl ?? '' }}'"
 		:translations="{{ json_encode([
 			'title' => trans('brackets/admin-auth::admin.two_factor.challenge.title'),
 			'codeText' => trans('brackets/admin-auth::admin.two_factor.challenge.code_text'),
@@ -15,6 +19,10 @@
 			'button' => trans('brackets/admin-auth::admin.two_factor.challenge.button'),
 			'useRecoveryCode' => trans('brackets/admin-auth::admin.two_factor.challenge.use_recovery_code'),
 			'useCode' => trans('brackets/admin-auth::admin.two_factor.challenge.use_code'),
+			'passkeyText' => trans('brackets/admin-auth::admin.two_factor.challenge.passkey_text'),
+			'usePasskey' => trans('brackets/admin-auth::admin.two_factor.challenge.use_passkey'),
+			'passkeyUnsupported' => trans('brackets/admin-auth::admin.passkeys.unsupported'),
+			'or' => trans('brackets/admin-auth::admin.two_factor.challenge.or'),
 		]) }}"
 	></two-factor-challenge-form>
 	<div class="text-center">

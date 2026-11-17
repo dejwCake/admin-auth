@@ -7,6 +7,8 @@ namespace Brackets\AdminAuth\Tests\Models;
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
 use Brackets\AdminAuth\Activation\Traits\CanActivate;
 use Brackets\AdminAuth\Notifications\ResetPassword;
+use Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable;
+use Brackets\AdminAuth\Passkeys\Traits\HasPasskeys;
 use Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable as TwoFactorAuthenticatableContract;
 use Brackets\AdminAuth\TwoFactor\Traits\TwoFactorAuthenticatable;
 use Illuminate\Container\Container;
@@ -19,9 +21,13 @@ use Override;
  * @property string $email
  * @property string $password
  */
-class TestUserModel extends Authenticatable implements CanActivateContract, TwoFactorAuthenticatableContract
+class TestUserModel extends Authenticatable implements
+    CanActivateContract,
+    TwoFactorAuthenticatableContract,
+    PasskeyAuthenticatable
 {
     use CanActivate;
+    use HasPasskeys;
     use Notifiable;
     use TwoFactorAuthenticatable;
 

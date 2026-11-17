@@ -47,6 +47,8 @@ final class TwoFactorController extends Controller
             'available' => $this->twoFactorService->isAvailableFor($user),
             'enabled' => $this->twoFactorService->isEnabledFor($user),
             'required' => $this->twoFactorService->isRequiredFor($user),
+            'canDisable' => $this->twoFactorService->canRemoveFactor($user, TwoFactorService::FACTOR_TOTP),
+            'passkeysUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/passkeys'),
             'enableUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/enable'),
             'confirmUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/confirm'),
             'recoveryCodesUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/recovery-codes'),
@@ -114,7 +116,7 @@ final class TwoFactorController extends Controller
     }
 
     /**
-     * Turn two-factor off, unless it is required for this admin.
+     * Turn two-factor off, unless it is required for this admin and TOTP is their only factor.
      *
      * @return array{message: string}|JsonResponse
      */
@@ -122,7 +124,7 @@ final class TwoFactorController extends Controller
     {
         $user = $this->getUser($request);
 
-        if ($this->twoFactorService->isRequiredFor($user)) {
+        if (!$this->twoFactorService->canRemoveFactor($user, TwoFactorService::FACTOR_TOTP)) {
             return $this->conflict('brackets/admin-auth::admin.two_factor.cannot_disable_required');
         }
 

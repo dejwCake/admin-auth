@@ -137,4 +137,29 @@ return [
         )),
         'issuer' => null,
     ],
+
+    /*
+    |--------------------------------------------------------------------------
+    | Passkeys
+    |--------------------------------------------------------------------------
+    |
+    | Every admin can add passkeys (WebAuthn) at /admin/passkeys, to sign in
+    | without a password or as the second factor. These options only set the
+    | relying party; the defaults come from app.url and app.name:
+    |   rp_id           - the domain passkeys are bound to; null = host of app.url.
+    |                     Changing it later makes every existing passkey unusable.
+    |   rp_name         - the name shown by the browser; null = app.name
+    |   allowed_origins - origins the admin is served on (comma-separated in the
+    |                     env); empty = scheme, host and port of app.url
+    |
+    */
+
+    'passkeys' => [
+        'rp_id' => env('ADMIN_PASSKEYS_RP_ID'),
+        'rp_name' => env('ADMIN_PASSKEYS_RP_NAME'),
+        'allowed_origins' => array_values(array_filter(
+            array_map('trim', explode(',', (string) env('ADMIN_PASSKEYS_ALLOWED_ORIGINS', ''))),
+            static fn (string $origin): bool => $origin !== '',
+        )),
+    ],
 ];

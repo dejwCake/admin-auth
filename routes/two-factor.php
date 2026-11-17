@@ -26,4 +26,8 @@ Route::middleware(['web', 'auth:' . config('admin-auth.defaults.guard'), 'admin'
             ->name('two-factor/challenge');
         Route::post('/challenge', [TwoFactorChallengeController::class, 'verify'])
             ->name('two-factor/verify');
+        Route::post('/challenge/passkey/options', [TwoFactorChallengeController::class, 'passkeyOptions'])
+            ->name('two-factor/challenge/passkey/options');
+        Route::post('/challenge/passkey', [TwoFactorChallengeController::class, 'passkey'])
+            ->name('two-factor/challenge/passkey');
     });

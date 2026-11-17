@@ -22,6 +22,12 @@ final readonly class TwoFactorSession
      */
     public const string IMPERSONATED_BY = 'admin-auth.two_factor.impersonated_by';
 
+    /**
+     * Session key holding the id of an admin found with no second factor and not forced to enrol, so the gate
+     * skips its queries. Not a verification: handOver() ignores it.
+     */
+    public const string UNENROLLED = 'admin-auth.two_factor.unenrolled';
+
     public function markVerified(Session $session, Authenticatable $user): void
     {
         $session->put(self::VERIFIED, $user->getAuthIdentifier());
@@ -37,9 +43,16 @@ final readonly class TwoFactorSession
         return $verified !== null && (string) $verified === (string) $user->getAuthIdentifier();
     }
 
-    public function isImpersonated(Session $session, Authenticatable $user): bool
+    public function markUnenrolled(Session $session, Authenticatable $user): void
     {
-        return $session->has(self::IMPERSONATED_BY) && $this->isVerified($session, $user);
+        $session->put(self::UNENROLLED, $user->getAuthIdentifier());
+    }
+
+    public function isUnenrolled(Session $session, Authenticatable $user): bool
+    {
+        $unenrolled = $session->get(self::UNENROLLED);
+
+        return $unenrolled !== null && (string) $unenrolled === (string) $user->getAuthIdentifier();
     }
 
     /**
@@ -59,6 +72,6 @@ final readonly class TwoFactorSession
 
     public function forget(Session $session): void
     {
-        $session->forget([self::VERIFIED, self::IMPERSONATED_BY]);
+        $session->forget([self::VERIFIED, self::IMPERSONATED_BY, self::UNENROLLED]);
     }
 }

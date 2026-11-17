@@ -8,6 +8,8 @@ use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
 use Brackets\AdminAuth\Activation\Notifications\ActivationNotification;
 use Brackets\AdminAuth\Activation\Traits\CanActivate;
 use Brackets\AdminAuth\Notifications\ResetPassword;
+use Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable;
+use Brackets\AdminAuth\Passkeys\Traits\HasPasskeys;
 use Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable as TwoFactorAuthenticatableContract;
 use Brackets\AdminAuth\TwoFactor\Traits\TwoFactorAuthenticatable;
 use Carbon\CarbonInterface;
@@ -28,9 +30,13 @@ use Spatie\Permission\Traits\HasRoles;
  * @property string $language
  * @property ?CarbonInterface $last_login_at
  */
-class TestAdminUserModel extends Authenticatable implements CanActivateContract, TwoFactorAuthenticatableContract
+class TestAdminUserModel extends Authenticatable implements
+    CanActivateContract,
+    TwoFactorAuthenticatableContract,
+    PasskeyAuthenticatable
 {
     use CanActivate;
+    use HasPasskeys;
     use HasRoles;
     use Notifiable;
     use SoftDeletes;

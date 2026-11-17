@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Http\Controllers;
 
+use Brackets\AdminAuth\Http\Requests\PasskeyCredentialRequest;
 use Brackets\AdminAuth\Http\Requests\TwoFactorChallengeRequest;
 use Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable;
 use Brackets\AdminAuth\TwoFactor\TwoFactorChallenge;
@@ -45,9 +46,17 @@ final class TwoFactorChallengeController extends Controller
             return $this->redirector->intended($this->redirectTo);
         }
 
+        $factors = $this->twoFactorChallenge->factors($user);
+
         return $this->viewFactory->make('brackets/admin-auth::admin.two-factor.challenge', [
             'action' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/verify'),
             'redirectUrl' => $this->redirectTo,
+            'hasTotp' => $factors['totp'],
+            'hasPasskeys' => $factors['passkeys'],
+            'passkeyOptionsUrl' => $this->urlGenerator->route(
+                'brackets/admin-auth::admin/two-factor/challenge/passkey/options',
+            ),
+            'passkeyUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/challenge/passkey'),
         ]);
     }
 
@@ -71,6 +80,28 @@ final class TwoFactorChallengeController extends Controller
         }
 
         return $this->redirector->intended($this->redirectTo);
+    }
+
+    /**
+     * Options limited to the admin's own passkeys.
+     *
+     * @return array<string, array|string|int|float|bool|null>
+     */
+    public function passkeyOptions(Request $request): array
+    {
+        return $this->twoFactorChallenge->passkeyOptions($request->session(), $this->getUser($request));
+    }
+
+    /**
+     * Verify a response of one of the admin's passkeys and return the page they first requested.
+     *
+     * @return array{redirect: string}
+     */
+    public function passkey(PasskeyCredentialRequest $request): array
+    {
+        $this->twoFactorChallenge->verifyPasskey($request->session(), $this->getUser($request), $request->credential());
+
+        return ['redirect' => $request->session()->pull('url.intended', $this->redirectTo)];
     }
 
     /**

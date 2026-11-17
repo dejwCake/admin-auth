@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Tests;
 
+use Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable;
 use Brackets\AdminAuth\Tests\Models\TestAdminUserModel;
 use Brackets\AdminAuth\Tests\Models\TestRoleAdminUserModel;
 use Brackets\AdminAuth\Tests\Models\TestUserModel;
@@ -33,8 +34,9 @@ trait TwoFactorHelpers
         $this->app->make(Gate::class)->define('admin', static fn (): bool => true);
     }
 
-    protected function createAdmin(string $email = 'john@example.com'): Model&TwoFactorAuthenticatable
-    {
+    protected function createAdmin(
+        string $email = 'john@example.com',
+    ): Model&TwoFactorAuthenticatable&PasskeyAuthenticatable {
         $password = $this->app->make(Hasher::class)->make(self::PASSWORD);
 
         $user = $this->adminAuthGuard === 'web'

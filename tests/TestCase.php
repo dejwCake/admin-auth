@@ -132,6 +132,7 @@ abstract class TestCase extends Orchestra
                 'password_reset_tokens',
                 'admin_password_resets',
                 'admin_activations',
+                'admin_passkeys',
             ] as $table
         ) {
             $app['db']->connection()->getSchemaBuilder()->dropIfExists($table);
@@ -200,6 +201,20 @@ abstract class TestCase extends Orchestra
                 $table->string('token');
                 $table->boolean('used')->default(false);
                 $table->timestamp('created_at')->nullable();
+            },
+        );
+
+        // No foreign key: the test admins live in two tables (one per guard).
+        $app['db']->connection()->getSchemaBuilder()->create(
+            'admin_passkeys',
+            static function (Blueprint $table): void {
+                $table->id();
+                $table->unsignedBigInteger('admin_user_id')->index();
+                $table->string('name');
+                $table->string('credential_id')->unique();
+                $table->json('credential');
+                $table->timestamp('last_used_at')->nullable();
+                $table->timestamps();
             },
         );
     }

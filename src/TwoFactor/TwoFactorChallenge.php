@@ -4,6 +4,8 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\TwoFactor;
 
+use Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable;
+use Brackets\AdminAuth\Services\PasskeyService;
 use Brackets\AdminAuth\Services\TwoFactorService;
 use Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable;
 use Illuminate\Cache\RateLimiter;
@@ -14,7 +16,7 @@ use Illuminate\Validation\ValidationException;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * The code asked for after the password login: throttled per admin, verifies the session on success.
+ * The code or passkey asked for after the password login: throttled per admin, verifies the session on success.
  */
 final readonly class TwoFactorChallenge
 {
@@ -26,15 +28,16 @@ final readonly class TwoFactorChallenge
         private TwoFactorService $twoFactorService,
         private TwoFactorSession $twoFactorSession,
         private RateLimiter $rateLimiter,
+        private PasskeyService $passkeyService,
     ) {
     }
 
     /**
-     * Whether the admin has two-factor and this session did not pass it yet.
+     * Whether the admin has a second factor and this session did not pass it yet.
      */
     public function isPending(Session $session, Authenticatable $user): bool
     {
-        return $this->twoFactorService->isEnabledFor($user) && !$this->twoFactorSession->isVerified($session, $user);
+        return !$this->twoFactorSession->isVerified($session, $user) && $this->twoFactorService->hasSecondFactor($user);
     }
 
     /**
@@ -50,14 +53,7 @@ final readonly class TwoFactorChallenge
     ): void {
         $field = $recoveryCode !== '' ? 'recovery_code' : 'code';
         $throttleKey = $this->twoFactorService->throttleKey($user);
-
-        if ($this->rateLimiter->tooManyAttempts($throttleKey, self::MAX_ATTEMPTS)) {
-            $seconds = $this->rateLimiter->availableIn($throttleKey);
-
-            throw ValidationException::withMessages([
-                $field => [trans('auth.throttle', ['seconds' => $seconds, 'minutes' => ceil($seconds / 60)])],
-            ])->status(Response::HTTP_TOO_MANY_REQUESTS);
-        }
+        $this->ensureNotThrottled($throttleKey, $field);
 
         $valid = $recoveryCode !== ''
             ? $this->twoFactorService->verifyRecoveryCode($user, $recoveryCode)
@@ -71,6 +67,87 @@ final readonly class TwoFactorChallenge
             ]);
         }
 
+        $this->pass($session, $user, $throttleKey);
+    }
+
+    /**
+     * Which factors the challenge offers the admin.
+     *
+     * @return array{totp: bool, passkeys: bool}
+     */
+    public function factors(Authenticatable $user): array
+    {
+        return [
+            'totp' => $this->twoFactorService->isEnabledFor($user),
+            'passkeys' => $this->passkeyService->hasPasskeys($user),
+        ];
+    }
+
+    /**
+     * Options limited to the admin's own passkeys.
+     *
+     * @return array<string, array|string|int|float|bool|null>
+     * @throws ValidationException when the admin can't use passkeys
+     */
+    public function passkeyOptions(Session $session, Authenticatable $user): array
+    {
+        return $this->passkeyService->challengeOptions($session, $this->passkeyUser($user));
+    }
+
+    /**
+     * Verify a response signed by one of the admin's passkeys and mark the session as verified.
+     *
+     * @param array<string, array|string|int|float|bool|null> $credential
+     * @throws ValidationException when throttled (429) or the passkey is rejected
+     */
+    public function verifyPasskey(Session $session, Authenticatable $user, array $credential): void
+    {
+        $throttleKey = $this->twoFactorService->throttleKey($user);
+        $this->ensureNotThrottled($throttleKey, 'passkey');
+
+        try {
+            $this->passkeyService->verifyFor($session, $this->passkeyUser($user), $credential);
+        } catch (ValidationException $validationException) {
+            $this->rateLimiter->hit($throttleKey, self::DECAY_SECONDS);
+
+            throw $validationException;
+        }
+
+        $this->pass($session, $user, $throttleKey);
+    }
+
+    /**
+     * @throws ValidationException when the model has no passkeys or the table is missing
+     */
+    private function passkeyUser(Authenticatable $user): PasskeyAuthenticatable
+    {
+        if (!$user instanceof PasskeyAuthenticatable || !$this->passkeyService->isAvailable()) {
+            throw ValidationException::withMessages([
+                'passkey' => [trans('brackets/admin-auth::admin.passkeys.migration_missing')],
+            ]);
+        }
+
+        return $user;
+    }
+
+    /**
+     * @throws ValidationException with 429 once the admin failed too often, with codes or passkeys
+     */
+    private function ensureNotThrottled(string $throttleKey, string $field): void
+    {
+        if (!$this->rateLimiter->tooManyAttempts($throttleKey, self::MAX_ATTEMPTS)) {
+            return;
+        }
+
+        $seconds = $this->rateLimiter->availableIn($throttleKey);
+
+        throw ValidationException::withMessages([
+            $field => [trans('auth.throttle', ['seconds' => $seconds, 'minutes' => ceil($seconds / 60)])],
+        ])->status(Response::HTTP_TOO_MANY_REQUESTS);
+    }
+
+    private function pass(Session $session, Authenticatable $user, string $throttleKey): void
+    {
         $this->rateLimiter->clear($throttleKey);
         $session->regenerate();
         $this->twoFactorSession->markVerified($session, $user);

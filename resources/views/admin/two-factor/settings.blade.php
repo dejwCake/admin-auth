@@ -25,6 +25,7 @@
             <two-factor-settings
                 :enabled="{{ json_encode($enabled) }}"
                 :required="{{ json_encode($required) }}"
+                :can-disable="{{ json_encode($canDisable ?? !$required) }}"
                 :enable-url="'{{ $enableUrl }}'"
                 :confirm-url="'{{ $confirmUrl }}'"
                 :recovery-codes-url="'{{ $recoveryCodesUrl }}'"
@@ -52,6 +53,14 @@
                     'required_notice' => trans('brackets/admin-auth::admin.two_factor.required_notice'),
                 ]) }}"
             ></two-factor-settings>
+        @endif
+
+        @if (isset($passkeysUrl))
+            <p class="mt-3 two-factor-passkeys-link">
+                <i class="fa fa-fingerprint"></i>
+                {{ trans('brackets/admin-auth::admin.two_factor.passkeys_hint') }}
+                <a href="{{ $passkeysUrl }}">{{ trans('brackets/admin-auth::admin.passkeys.title') }}</a>
+            </p>
         @endif
 
     </div>

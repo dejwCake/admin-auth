@@ -73,7 +73,7 @@ final class AdminAuthInstall extends Command
     }
 
     /**
-     * Links to the profile, password and two-factor pages, before the auto-generation marker (as the generator adds them).
+     * Links to the profile, password, two-factor and passkeys pages, before the auto-generation marker (as the generator adds them).
      */
     private function addProfileDropdownLinks(): void
     {
@@ -114,6 +114,18 @@ final class AdminAuthInstall extends Command
                 $marker,
             ),
             '|url\(\'admin\/two-factor\'\)|',
+        );
+
+        $this->strReplaceInFile(
+            $dropdown,
+            $marker,
+            sprintf(
+                '<a href="{{ url(\'admin/passkeys\') }}" class="dropdown-item"><i class="fa fa-fingerprint"></i>  %s</a>
+    %s',
+                '{{ trans(\'brackets/admin-auth::admin.profile_dropdown.passkeys\') }}',
+                $marker,
+            ),
+            '|url\(\'admin\/passkeys\'\)|',
         );
     }
 

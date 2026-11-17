@@ -6,12 +6,15 @@ namespace Brackets\AdminAuth\Tests\Feature\Console\Commands;
 
 use Brackets\AdminAuth\Services\TwoFactorService;
 use Brackets\AdminAuth\Tests\AdminUserTestCase;
+use Brackets\AdminAuth\Tests\PasskeyHelpers;
 use Brackets\AdminAuth\Tests\TwoFactorHelpers;
 use Illuminate\Cache\RateLimiter;
 use Illuminate\Contracts\Cache\Repository as Cache;
+use Illuminate\Database\DatabaseManager;
 
 class TwoFactorResetCommandTest extends AdminUserTestCase
 {
+    use PasskeyHelpers;
     use TwoFactorHelpers;
 
     public function testResetsAnEnrolledAdmin(): void
@@ -99,13 +102,73 @@ class TwoFactorResetCommandTest extends AdminUserTestCase
         self::assertTrue($user->fresh()->hasTwoFactorEnabled());
     }
 
-    public function testMissingColumnsFail(): void
+    public function testMissingColumnsAndTableFail(): void
     {
         $this->createAdmin();
         $this->dropTwoFactorColumns();
+        $this->dropPasskeysTable();
 
         $this->artisan('admin-auth:two-factor-reset', ['email' => 'john@example.com', '--force' => true])
             ->expectsOutputToContain('migration')
             ->assertExitCode(1);
+    }
+
+    public function testResetsTotpAndEveryPasskey(): void
+    {
+        $user = $this->createAdmin();
+        $this->enrol($user);
+        $this->addPasskey($user, 'MacBook');
+        $this->addPasskey($user, 'YubiKey');
+        $other = $this->addPasskey($this->createAdmin('jane@example.com'), 'Jane phone');
+
+        $this->artisan('admin-auth:two-factor-reset', ['email' => 'john@example.com', '--force' => true])
+            ->expectsOutputToContain('the passkey "MacBook"')
+            ->expectsOutputToContain('the passkey "YubiKey"')
+            ->assertExitCode(0);
+
+        self::assertFalse($user->fresh()->hasTwoFactorData());
+        self::assertSame(0, $user->passkeys()->count());
+        self::assertNotNull($other->fresh());
+    }
+
+    public function testResetsAnAdminWithPasskeysOnly(): void
+    {
+        $user = $this->createAdmin();
+        $this->addPasskey($user);
+
+        $this->artisan('admin-auth:two-factor-reset', ['email' => 'john@example.com', '--force' => true])
+            ->assertExitCode(0);
+
+        self::assertSame(0, $user->passkeys()->count());
+    }
+
+    public function testConfirmationListsThePasskeysAndDeclineKeepsThem(): void
+    {
+        $user = $this->createAdmin();
+        $this->addPasskey($user, 'MacBook');
+
+        $this->artisan('admin-auth:two-factor-reset', ['email' => 'john@example.com'])
+            ->expectsOutputToContain('the passkey "MacBook"')
+            ->expectsConfirmation('Turn off two-factor authentication for john@example.com?', 'no')
+            ->assertExitCode(0);
+
+        self::assertSame(1, $user->passkeys()->count());
+    }
+
+    public function testMissingColumnsWithThePasskeysTableRemovesThePasskeys(): void
+    {
+        $user = $this->createAdmin();
+        $this->addPasskey($user);
+        $this->dropTwoFactorColumns();
+
+        $this->artisan('admin-auth:two-factor-reset', ['email' => 'john@example.com', '--force' => true])
+            ->assertExitCode(0);
+
+        self::assertSame(0, $user->passkeys()->count());
+    }
+
+    private function dropPasskeysTable(): void
+    {
+        $this->app->make(DatabaseManager::class)->connection()->getSchemaBuilder()->dropIfExists('admin_passkeys');
     }
 }

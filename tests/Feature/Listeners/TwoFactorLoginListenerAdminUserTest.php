@@ -51,6 +51,21 @@ class TwoFactorLoginListenerAdminUserTest extends AdminUserTestCase
         $this->get('/admin')->assertStatus(200);
     }
 
+    public function testAdminWithoutAFactorImpersonatingAnAdminWithTwoFactorIsChallenged(): void
+    {
+        $this->allowAdmin();
+        $this->registerImpersonationRoute();
+        $admin = $this->createAdmin();
+        $target = $this->createAdmin('target@example.com');
+        $this->enrol($target);
+        // The gate remembers that this admin has nothing to verify; that is not a verification to hand over.
+        $this->actingAs($admin, $this->adminAuthGuard)->get('/admin')->assertStatus(200);
+
+        $this->get(sprintf('/admin/test-impersonate/%s', $target->getKey()))->assertStatus(200);
+
+        $this->get('/admin')->assertRedirect(route('brackets/admin-auth::admin/two-factor/challenge'));
+    }
+
     public function testPasswordLoginAfterLogoutIsChallenged(): void
     {
         $this->verifiedAdmin();

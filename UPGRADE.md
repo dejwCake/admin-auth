@@ -101,6 +101,68 @@ admin is asked for a code after the password login. See README → "Two-factor a
   columns into generated code.
 - New composer dependencies: `pragmarx/google2fa`, `bacon/bacon-qr-code`.
 
+### Passkeys
+
+Every admin can now add passkeys (WebAuthn) at `/admin/passkeys`, sign in with one without a password
+and use one as the second factor; forced two-factor is satisfied by TOTP or a passkey. See README →
+"Passkeys".
+
+Update `dejwcake/admin-auth` and `@dejwcake/craftable` together: the passkeys page mounts
+`PasskeySettings`, and the login and challenge pages pass props the older `LoginForm` and
+`TwoFactorChallengeForm` don't know.
+
+1. **Publish and run the migration — required.** It adds the `admin_passkeys` table:
+
+   ```shell
+   php artisan vendor:publish --provider="Brackets\AdminAuth\AdminAuthServiceProvider" --tag=migrations
+   php artisan migrate
+   ```
+
+   Until it runs nothing breaks: admin pages and the password login keep working, the login page has
+   no passkey button and the passkeys page shows a "run the migration" notice. Its foreign key points
+   at `admin_users`; edit the published file if your admin guard uses another table.
+2. **Register the component** in `resources/js/admin/admin.js`:
+
+   ```js
+   import PasskeySettings from '@craftable/account/PasskeySettings.vue';
+
+   app.component('PasskeySettings', PasskeySettings);
+   ```
+
+3. **Add the dropdown link** to `resources/views/admin/layout/profile-dropdown.blade.php` (or run
+   `php artisan admin-auth:install` again, which adds it once):
+
+   ```blade
+   <a href="{{ url('admin/passkeys') }}" class="dropdown-item"><i class="fa fa-fingerprint"></i>  {{ trans('brackets/admin-auth::admin.profile_dropdown.passkeys') }}</a>
+   ```
+
+4. **Overridden views.** A published `admin/auth/login.blade.php` keeps working without the passkey
+   button; add the two props to `<login-form>` to get it:
+
+   ```blade
+   @if(($passkeyOptionsUrl ?? '') !== '')
+   :passkey-options-url="'{{ $passkeyOptionsUrl }}'"
+   :passkey-login-url="'{{ $passkeyLoginUrl }}'"
+   @endif
+   ```
+
+   and `'passkeyButton' => trans('brackets/admin-auth::admin.login.passkey_button')` to its
+   translations. A published `admin/two-factor/challenge.blade.php` gets `:has-totp`,
+   `:has-passkeys`, `:passkey-options-url` and `:passkey-url` (see the package view) — without them
+   an admin whose only factor is a passkey can't pass the challenge; a published
+   `admin/two-factor/settings.blade.php` gets `:can-disable`.
+5. **Rebuild the assets.**
+
+- **Secure context.** Passkeys need HTTPS, or `localhost` in development.
+- **No config merge needed.** A published `config/admin-auth.php` without the `passkeys` block falls
+  back to the package defaults (from `app.url` / `app.name`). When the admin runs on another host
+  than `APP_URL`, set `ADMIN_PASSKEYS_RP_ID` and `ADMIN_PASSKEYS_ALLOWED_ORIGINS`.
+- **Own admin model.** Implement `Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable` with
+  the `Brackets\AdminAuth\Passkeys\Traits\HasPasskeys` trait; without it the admin has no passkeys.
+- **Admin-users CRUD** needs no change; deleting an admin there soft-deletes and keeps the passkeys.
+- `admin-auth:two-factor-reset` now also removes passkeys.
+- New composer dependency: `web-auth/webauthn-lib`.
+
 ### Publishable views
 
 `vendor:publish --provider="Brackets\AdminAuth\AdminAuthServiceProvider" --tag=views` copies the

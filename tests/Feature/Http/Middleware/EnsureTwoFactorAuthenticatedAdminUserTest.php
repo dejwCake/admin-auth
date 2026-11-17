@@ -5,14 +5,18 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Tests\Feature\Http\Middleware;
 
 use Brackets\AdminAuth\Tests\AdminUserTestCase;
+use Brackets\AdminAuth\Tests\PasskeyHelpers;
 use Brackets\AdminAuth\Tests\TwoFactorHelpers;
+use Brackets\AdminAuth\Tests\VirtualAuthenticator;
 use Brackets\AdminAuth\TwoFactor\TwoFactorSession;
 use Illuminate\Auth\SessionGuard;
 use Illuminate\Contracts\Auth\Factory as AuthFactory;
+use Illuminate\Database\DatabaseManager;
 use Illuminate\Support\Str;
 
 class EnsureTwoFactorAuthenticatedAdminUserTest extends AdminUserTestCase
 {
+    use PasskeyHelpers;
     use TwoFactorHelpers;
 
     public function testPasswordLoginOfEnrolledAdminIsChallenged(): void
@@ -162,5 +166,103 @@ class EnsureTwoFactorAuthenticatedAdminUserTest extends AdminUserTestCase
         $this->actingAs($this->createRoleAdmin(['Editor']), $this->adminAuthGuard)
             ->get('/admin')
             ->assertStatus(200);
+    }
+
+    public function testPasswordLoginOfAdminWithOnlyAPasskeyIsChallenged(): void
+    {
+        $this->allowAdmin();
+        $this->addPasskey($this->createAdmin());
+
+        $this->post('/admin/login', ['email' => 'john@example.com', 'password' => self::PASSWORD]);
+
+        $this->get('/admin')->assertRedirect(route('brackets/admin-auth::admin/two-factor/challenge'));
+    }
+
+    public function testChallengePasskeyRoutesAreReachableBeforeVerification(): void
+    {
+        $this->allowAdmin();
+        $user = $this->createAdmin();
+        $this->addPasskey($user);
+
+        $this->actingAs($user, $this->adminAuthGuard)
+            ->postJson('/admin/two-factor/challenge/passkey/options')
+            ->assertOk();
+    }
+
+    public function testRequiredForEveryoneAllowsThePasskeysPage(): void
+    {
+        $this->allowAdmin();
+        $this->requireTwoFactor();
+        $settings = route('brackets/admin-auth::admin/two-factor');
+
+        $this->actingAs($this->createAdmin(), $this->adminAuthGuard)->get('/admin')->assertRedirect($settings);
+        $this->get('/admin/passkeys')->assertOk();
+        $this->postJson('/admin/passkeys/options', ['current_password' => self::PASSWORD])->assertOk();
+    }
+
+    public function testForcedAdminWithAPasskeyOnlyPassesTheChallengeWithIt(): void
+    {
+        $this->allowAdmin();
+        $this->requireTwoFactor();
+        $user = $this->createAdmin();
+        $authenticator = new VirtualAuthenticator();
+        $this->addPasskey($user, 'MacBook', $authenticator);
+        $this->post('/admin/login', ['email' => 'john@example.com', 'password' => self::PASSWORD]);
+
+        $options = $this->postJson('/admin/two-factor/challenge/passkey/options')->json();
+        $this->postJson('/admin/two-factor/challenge/passkey', [
+            'credential' => $this->assertion($authenticator, $options, $user),
+        ])->assertOk();
+
+        $this->get('/admin')->assertOk();
+    }
+
+    public function testForcedAdminEnrolsWithAPasskey(): void
+    {
+        $this->allowAdmin();
+        $this->requireTwoFactor();
+        $user = $this->createAdmin();
+        $this->actingAs($user, $this->adminAuthGuard)->get('/admin')
+            ->assertRedirect(route('brackets/admin-auth::admin/two-factor'));
+
+        $options = $this->postJson('/admin/passkeys/options', ['current_password' => self::PASSWORD])->json();
+        $this->postJson('/admin/passkeys', [
+            'name' => 'MacBook',
+            'credential' => (new VirtualAuthenticator())->register($options, $this->origin()),
+        ])->assertCreated();
+
+        $this->get('/admin')->assertOk();
+    }
+
+    public function testAdminWithoutAFactorIsRememberedAsNothingToVerify(): void
+    {
+        $this->allowAdmin();
+        $user = $this->createAdmin();
+
+        $this->actingAs($user, $this->adminAuthGuard)->get('/admin')->assertOk();
+
+        self::assertSame($user->getAuthIdentifier(), $this->passkeySession()->get(TwoFactorSession::UNENROLLED));
+        self::assertNull($this->passkeySession()->get(TwoFactorSession::VERIFIED));
+    }
+
+    public function testForcedAdminIsNotRememberedAsNothingToVerify(): void
+    {
+        $this->allowAdmin();
+        $this->requireTwoFactor();
+
+        $this->actingAs($this->createAdmin(), $this->adminAuthGuard)->get('/admin');
+
+        self::assertNull($this->passkeySession()->get(TwoFactorSession::UNENROLLED));
+    }
+
+    public function testMissingPasskeysTableMeansNoPasskeys(): void
+    {
+        $this->allowAdmin();
+        $user = $this->createAdmin();
+        $this->addPasskey($user);
+        $this->app->make(DatabaseManager::class)
+            ->connection()->getSchemaBuilder()->dropIfExists('admin_passkeys');
+
+        $this->actingAs($user, $this->adminAuthGuard)->get('/admin')->assertOk();
     }
 }

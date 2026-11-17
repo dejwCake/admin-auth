@@ -3,4 +3,5 @@
   <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Http/Controllers/Auth/ActivationEmailController.php"/>
   <violation rule="PHPMD\Rule\Design\CouplingBetweenObjects" file="src/Http/Controllers/Auth/ResetPasswordController.php"/>
   <violation rule="PHPMD\Rule\Design\NumberOfChildren" file="tests/AdminUserTestCase.php"/>
+  <violation rule="PHPMD\Rule\Design\NumberOfChildren" file="tests/UserTestCase.php"/>
 </phpmd-baseline>

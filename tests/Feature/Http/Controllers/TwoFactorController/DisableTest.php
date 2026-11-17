@@ -5,11 +5,13 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Tests\Feature\Http\Controllers\TwoFactorController;
 
 use Brackets\AdminAuth\Tests\AdminUserTestCase;
+use Brackets\AdminAuth\Tests\PasskeyHelpers;
 use Brackets\AdminAuth\Tests\TwoFactorHelpers;
 use Brackets\AdminAuth\TwoFactor\TwoFactorSession;
 
 class DisableTest extends AdminUserTestCase
 {
+    use PasskeyHelpers;
     use TwoFactorHelpers;
 
     public function testDisableRemovesTheDataAndTheNextLoginNeedsNoCode(): void
@@ -57,5 +59,23 @@ class DisableTest extends AdminUserTestCase
             ->assertStatus(409);
 
         self::assertTrue($user->fresh()->hasTwoFactorEnabled());
+    }
+
+    public function testDisableWhileRequiredWithAPasskeyKeepsThePasskey(): void
+    {
+        $this->allowAdmin();
+        $this->requireTwoFactor();
+        $user = $this->createAdmin();
+        $this->enrol($user);
+        $this->addPasskey($user);
+
+        $this->actingAs($user, $this->adminAuthGuard)
+            ->withSession([TwoFactorSession::VERIFIED => $user->getAuthIdentifier()])
+            ->deleteJson('/admin/two-factor', ['current_password' => self::PASSWORD])
+            ->assertStatus(200);
+
+        self::assertFalse($user->fresh()->hasTwoFactorData());
+        self::assertSame(1, $user->passkeys()->count());
+        $this->get('/admin')->assertStatus(200);
     }
 }

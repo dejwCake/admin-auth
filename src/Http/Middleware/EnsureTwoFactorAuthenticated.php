@@ -17,8 +17,8 @@ use Illuminate\Routing\Redirector;
 use Symfony\Component\HttpFoundation\Response;
 
 /**
- * Holds an admin on the two-factor challenge until the session is verified, and a forced admin
- * without two-factor on the settings page until they enrol.
+ * Holds an admin with a second factor (TOTP or a passkey) on the two-factor challenge until the session is
+ * verified, and a forced admin without one on the settings page until they enrol.
  */
 final class EnsureTwoFactorAuthenticated
 {
@@ -31,6 +31,8 @@ final class EnsureTwoFactorAuthenticated
     private const array CHALLENGE_ROUTES = [
         self::CHALLENGE_ROUTE,
         'brackets/admin-auth::admin/two-factor/verify',
+        'brackets/admin-auth::admin/two-factor/challenge/passkey/options',
+        'brackets/admin-auth::admin/two-factor/challenge/passkey',
     ];
 
     /**
@@ -40,6 +42,9 @@ final class EnsureTwoFactorAuthenticated
         self::SETTINGS_ROUTE,
         'brackets/admin-auth::admin/two-factor/enable',
         'brackets/admin-auth::admin/two-factor/confirm',
+        'brackets/admin-auth::admin/passkeys',
+        'brackets/admin-auth::admin/passkeys/options',
+        'brackets/admin-auth::admin/passkeys/store',
     ];
 
     private string $guard;
@@ -63,27 +68,30 @@ final class EnsureTwoFactorAuthenticated
         }
 
         $session = $request->session();
-        // A verified admin who impersonates another admin keeps the verification for them.
-        if ($this->twoFactorSession->isImpersonated($session, $user)) {
+        // Verified (also by a verified admin who impersonates this one), or known to have nothing to verify:
+        // no query on every admin request.
+        if (
+            $this->twoFactorSession->isVerified($session, $user)
+            || $this->twoFactorSession->isUnenrolled($session, $user)
+        ) {
             return $next($request);
         }
 
         $routeName = $request->route()?->getName();
 
-        if ($this->twoFactorService->isEnabledFor($user)) {
-            if (
-                $this->twoFactorSession->isVerified($session, $user)
-                || in_array($routeName, self::CHALLENGE_ROUTES, true)
-            ) {
-                return $next($request);
-            }
-
-            return $this->deny($request, self::CHALLENGE_ROUTE);
+        if ($this->twoFactorService->hasSecondFactor($user)) {
+            return in_array($routeName, self::CHALLENGE_ROUTES, true)
+                ? $next($request)
+                : $this->deny($request, self::CHALLENGE_ROUTE);
         }
 
-        if ($this->twoFactorService->isRequiredFor($user) && !in_array($routeName, self::ENROLMENT_ROUTES, true)) {
-            return $this->deny($request, self::SETTINGS_ROUTE);
+        if ($this->twoFactorService->isRequiredFor($user)) {
+            return in_array($routeName, self::ENROLMENT_ROUTES, true)
+                ? $next($request)
+                : $this->deny($request, self::SETTINGS_ROUTE);
         }
+
+        $this->twoFactorSession->markUnenrolled($session, $user);
 
         return $next($request);
     }

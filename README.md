@@ -61,7 +61,8 @@ are on; there is no switch to turn the feature off, and by default it is optiona
   the minute. Admin AJAX calls made before that get a 403 with the challenge URL, which
   `@dejwcake/craftable`'s `useAdmin` follows.
 - **Changes.** Regenerating the recovery codes and disabling two-factor ask for the current
-  password; disabling is refused while two-factor is required for the admin.
+  password; disabling is refused while two-factor is required for the admin and TOTP is their only
+  second factor (a passkey counts, see "Passkeys").
 - **Impersonal login.** When an admin whose session passed two-factor uses impersonal login from
   the admin-users listing, the session stays verified for the impersonated admin: no challenge, no
   forced enrolment. A password login always starts unverified.
@@ -70,7 +71,7 @@ To require it, set:
 
 | Env | Config (`admin-auth.two_factor.…`) | |
 |---|---|---|
-| `ADMIN_TWO_FACTOR_REQUIRED=true` | `required` | admins without two-factor are held on `/admin/two-factor` until they enrol |
+| `ADMIN_TWO_FACTOR_REQUIRED=true` | `required` | admins without a second factor (TOTP or a passkey) are held on `/admin/two-factor` until they enrol; the passkeys page stays reachable |
 | `ADMIN_TWO_FACTOR_REQUIRED_ROLES=Administrator,Editor` | `required_roles` | limits `required` to admins with one of these roles; empty = every admin |
 
 The name shown in the authenticator app is `admin-auth.two_factor.issuer`, `app.name` by default.
@@ -96,12 +97,67 @@ Operations:
   php artisan admin-auth:two-factor-reset admin@example.com
   ```
 
-  It asks for confirmation unless `--force` is given, works even when two-factor is required (the
-  admin is then asked to enrol again on their next page) and leaves open sessions logged in.
+  It removes the TOTP data and every passkey of the admin, lists them and asks for confirmation
+  unless `--force` is given, works even when two-factor is required (the admin is then asked to
+  enrol again on their next page) and leaves open sessions logged in.
 
 The pages mount the `TwoFactorSettings` and `TwoFactorChallengeForm` components from
 `@dejwcake/craftable`, which `admin.js` has to register (the admin-ui install stub does). The
 admin-auth install command adds the "Two-factor authentication" link to the profile dropdown.
+
+## Passkeys
+
+Every admin can add passkeys (WebAuthn / FIDO2: Touch ID, Windows Hello, Android, iCloud / Google /
+1Password keychains, security keys) on the "Passkeys" page at `/admin/passkeys` (route
+`brackets/admin-auth::admin/passkeys`). Like TOTP, passkeys are always available; there is no switch.
+
+- **The page** lists the admin's passkeys (name, added, last used) and adds, renames and removes
+  them. Adding and removing ask for the current password; a new passkey's name is prefilled from
+  the browser and the OS ("Chrome on macOS").
+- **Passwordless login.** The login page shows "Sign in with a passkey", and browsers that support
+  it offer passkeys in the e-mail field's autofill. The device checks the user (biometrics or PIN),
+  so a passkey login counts as two factors and skips the challenge. It applies the same forbidden
+  and activation checks as the password login; a soft-deleted admin cannot sign in. 5 failed
+  passkey logins per minute and IP address lock it for the rest of the minute.
+- **Second factor.** After a password login, an admin with a passkey can pass the two-factor
+  challenge with it instead of a code. Failed attempts count toward the same limit as codes.
+- **Forced two-factor** (`ADMIN_TWO_FACTOR_REQUIRED`) is satisfied by TOTP **or** a passkey. A
+  forced admin can't remove their last second factor.
+- **Reset.** `admin-auth:two-factor-reset` also removes the admin's passkeys.
+
+Passkeys need a **secure context**: HTTPS, or `localhost` in development. On plain HTTP the browser
+hides the passkey button and the page says passkeys are unavailable — with Harbor use
+`http://localhost:<port>` or enable its TLS.
+
+The relying party comes from `APP_URL` and `APP_NAME`. Set these when the admin is served on another
+host:
+
+| Env | Config (`admin-auth.passkeys.…`) | |
+|---|---|---|
+| `ADMIN_PASSKEYS_RP_ID=example.com` | `rp_id` | the domain passkeys are bound to: the admin's host or a registrable suffix of it; default the host of `app.url` |
+| `ADMIN_PASSKEYS_RP_NAME="Example admin"` | `rp_name` | the name the browser shows; default `app.name` |
+| `ADMIN_PASSKEYS_ALLOWED_ORIGINS=https://admin.example.com` | `allowed_origins` | comma-separated origins the admin is served on; default the scheme, host and port of `app.url` |
+
+A rejected passkey response is logged as a warning with the origin the browser signed for, which
+tells a wrong `ADMIN_PASSKEYS_ALLOWED_ORIGINS` from an attack.
+
+- **Changing the RP id later makes every existing passkey unusable.** Admins can still sign in with
+  their password (and TOTP), or be reset with the command, and add new passkeys.
+- **Synced passkeys** (iCloud, Google, password managers) are only as safe as that account. They are
+  still phishing-resistant; attestation is not checked (`none`), so any authenticator model works.
+
+The feature needs the `admin_passkeys` table (publish and run the migrations). Without it admin
+pages and the password login keep working, every admin counts as having no passkeys, the login page
+has no passkey option and the page says which migration to run. The table's foreign key points at
+`admin_users`; if your admin guard uses another table, edit the published migration. Force-deleting
+an admin removes their passkeys; the generated CRUD soft-deletes, which keeps them (a restore brings
+them back). The admin model needs `Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable` and
+the `Brackets\AdminAuth\Passkeys\Traits\HasPasskeys` trait (`Brackets\AdminAuth\Models\AdminUser`
+has both).
+
+The page mounts the `PasskeySettings` component from `@dejwcake/craftable`, which `admin.js` has to
+register (the admin-ui install stub does); the login and challenge forms get the passkey option from
+props. The admin-auth install command adds the "Passkeys" link to the profile dropdown.
 
 ## Customising pages
 
@@ -139,6 +195,10 @@ the package version when you upgrade.
 | Change password | `admin.profile.edit-password` | `account/PasswordChangeForm.vue` |
 | Two-factor authentication | `admin.two-factor.settings` | `account/TwoFactorSettings.vue` |
 | Two-factor challenge | `admin.two-factor.challenge` | `auth/TwoFactorChallengeForm.vue` |
+| Passkeys | `admin.passkeys.index` | `account/PasskeySettings.vue` |
+
+The passkey components share `composables/usePasskeys.js` (`@craftable/composables/usePasskeys.js`),
+which a project can override alone, e.g. for a different autofill behaviour.
 
 ## Issues
 Where do I report issues?

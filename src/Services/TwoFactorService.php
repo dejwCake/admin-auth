@@ -21,6 +21,9 @@ final readonly class TwoFactorService
 {
     public const int RECOVERY_CODE_COUNT = 8;
 
+    public const string FACTOR_TOTP = 'totp';
+    public const string FACTOR_PASSKEY = 'passkey';
+
     /**
      * Codes are accepted one step (30 s) either side, so a replay is possible for at most 90 s.
      */
@@ -35,6 +38,7 @@ final readonly class TwoFactorService
         private Config $config,
         private RateLimiter $rateLimiter,
         private QrCodeRenderer $qrCodeRenderer,
+        private PasskeyService $passkeyService,
     ) {
     }
 
@@ -51,6 +55,31 @@ final readonly class TwoFactorService
     public function isEnabledFor(Authenticatable $user): bool
     {
         return $user instanceof TwoFactorAuthenticatable && $user->hasTwoFactorEnabled();
+    }
+
+    /**
+     * Whether the admin has a second factor: confirmed TOTP or at least one passkey.
+     */
+    public function hasSecondFactor(Authenticatable $user): bool
+    {
+        return $this->isEnabledFor($user) || $this->passkeyService->hasPasskeys($user);
+    }
+
+    /**
+     * Whether the admin may remove one of their factors (TOTP, or one passkey): always, unless two-factor is
+     * required for them and it is their last one.
+     */
+    public function canRemoveFactor(Authenticatable $user, string $factor): bool
+    {
+        if (!$this->isRequiredFor($user)) {
+            return true;
+        }
+
+        $passkeys = $this->passkeyService->countFor($user);
+
+        return $factor === self::FACTOR_TOTP
+            ? $passkeys > 0
+            : $passkeys > 1 || $this->isEnabledFor($user);
     }
 
     /**

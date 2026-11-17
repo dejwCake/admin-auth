@@ -7,6 +7,8 @@ namespace Brackets\AdminAuth\Models;
 use Brackets\AdminAuth\Activation\Contracts\CanActivate as CanActivateContract;
 use Brackets\AdminAuth\Activation\Traits\CanActivate;
 use Brackets\AdminAuth\Notifications\ResetPassword;
+use Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable;
+use Brackets\AdminAuth\Passkeys\Traits\HasPasskeys;
 use Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable as TwoFactorAuthenticatableContract;
 use Brackets\AdminAuth\TwoFactor\Traits\TwoFactorAuthenticatable;
 use Brackets\Media\HasMedia\AutoProcessMediaTrait;
@@ -64,13 +66,18 @@ use Spatie\Permission\Traits\HasRoles;
     'two_factor_recovery_codes',
     'two_factor_confirmed_at',
 ])]
-class AdminUser extends Authenticatable implements CanActivateContract, HasMedia, TwoFactorAuthenticatableContract
+class AdminUser extends Authenticatable implements
+    CanActivateContract,
+    HasMedia,
+    TwoFactorAuthenticatableContract,
+    PasskeyAuthenticatable
 {
     use AutoProcessMediaTrait;
     use CanActivate;
     use HasFactory;
     use HasMediaCollectionsTrait;
     use HasMediaThumbsTrait;
+    use HasPasskeys;
     use HasRoles;
     use Notifiable;
     use ProcessMediaTrait;

@@ -163,6 +163,28 @@ Update `dejwcake/admin-auth` and `@dejwcake/craftable` together: the passkeys pa
 - `admin-auth:two-factor-reset` now also removes passkeys.
 - New composer dependency: `web-auth/webauthn-lib`.
 
+### Resetting another admin's two-factor
+
+Admins with the new permission `admin.admin-user.security-reset` can remove another admin's TOTP and
+passkeys from the admin-users listing. See README → "Resetting another admin's two-factor".
+
+1. **Publish and run the migrations.** `add_admin_security_reset_permission` adds the permission
+   and grants it to the `Administrator` role:
+
+   ```shell
+   php artisan vendor:publish --provider="Brackets\AdminAuth\AdminAuthServiceProvider" --tag=migrations
+   php artisan migrate
+   ```
+
+   Without an `Administrator` role on the admin guard the permission is created unassigned — grant it
+   to the roles that should have it.
+2. **Get the button:** regenerate the admin-users CRUD with admin-generator
+   (`php artisan admin:generate:admin-user --except=show -f`), or add it to the generated listing by
+   hand as admin-generator's UPGRADE.md shows. The generated listing imports `SecurityResetButton`
+   from `@dejwcake/craftable`, so update it together with admin-auth, then rebuild the assets.
+
+Without regenerating, the endpoint exists but nothing in the admin calls it.
+
 ### Publishable views
 
 `vendor:publish --provider="Brackets\AdminAuth\AdminAuthServiceProvider" --tag=views` copies the

@@ -154,4 +154,21 @@ return [
         'renamed' => 'The passkey has been renamed.',
         'removed' => 'The passkey has been removed.',
     ],
+
+    'security_reset' => [
+        'reset_btn' => 'Reset two-factor',
+        'confirm_title' => 'Reset two-factor authentication?',
+        'confirm_text' => 'This removes the admin\'s authenticator app, recovery codes and passkeys.',
+        'current_password' => 'Your password',
+        'confirm_btn' => 'Reset',
+        'own_account' => 'Use your own two-factor and passkeys pages to change your account.',
+        'nothing_to_reset' => 'This admin has no two-factor authentication, nothing to reset.',
+        'done' => 'Two-factor authentication of the admin was reset.',
+        'notification' => [
+            'subject' => 'Your two-factor authentication was reset',
+            'line' => ':name reset your two-factor authentication on :time.',
+            'enrol' => 'You can sign in with your password and set up two-factor authentication again.',
+            'unexpected' => 'If you did not ask for this, contact :name or another administrator.',
+        ],
+    ],
 ];

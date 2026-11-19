@@ -31,6 +31,7 @@ class AdminAuthServiceProvider extends ServiceProvider
             $this->loadRoutesFrom(__DIR__ . '/../routes/admin.php');
             $this->loadRoutesFrom(__DIR__ . '/../routes/two-factor.php');
             $this->loadRoutesFrom(__DIR__ . '/../routes/passkeys.php');
+            $this->loadRoutesFrom(__DIR__ . '/../routes/admin-security.php');
         }
 
         if (
@@ -163,6 +164,18 @@ class AdminAuthServiceProvider extends ServiceProvider
                 __DIR__ . '/../database/migrations/add_two_factor_columns_to_admin_users_table.php'
                 => sprintf(
                     '%s/%s_000001_add_two_factor_columns_to_admin_users_table.php',
+                    $this->app->databasePath('migrations'),
+                    date('Y_m_d'),
+                ),
+            ], 'migrations');
+        }
+
+        if (!glob($this->app->databasePath('migrations/*_add_admin_security_reset_permission.php'))) {
+            // After the admin-users and passkeys migrations of the same day; it only needs the permission tables.
+            $this->publishes([
+                __DIR__ . '/../database/migrations/add_admin_security_reset_permission.php'
+                => sprintf(
+                    '%s/%s_000003_add_admin_security_reset_permission.php',
                     $this->app->databasePath('migrations'),
                     date('Y_m_d'),
                 ),

@@ -152,4 +152,21 @@ return [
         'renamed' => 'Prístupový kľúč bol premenovaný.',
         'removed' => 'Prístupový kľúč bol odstránený.',
     ],
+
+    'security_reset' => [
+        'reset_btn' => 'Zrušiť dvojfaktorové overenie',
+        'confirm_title' => 'Zrušiť dvojfaktorové overenie?',
+        'confirm_text' => 'Odstráni aplikáciu na overovanie, záchranné kódy a prístupové kľúče administrátora.',
+        'current_password' => 'Vaše heslo',
+        'confirm_btn' => 'Zrušiť',
+        'own_account' => 'Svoj účet meníte na vlastných stránkach dvojfaktorového overenia a kľúčov.',
+        'nothing_to_reset' => 'Tento administrátor nemá dvojfaktorové overenie, niet čo zrušiť.',
+        'done' => 'Dvojfaktorové overenie administrátora bolo zrušené.',
+        'notification' => [
+            'subject' => 'Vaše dvojfaktorové overenie bolo zrušené',
+            'line' => ':name zrušil(a) vaše dvojfaktorové overenie :time.',
+            'enrol' => 'Môžete sa prihlásiť heslom a znova si nastaviť dvojfaktorové overenie.',
+            'unexpected' => 'Ak ste o to nežiadali, kontaktujte :name alebo iného administrátora.',
+        ],
+    ],
 ];

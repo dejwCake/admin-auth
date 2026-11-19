@@ -10,7 +10,7 @@ use Brackets\AdminAuth\Tests\PasskeyHelpers;
 use Brackets\AdminAuth\Tests\TwoFactorHelpers;
 use Illuminate\Database\DatabaseManager;
 
-class PreviewTest extends AdminUserTestCase
+class FactorsOfTest extends AdminUserTestCase
 {
     use PasskeyHelpers;
     use TwoFactorHelpers;
@@ -22,20 +22,20 @@ class PreviewTest extends AdminUserTestCase
         $this->addPasskey($user, 'MacBook');
         $this->addPasskey($user, 'YubiKey');
 
-        $preview = $this->service()->preview($user->fresh());
+        $factors = $this->service()->factorsOf($user->fresh());
 
-        self::assertNotNull($preview);
-        self::assertTrue($preview->totp);
-        self::assertSame(['MacBook', 'YubiKey'], $preview->passkeys);
-        self::assertFalse($preview->isEmpty());
+        self::assertNotNull($factors);
+        self::assertTrue($factors->totp);
+        self::assertSame(['MacBook', 'YubiKey'], $factors->passkeys);
+        self::assertFalse($factors->isEmpty());
     }
 
     public function testAdminWithoutFactorsHasNothingToReset(): void
     {
-        $preview = $this->service()->preview($this->createAdmin());
+        $factors = $this->service()->factorsOf($this->createAdmin());
 
-        self::assertNotNull($preview);
-        self::assertTrue($preview->isEmpty());
+        self::assertNotNull($factors);
+        self::assertTrue($factors->isEmpty());
     }
 
     public function testMissingColumnsStillListThePasskeys(): void
@@ -44,11 +44,11 @@ class PreviewTest extends AdminUserTestCase
         $this->addPasskey($user, 'MacBook');
         $this->dropTwoFactorColumns();
 
-        $preview = $this->service()->preview($user->fresh());
+        $factors = $this->service()->factorsOf($user->fresh());
 
-        self::assertNotNull($preview);
-        self::assertFalse($preview->totp);
-        self::assertSame(['MacBook'], $preview->passkeys);
+        self::assertNotNull($factors);
+        self::assertFalse($factors->totp);
+        self::assertSame(['MacBook'], $factors->passkeys);
     }
 
     public function testMissingTableStillListsTotp(): void
@@ -57,11 +57,11 @@ class PreviewTest extends AdminUserTestCase
         $this->enrol($user);
         $this->dropPasskeysTable();
 
-        $preview = $this->service()->preview($user->fresh());
+        $factors = $this->service()->factorsOf($user->fresh());
 
-        self::assertNotNull($preview);
-        self::assertTrue($preview->totp);
-        self::assertSame([], $preview->passkeys);
+        self::assertNotNull($factors);
+        self::assertTrue($factors->totp);
+        self::assertSame([], $factors->passkeys);
     }
 
     public function testNeitherMigrationGivesNull(): void
@@ -70,7 +70,7 @@ class PreviewTest extends AdminUserTestCase
         $this->dropTwoFactorColumns();
         $this->dropPasskeysTable();
 
-        self::assertNull($this->service()->preview($user->fresh()));
+        self::assertNull($this->service()->factorsOf($user->fresh()));
     }
 
     private function dropPasskeysTable(): void

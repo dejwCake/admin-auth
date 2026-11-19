@@ -20,33 +20,35 @@ final readonly class SecurityResetService
     }
 
     /**
-     * What a reset would remove; null when neither the two-factor columns nor the passkeys table exist.
+     * The admin's second factors now, i.e. what a reset would remove; null when neither the two-factor
+     * columns nor the passkeys table exist.
      */
-    public function preview(Authenticatable $user): ?SecurityResetResult
+    public function factorsOf(Authenticatable $user): ?SecondFactors
     {
         if (!$this->hasTotpColumns($user) && !$this->passkeyService->isAvailableFor($user)) {
             return null;
         }
 
-        return new SecurityResetResult($this->hasTotpData($user), $this->passkeyNames($user));
+        return new SecondFactors($this->hasTotpData($user), $this->passkeyNames($user));
     }
 
     /**
-     * Remove what exists (also the TOTP replay and throttle state); returns what was removed.
+     * Remove the admin's second factors (also the TOTP replay and throttle state); returns the factors
+     * as they were before, i.e. what was removed.
      */
-    public function reset(Authenticatable $user): SecurityResetResult
+    public function reset(Authenticatable $user): SecondFactors
     {
-        $result = $this->preview($user) ?? new SecurityResetResult(false, []);
+        $factors = $this->factorsOf($user) ?? new SecondFactors(false, []);
 
-        if ($result->totp && $user instanceof Model && $user instanceof TwoFactorAuthenticatable) {
+        if ($factors->totp && $user instanceof Model && $user instanceof TwoFactorAuthenticatable) {
             $this->twoFactorService->disable($user);
         }
 
-        if ($result->passkeys !== [] && $user instanceof PasskeyAuthenticatable) {
+        if ($factors->passkeys !== [] && $user instanceof PasskeyAuthenticatable) {
             $user->passkeys()->delete();
         }
 
-        return $result;
+        return $factors;
     }
 
     private function hasTotpColumns(Authenticatable $user): bool

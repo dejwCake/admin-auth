@@ -5,9 +5,9 @@ declare(strict_types=1);
 namespace Brackets\AdminAuth\Services;
 
 /**
- * The second factors of an admin that a security reset removes (or removed).
+ * A snapshot of an admin's second factors: whether they have TOTP data, and the names of their passkeys.
  */
-final readonly class SecurityResetResult
+final readonly class SecondFactors
 {
     /**
      * @param array<int, string> $passkeys names of the passkeys

@@ -25,10 +25,10 @@ class ResetTest extends AdminUserTestCase
         $this->addPasskey($user, 'YubiKey');
         $other = $this->addPasskey($this->createAdmin('jane@example.com'), 'Jane phone');
 
-        $result = $this->service()->reset($user->fresh());
+        $removed = $this->service()->reset($user->fresh());
 
-        self::assertTrue($result->totp);
-        self::assertSame(['MacBook', 'YubiKey'], $result->passkeys);
+        self::assertTrue($removed->totp);
+        self::assertSame(['MacBook', 'YubiKey'], $removed->passkeys);
         self::assertFalse($user->fresh()->hasTwoFactorData());
         self::assertSame(0, $user->passkeys()->count());
         self::assertNotNull($other->fresh());
@@ -51,9 +51,9 @@ class ResetTest extends AdminUserTestCase
     {
         $user = $this->createAdmin();
 
-        $result = $this->service()->reset($user);
+        $removed = $this->service()->reset($user);
 
-        self::assertTrue($result->isEmpty());
+        self::assertTrue($removed->isEmpty());
     }
 
     public function testMissingColumnsRemoveThePasskeys(): void
@@ -62,9 +62,9 @@ class ResetTest extends AdminUserTestCase
         $this->addPasskey($user);
         $this->dropTwoFactorColumns();
 
-        $result = $this->service()->reset($user->fresh());
+        $removed = $this->service()->reset($user->fresh());
 
-        self::assertFalse($result->totp);
+        self::assertFalse($removed->totp);
         self::assertSame(0, $user->passkeys()->count());
     }
 

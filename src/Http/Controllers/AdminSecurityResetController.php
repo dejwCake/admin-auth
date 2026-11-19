@@ -16,6 +16,8 @@ use Illuminate\Database\Eloquent\Model;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
+use function assert;
+
 /**
  * Removes another admin's second factors (TOTP and passkeys) from the admin-users listing.
  */
@@ -42,11 +44,11 @@ final class AdminSecurityResetController extends Controller
     public function __invoke(SecurityResetRequest $request, string $targetAdminId): array
     {
         $actor = $this->authFactory->guard($this->guard)->user();
-        \assert($actor instanceof Authenticatable || $actor === null);
+        assert($actor instanceof Authenticatable || $actor === null);
         $target = $this->targetAdmin($targetAdminId);
 
-        $result = $this->securityResetService->reset($target);
-        if ($result->isEmpty()) {
+        $removed = $this->securityResetService->reset($target);
+        if ($removed->isEmpty()) {
             return ['message' => trans('brackets/admin-auth::admin.security_reset.nothing_to_reset')];
         }
 
@@ -54,8 +56,8 @@ final class AdminSecurityResetController extends Controller
         $this->logger->info('Second factors of an admin were reset by another admin.', [
             'actor_id' => $this->idOf($actor),
             'target_id' => $target->getAuthIdentifier(),
-            'totp' => $result->totp,
-            'passkeys' => count($result->passkeys),
+            'totp' => $removed->totp,
+            'passkeys' => count($removed->passkeys),
         ]);
 
         return ['message' => trans('brackets/admin-auth::admin.security_reset.done')];

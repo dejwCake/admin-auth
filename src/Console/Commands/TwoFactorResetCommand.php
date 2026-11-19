@@ -52,24 +52,24 @@ final class TwoFactorResetCommand extends Command
             return self::FAILURE;
         }
 
-        $preview = $this->securityResetService->preview($user);
-        if ($preview === null) {
+        $factors = $this->securityResetService->factorsOf($user);
+        if ($factors === null) {
             $this->error(trans('brackets/admin-auth::admin.two_factor.migration_missing'));
 
             return self::FAILURE;
         }
 
-        if ($preview->isEmpty()) {
+        if ($factors->isEmpty()) {
             $this->info(sprintf('%s has no two-factor authentication, nothing to reset.', $email));
 
             return self::SUCCESS;
         }
 
         $this->line(sprintf('This removes from %s:', $email));
-        if ($preview->totp) {
+        if ($factors->totp) {
             $this->line('  - the authenticator app (TOTP) and the recovery codes');
         }
-        foreach ($preview->passkeys as $name) {
+        foreach ($factors->passkeys as $name) {
             $this->line(sprintf('  - the passkey "%s"', $name));
         }
 

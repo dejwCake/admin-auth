@@ -68,14 +68,17 @@ admin is asked for a code after the password login. See README → "Two-factor a
    ```
 
    Until it runs nothing breaks: admin pages keep working, every admin counts as not enrolled and the
-   two-factor page shows a "run the migration" notice instead of enrolment.
+   two-factor page's "Authenticator app" section shows a "run the migration" notice instead of
+   enrolment.
 2. **Register the components** in `resources/js/admin/admin.js` (`@dejwcake/craftable` of the same
    release):
 
    ```js
+   import TwoFactorOverview from '@craftable/account/TwoFactorOverview.vue';
    import TwoFactorSettings from '@craftable/account/TwoFactorSettings.vue';
    import TwoFactorChallengeForm from '@craftable/auth/TwoFactorChallengeForm.vue';
 
+   app.component('TwoFactorOverview', TwoFactorOverview);
    app.component('TwoFactorSettings', TwoFactorSettings);
    app.component('TwoFactorChallengeForm', TwoFactorChallengeForm);
    ```
@@ -91,7 +94,11 @@ admin is asked for a code after the password login. See README → "Two-factor a
 
 - **No config merge needed.** A published `config/admin-auth.php` without the `two_factor` block
   falls back to the package default (optional for everyone). To require two-factor, set
-  `ADMIN_TWO_FACTOR_REQUIRED=true`, optionally with `ADMIN_TWO_FACTOR_REQUIRED_ROLES`.
+  `ADMIN_TWO_FACTOR_REQUIRED=true`, optionally with `ADMIN_TWO_FACTOR_REQUIRED_ROLES`. A `two_factor`
+  block without `factors` uses the default second factors (authenticator app, then passkeys).
+- **Overridden settings view.** `two-factor/settings.blade.php` mounts `<two-factor-overview>` and
+  gets `$factors` (one array per second factor) and `$required`; its own strings are `trans()` calls
+  in the view.
 - **Own admin model.** If the `admin_users` provider points at your own model, implement
   `Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable` with the
   `Brackets\AdminAuth\TwoFactor\Traits\TwoFactorAuthenticatable` trait; without it the admin counts

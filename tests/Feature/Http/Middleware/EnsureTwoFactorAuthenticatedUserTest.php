@@ -145,7 +145,7 @@ class EnsureTwoFactorAuthenticatedUserTest extends UserTestCase
         $this->actingAs($this->createAdmin(), $this->adminAuthGuard)
             ->get('/admin')
             ->assertRedirect(route('brackets/admin-auth::admin/two-factor'));
-        $this->get('/admin/two-factor')->assertSee('two-factor-migration-missing', false);
+        $this->get('/admin/two-factor')->assertSee('Two-factor needs a migration');
     }
 
     public function testPasswordLoginOfAdminWithOnlyAPasskeyIsChallenged(): void

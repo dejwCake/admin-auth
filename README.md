@@ -77,8 +77,8 @@ To require it, set:
 The name shown in the authenticator app is `admin-auth.two_factor.issuer`, `app.name` by default.
 
 The feature needs the `two_factor_*` columns on `admin_users` (publish and run the migrations).
-Without them admin pages keep working, every admin counts as not enrolled and the page says which
-migration to run; with two-factor required, admins are held on that notice. The admin model needs
+Without them admin pages keep working, every admin counts as not enrolled and the page's
+"Authenticator app" section says which migration to run; with two-factor required, admins are held on that notice. The admin model needs
 `Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable` and its trait
 (`Brackets\AdminAuth\Models\AdminUser` has both).
 
@@ -101,9 +101,40 @@ Operations:
   unless `--force` is given, works even when two-factor is required (the admin is then asked to
   enrol again on their next page) and leaves open sessions logged in.
 
-The pages mount the `TwoFactorSettings` and `TwoFactorChallengeForm` components from
-`@dejwcake/craftable`, which `admin.js` has to register (the admin-ui install stub does). The
-admin-auth install command adds the "Two-factor authentication" link to the profile dropdown.
+The pages mount the `TwoFactorOverview`, `TwoFactorSettings` and `TwoFactorChallengeForm`
+components from `@dejwcake/craftable`, which `admin.js` has to register (the admin-ui install stub
+does). The admin-auth install command adds the "Two-factor authentication" link to the profile
+dropdown.
+
+### Second factors
+
+`/admin/two-factor` shows whether two-factor is on (an admin with any active second factor is
+protected) and one section per second factor, each with its own status. The factors are listed in
+`admin-auth.two_factor.factors`, in that order:
+
+```php
+'two_factor' => [
+    // …
+    'factors' => [
+        Brackets\AdminAuth\TwoFactor\Factors\TotpFactor::class,     // "Authenticator app", managed in place
+        Brackets\AdminAuth\TwoFactor\Factors\PasskeyFactor::class,  // "Passkeys", links to /admin/passkeys
+    ],
+],
+```
+
+Without the key (e.g. a published config with its own `two_factor` array) these two are used. A
+further factor (e-mail or SMS codes, say) is a class implementing
+`Brackets\AdminAuth\TwoFactor\Contracts\SecondFactor`, resolved through the container:
+
+- `isAvailableFor()` and `isActiveFor()` say whether its migration has run and whether the admin
+  has it;
+- `present()` returns a `SecondFactorPresentation`: name, icon, status and either a link or a
+  registered Vue component (with its props) that manages the factor in place and emits
+  `update:active` when it turns on or off.
+
+An unknown class in the list fails the page with an error naming it. The list drives the settings
+page only: the login challenge, forced enrolment and the security reset know the authenticator app
+and passkeys, so a new factor also needs its own challenge.
 
 ## Passkeys
 

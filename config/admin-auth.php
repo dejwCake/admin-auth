@@ -2,6 +2,9 @@
 
 declare(strict_types=1);
 
+use Brackets\AdminAuth\TwoFactor\Factors\PasskeyFactor;
+use Brackets\AdminAuth\TwoFactor\Factors\TotpFactor;
+
 return [
 
     /*
@@ -126,6 +129,9 @@ return [
     |   required_roles - limits "required" to admins with one of these roles
     |                    (comma-separated in the env); empty = every admin
     |   issuer         - the name shown in the authenticator app; null = app.name
+    |   factors        - the second factors on the settings page, in this order;
+    |                    a further factor implements
+    |                    Brackets\AdminAuth\TwoFactor\Contracts\SecondFactor
     |
     */
 
@@ -136,6 +142,10 @@ return [
             static fn (string $role): bool => $role !== '',
         )),
         'issuer' => null,
+        'factors' => [
+            TotpFactor::class,
+            PasskeyFactor::class,
+        ],
     ],
 
     /*

@@ -8,9 +8,9 @@ use Brackets\AdminAuth\Http\Requests\ConfirmTwoFactorRequest;
 use Brackets\AdminAuth\Http\Requests\TwoFactorPasswordRequest;
 use Brackets\AdminAuth\Services\TwoFactorService;
 use Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable;
+use Brackets\AdminAuth\TwoFactor\SecondFactorRegistry;
 use Brackets\AdminAuth\TwoFactor\TwoFactorSession;
 use Illuminate\Contracts\Config\Repository as Config;
-use Illuminate\Contracts\Routing\UrlGenerator;
 use Illuminate\Contracts\View\Factory as ViewFactory;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Model;
@@ -26,33 +26,26 @@ final class TwoFactorController extends Controller
         private readonly Config $config,
         private readonly TwoFactorService $twoFactorService,
         private readonly TwoFactorSession $twoFactorSession,
-        private readonly UrlGenerator $urlGenerator,
+        private readonly SecondFactorRegistry $secondFactorRegistry,
         private readonly ViewFactory $viewFactory,
     ) {
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
     }
 
     /**
-     * Show whether two-factor is on and what can be done in that state.
+     * Show whether two-factor is on, and each second factor with its status and actions.
      */
     public function show(Request $request): View
     {
-        // Any admin model: one without two-factor support gets the same notice as a missing migration.
+        // Any admin model: a factor it does not support shows the same notice as a missing migration.
         $user = $request->user($this->guard);
         if ($user === null) {
             throw NotFoundHttpException::fromStatusCode(404, trans('Admin User not found'));
         }
 
         return $this->viewFactory->make('brackets/admin-auth::admin.two-factor.settings', [
-            'available' => $this->twoFactorService->isAvailableFor($user),
-            'enabled' => $this->twoFactorService->isEnabledFor($user),
+            'factors' => $this->secondFactorRegistry->presentFor($user),
             'required' => $this->twoFactorService->isRequiredFor($user),
-            'canDisable' => $this->twoFactorService->canRemoveFactor($user, TwoFactorService::FACTOR_TOTP),
-            'passkeysUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/passkeys'),
-            'enableUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/enable'),
-            'confirmUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/confirm'),
-            'recoveryCodesUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/recovery-codes'),
-            'disableUrl' => $this->urlGenerator->route('brackets/admin-auth::admin/two-factor/disable'),
         ]);
     }
 

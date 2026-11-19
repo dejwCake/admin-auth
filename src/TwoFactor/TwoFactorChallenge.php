@@ -63,7 +63,9 @@ final readonly class TwoFactorChallenge
             $this->rateLimiter->hit($throttleKey, self::DECAY_SECONDS);
 
             throw ValidationException::withMessages([
-                $field => [trans(sprintf('brackets/admin-auth::admin.two_factor.invalid_%s', $field))],
+                $field => [$recoveryCode !== ''
+                    ? trans('brackets/admin-auth::admin.two_factor.invalid_recovery_code')
+                    : trans('brackets/admin-auth::admin.two_factor.invalid_code')],
             ]);
         }
 

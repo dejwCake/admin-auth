@@ -114,7 +114,20 @@ return [
         'enabled' => 'Dvojfaktorové overenie bolo zapnuté.',
         'disabled' => 'Dvojfaktorové overenie bolo vypnuté.',
         'recovery_codes_regenerated' => 'Boli vygenerované nové záchranné kódy.',
-        'passkeys_hint' => 'Prihlásiť sa a potvrdiť prihlásenie môžete aj prístupovým kľúčom:',
+        'status_not_set_up' => 'Nenastavené',
+        'active_via' => 'Aktívne: :factors',
+        'factors' => [
+            'totp' => [
+                'name' => 'Overovacia aplikácia',
+            ],
+            'passkey' => [
+                'name' => 'Prístupové kľúče',
+                'count' => '{1} :count prístupový kľúč|[2,4] :count prístupové kľúče|[5,*] :count prístupových kľúčov',
+                'none' => 'Žiadne',
+                'manage' => 'Spravovať prístupové kľúče',
+                'add' => 'Pridať prístupový kľúč',
+            ],
+        ],
         'challenge' => [
             'title' => 'Dvojfaktorové overenie',
             'code_text' => 'Zadajte kód z overovacej aplikácie.',

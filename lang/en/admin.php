@@ -116,7 +116,20 @@ return [
         'enabled' => 'Two-factor authentication has been enabled.',
         'disabled' => 'Two-factor authentication has been disabled.',
         'recovery_codes_regenerated' => 'New recovery codes have been generated.',
-        'passkeys_hint' => 'You can also sign in and confirm your login with a passkey:',
+        'status_not_set_up' => 'Not set up',
+        'active_via' => 'Active: :factors',
+        'factors' => [
+            'totp' => [
+                'name' => 'Authenticator app',
+            ],
+            'passkey' => [
+                'name' => 'Passkeys',
+                'count' => '{1} :count passkey|[2,*] :count passkeys',
+                'none' => 'None',
+                'manage' => 'Manage passkeys',
+                'add' => 'Add a passkey',
+            ],
+        ],
         'challenge' => [
             'title' => 'Two-factor authentication',
             'code_text' => 'Enter the code from your authenticator app.',

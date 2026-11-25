@@ -246,7 +246,7 @@ the package version when you upgrade.
 | Activation | `admin.auth.activation.email`, `admin.auth.activation.error` | `auth/ActivationForm.vue`, `auth/ActivationError.vue` |
 | My profile | `admin.profile.edit-profile` | `account/ProfileForm.vue` |
 | Change password | `admin.profile.edit-password` | `account/PasswordChangeForm.vue` |
-| Two-factor authentication | `admin.two-factor.settings` | `account/TwoFactorSettings.vue` |
+| Two-factor authentication | `admin.two-factor.settings` | `account/TwoFactorOverview.vue`, `account/TwoFactorSettings.vue` |
 | Two-factor challenge | `admin.two-factor.challenge` | `auth/TwoFactorChallengeForm.vue` |
 | Passkeys | `admin.passkeys.index` | `account/PasskeySettings.vue` |
 

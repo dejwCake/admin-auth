@@ -13,6 +13,7 @@
 		:translations="{{ json_encode([
 			'title' => trans('brackets/admin-auth::admin.two_factor.challenge.title'),
 			'codeText' => trans('brackets/admin-auth::admin.two_factor.challenge.code_text'),
+			'codeOrPasskeyText' => trans('brackets/admin-auth::admin.two_factor.challenge.code_or_passkey_text'),
 			'recoveryCodeText' => trans('brackets/admin-auth::admin.two_factor.challenge.recovery_code_text'),
 			'code' => trans('brackets/admin-auth::admin.two_factor.challenge.code'),
 			'recoveryCode' => trans('brackets/admin-auth::admin.two_factor.challenge.recovery_code'),

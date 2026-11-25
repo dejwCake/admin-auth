@@ -138,6 +138,7 @@ return [
             'use_recovery_code' => 'Použiť záchranný kód',
             'use_code' => 'Použiť overovací kód',
             'passkey_text' => 'Potvrďte prihlásenie prístupovým kľúčom.',
+            'code_or_passkey_text' => 'Použite prístupový kľúč alebo zadajte kód z overovacej aplikácie.',
             'use_passkey' => 'Použiť prístupový kľúč',
             'or' => 'alebo',
         ],

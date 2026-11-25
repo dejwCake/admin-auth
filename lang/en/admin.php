@@ -140,6 +140,7 @@ return [
             'use_recovery_code' => 'Use a recovery code',
             'use_code' => 'Use an authentication code',
             'passkey_text' => 'Confirm your login with your passkey.',
+            'code_or_passkey_text' => 'Use your passkey or enter the code from your authenticator app.',
             'use_passkey' => 'Use a passkey',
             'or' => 'or',
         ],

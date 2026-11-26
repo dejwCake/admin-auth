@@ -30,7 +30,7 @@ final class AdminTwoFactor extends Model
     public function consumeRecoveryCode(Closure $matches): ?self
     {
         return $this->getConnection()->transaction(function () use ($matches): ?self {
-            $locked = self::query()->whereKey($this->getKey())->lockForUpdate()->first();
+            $locked = $this->newQuery()->whereKey($this->getKey())->lockForUpdate()->first();
             if (!$locked instanceof self) {
                 return null;
             }

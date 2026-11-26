@@ -9,6 +9,7 @@ use Brackets\AdminAuth\Tests\Models\TestAdminUserModel;
 use Brackets\AdminAuth\Tests\Models\TestUserModel;
 use Brackets\AdminUI\AdminUIServiceProvider;
 use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Database\Schema\Builder;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Env;
@@ -199,15 +200,15 @@ abstract class TestCase extends Orchestra
             },
         );
 
-        $this->setUpSecondFactorTables($app);
+        $this->setUpSecondFactorTables($app['db']->connection()->getSchemaBuilder());
     }
 
     /**
      * No foreign keys: the test admins live in two tables (one per guard).
      */
-    private function setUpSecondFactorTables(Application $app): void
+    protected function setUpSecondFactorTables(Builder $schemaBuilder): void
     {
-        $app['db']->connection()->getSchemaBuilder()->create(
+        $schemaBuilder->create(
             'admin_two_factors',
             static function (Blueprint $table): void {
                 $table->id();
@@ -219,7 +220,7 @@ abstract class TestCase extends Orchestra
             },
         );
 
-        $app['db']->connection()->getSchemaBuilder()->create(
+        $schemaBuilder->create(
             'admin_passkeys',
             static function (Blueprint $table): void {
                 $table->id();

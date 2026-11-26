@@ -159,7 +159,7 @@ final class PasskeyController extends Controller
     {
         $user = $request->user($this->guard);
 
-        return $user instanceof PasskeyAuthenticatable && $this->passkeyService->isAvailable() ? $user : null;
+        return $user instanceof PasskeyAuthenticatable && $this->passkeyService->isAvailableFor($user) ? $user : null;
     }
 
     private function unavailable(): JsonResponse

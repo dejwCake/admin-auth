@@ -13,11 +13,11 @@ Route::middleware(['web', 'auth:' . config('admin-auth.defaults.guard'), 'admin'
         Route::get('/profile', 'editProfile')
             ->name('edit-profile');
         Route::post('/profile', 'updateProfile')
-            ->middleware('throttle:6,1')
+            ->middleware('throttle:6,1,admin-auth-profile')
             ->name('update-profile');
         Route::get('/password', 'editPassword')
             ->name('edit-password');
         Route::post('/password', 'updatePassword')
-            ->middleware('throttle:6,1')
+            ->middleware('throttle:6,1,admin-auth-password')
             ->name('update-password');
     });

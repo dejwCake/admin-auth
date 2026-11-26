@@ -74,6 +74,27 @@ class UpdatePasswordAdminUserTest extends AdminUserTestCase
         $this->actingAs($user, $this->adminAuthGuard)->postJson('/admin/password', $data)->assertStatus(429);
     }
 
+    public function testProfileSavesDoNotThrottleThePasswordChange(): void
+    {
+        $user = $this->createTestUser();
+        $profile = [
+            'first_name' => 'Johnny',
+            'last_name' => 'Smith',
+            'email' => 'john@example.com',
+            'language' => 'en',
+        ];
+
+        for ($i = 0; $i < 6; $i++) {
+            $this->actingAs($user, $this->adminAuthGuard)->postJson('/admin/profile', $profile)->assertStatus(200);
+        }
+
+        $this->actingAs($user, $this->adminAuthGuard)->postJson('/admin/password', [
+            'current_password' => 'testpass123',
+            'password' => self::NEW_PASSWORD,
+            'password_confirmation' => self::NEW_PASSWORD,
+        ])->assertStatus(200);
+    }
+
     public function testMissingCurrentPasswordIsRejected(): void
     {
         $user = $this->createTestUser();

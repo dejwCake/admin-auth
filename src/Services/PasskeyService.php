@@ -36,7 +36,7 @@ final readonly class PasskeyService
     }
 
     /**
-     * Whether the passkeys table exists (the migration has run).
+     * Whether the passkeys table exists (the migration has run), before any admin is known.
      */
     public function isAvailable(): bool
     {
@@ -48,17 +48,17 @@ final readonly class PasskeyService
      */
     public function isAvailableFor(Authenticatable $user): bool
     {
-        return $user instanceof PasskeyAuthenticatable && $this->isAvailable();
+        return $user instanceof PasskeyAuthenticatable && $this->hasTable($user);
     }
 
     public function hasPasskeys(Authenticatable $user): bool
     {
-        return $user instanceof PasskeyAuthenticatable && $this->isAvailable() && $user->passkeys()->exists();
+        return $user instanceof PasskeyAuthenticatable && $this->hasTable($user) && $user->passkeys()->exists();
     }
 
     public function countFor(Authenticatable $user): int
     {
-        return $user instanceof PasskeyAuthenticatable && $this->isAvailable() ? $user->passkeys()->count() : 0;
+        return $user instanceof PasskeyAuthenticatable && $this->hasTable($user) ? $user->passkeys()->count() : 0;
     }
 
     /**
@@ -118,7 +118,7 @@ final readonly class PasskeyService
         $credentialId = AdminPasskey::encodeCredentialId($credentialRecord->publicKeyCredentialId);
         $passkey = $user->passkeys()->make(['name' => $name]);
         $passkey->forceFill(['credential_id' => $credentialId, 'credential' => $credentialRecord]);
-        $isStored = AdminPasskey::query()->where('credential_id_hash', $passkey->credential_id_hash)->exists();
+        $isStored = $passkey->newQuery()->where('credential_id_hash', $passkey->credential_id_hash)->exists();
         if ($isStored || !$passkey->saveUnlessDuplicate()) {
             throw $this->passkeyRejection->reject('The credential is already stored.', $credential);
         }
@@ -162,6 +162,14 @@ final readonly class PasskeyService
     }
 
     /* ************************ HELPERS ************************ */
+
+    /**
+     * On the admin's connection, which the passkeys relation carries.
+     */
+    private function hasTable(PasskeyAuthenticatable $user): bool
+    {
+        return $this->schemaCheck->hasTable($user->passkeys()->getRelated());
+    }
 
     /**
      * The stored passkey the response names: any admin's, or only the given admin's.

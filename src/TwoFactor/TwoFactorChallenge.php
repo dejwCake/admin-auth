@@ -117,7 +117,7 @@ final readonly class TwoFactorChallenge
      */
     private function passkeyUser(Authenticatable $user): PasskeyAuthenticatable
     {
-        if (!$user instanceof PasskeyAuthenticatable || !$this->passkeyService->isAvailable()) {
+        if (!$user instanceof PasskeyAuthenticatable || !$this->passkeyService->isAvailableFor($user)) {
             throw ValidationException::withMessages([
                 'passkey' => [trans('brackets/admin-auth::admin.passkeys.migration_missing')],
             ]);

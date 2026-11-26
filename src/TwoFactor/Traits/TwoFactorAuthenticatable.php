@@ -35,7 +35,7 @@ trait TwoFactorAuthenticatable
 
     public function hasTwoFactorTable(): bool
     {
-        return Container::getInstance()->make(SchemaCheck::class)->hasTable(new AdminTwoFactor());
+        return Container::getInstance()->make(SchemaCheck::class)->hasTable($this->twoFactor()->getRelated());
     }
 
     public function getTwoFactorRecord(): ?AdminTwoFactor

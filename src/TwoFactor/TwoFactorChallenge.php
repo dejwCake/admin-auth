@@ -53,15 +53,15 @@ final readonly class TwoFactorChallenge
     ): void {
         $field = $recoveryCode !== '' ? 'recovery_code' : 'code';
         $throttleKey = $this->twoFactorService->throttleKey($user);
-        $this->ensureNotThrottled($throttleKey, $field);
+        $this->countAttempt($throttleKey, $field);
 
-        $valid = $recoveryCode !== ''
-            ? $this->twoFactorService->verifyRecoveryCode($user, $recoveryCode)
-            : $this->twoFactorService->verifyCode($user, $code);
+        $valid = $this->twoFactorService->isEnabledFor($user) && (
+            $recoveryCode !== ''
+                ? $this->twoFactorService->verifyRecoveryCode($user, $recoveryCode)
+                : $this->twoFactorService->verifyCode($user, $code)
+        );
 
         if (!$valid) {
-            $this->rateLimiter->hit($throttleKey, self::DECAY_SECONDS);
-
             throw ValidationException::withMessages([
                 $field => [$recoveryCode !== ''
                     ? trans('brackets/admin-auth::admin.two_factor.invalid_recovery_code')
@@ -105,15 +105,9 @@ final readonly class TwoFactorChallenge
     public function verifyPasskey(Session $session, Authenticatable $user, array $credential): void
     {
         $throttleKey = $this->twoFactorService->throttleKey($user);
-        $this->ensureNotThrottled($throttleKey, 'passkey');
+        $this->countAttempt($throttleKey, 'passkey');
 
-        try {
-            $this->passkeyService->verifyFor($session, $this->passkeyUser($user), $credential);
-        } catch (ValidationException $validationException) {
-            $this->rateLimiter->hit($throttleKey, self::DECAY_SECONDS);
-
-            throw $validationException;
-        }
+        $this->passkeyService->verifyFor($session, $this->passkeyUser($user), $credential);
 
         $this->pass($session, $user, $throttleKey);
     }
@@ -133,11 +127,11 @@ final readonly class TwoFactorChallenge
     }
 
     /**
-     * @throws ValidationException with 429 once the admin failed too often, with codes or passkeys
+     * @throws ValidationException with 429 once the admin tried too often, with codes or passkeys
      */
-    private function ensureNotThrottled(string $throttleKey, string $field): void
+    private function countAttempt(string $throttleKey, string $field): void
     {
-        if (!$this->rateLimiter->tooManyAttempts($throttleKey, self::MAX_ATTEMPTS)) {
+        if ($this->rateLimiter->hit($throttleKey, self::DECAY_SECONDS) <= self::MAX_ATTEMPTS) {
             return;
         }
 

@@ -133,6 +133,7 @@ abstract class TestCase extends Orchestra
                 'admin_password_resets',
                 'admin_activations',
                 'admin_passkeys',
+                'admin_two_factors',
             ] as $table
         ) {
             $app['db']->connection()->getSchemaBuilder()->dropIfExists($table);
@@ -146,9 +147,6 @@ abstract class TestCase extends Orchestra
                 $table->string('email');
                 $table->string('password');
                 $table->string('remember_token')->nullable();
-                $table->text('two_factor_secret')->nullable();
-                $table->text('two_factor_recovery_codes')->nullable();
-                $table->timestamp('two_factor_confirmed_at')->nullable();
                 $table->dateTime('created_at');
                 $table->dateTime('updated_at');
             },
@@ -166,9 +164,6 @@ abstract class TestCase extends Orchestra
                 $table->boolean('activated')->default(false);
                 $table->boolean('forbidden')->default(false);
                 $table->string('language', 2)->default('en');
-                $table->text('two_factor_secret')->nullable();
-                $table->text('two_factor_recovery_codes')->nullable();
-                $table->timestamp('two_factor_confirmed_at')->nullable();
                 $table->timestamp('last_login_at')->nullable();
                 $table->softDeletes('deleted_at');
                 $table->dateTime('created_at');
@@ -204,14 +199,34 @@ abstract class TestCase extends Orchestra
             },
         );
 
-        // No foreign key: the test admins live in two tables (one per guard).
+        $this->setUpSecondFactorTables($app);
+    }
+
+    /**
+     * No foreign keys: the test admins live in two tables (one per guard).
+     */
+    private function setUpSecondFactorTables(Application $app): void
+    {
+        $app['db']->connection()->getSchemaBuilder()->create(
+            'admin_two_factors',
+            static function (Blueprint $table): void {
+                $table->id();
+                $table->unsignedBigInteger('admin_user_id')->unique();
+                $table->text('secret');
+                $table->text('recovery_codes')->nullable();
+                $table->timestamp('confirmed_at')->nullable();
+                $table->timestamps();
+            },
+        );
+
         $app['db']->connection()->getSchemaBuilder()->create(
             'admin_passkeys',
             static function (Blueprint $table): void {
                 $table->id();
                 $table->unsignedBigInteger('admin_user_id')->index();
                 $table->string('name');
-                $table->string('credential_id')->unique();
+                $table->text('credential_id');
+                $table->char('credential_id_hash', 64)->unique();
                 $table->json('credential');
                 $table->timestamp('last_used_at')->nullable();
                 $table->timestamps();

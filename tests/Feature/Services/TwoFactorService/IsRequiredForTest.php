@@ -43,11 +43,11 @@ class IsRequiredForTest extends AdminUserTestCase
         );
     }
 
-    public function testNotRequiredByRoleForAModelWithoutRoles(): void
+    public function testRequiredByRoleForAModelWithoutRolesFailsClosed(): void
     {
         $this->requireTwoFactor(['Administrator']);
         $user = TestUserModel::create(['email' => 'jane@example.com', 'password' => 'x']);
 
-        self::assertFalse($this->app->make(TwoFactorService::class)->isRequiredFor($user));
+        self::assertTrue($this->app->make(TwoFactorService::class)->isRequiredFor($user));
     }
 }

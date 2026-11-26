@@ -93,6 +93,7 @@ final readonly class TotpFactor implements SecondFactor
             'copied' => trans('brackets/admin-auth::admin.two_factor.copied'),
             'download' => trans('brackets/admin-auth::admin.two_factor.download'),
             'done' => trans('brackets/admin-auth::admin.two_factor.done'),
+            'failed' => trans('brackets/admin-auth::admin.two_factor.failed'),
             'current_password' => trans('brackets/admin-auth::admin.two_factor.current_password'),
             'regenerate' => trans('brackets/admin-auth::admin.two_factor.regenerate'),
             'disable' => trans('brackets/admin-auth::admin.two_factor.disable'),

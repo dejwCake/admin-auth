@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Tests\Feature\Database\Migrations;
 
+use Brackets\AdminAuth\Models\AdminPasskey;
 use Brackets\AdminAuth\Models\AdminUser;
 use Brackets\AdminAuth\Tests\AdminUserTestCase;
 use Carbon\CarbonImmutable;
@@ -79,6 +80,7 @@ class CreateAdminPasskeysTableTest extends AdminUserTestCase
                 'admin_user_id' => $adminId,
                 'name' => sprintf('Passkey %d', $i),
                 'credential_id' => sprintf('credential-%d', $i),
+                'credential_id_hash' => AdminPasskey::hashCredentialId(sprintf('credential-%d', $i)),
                 'credential' => '{}',
                 'created_at' => $now,
                 'updated_at' => $now,

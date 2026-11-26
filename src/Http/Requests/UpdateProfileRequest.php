@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Http\Requests;
 
+use Brackets\AdminAuth\Services\ProfileService;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Foundation\Http\FormRequest;
@@ -15,7 +16,7 @@ final class UpdateProfileRequest extends FormRequest
     /**
      * @return array<string, array<int, string|object>>
      */
-    public function rules(Config $config): array
+    public function rules(Config $config, ProfileService $profileService): array
     {
         $guard = $config->get('admin-auth.defaults.guard', 'admin');
         $user = $this->user($guard);
@@ -39,6 +40,7 @@ final class UpdateProfileRequest extends FormRequest
             'language' => [
                 'sometimes',
                 'string',
+                Rule::in($profileService->getAllowedLocales()),
             ],
             'current_password' => [
                 Rule::requiredIf(fn (): bool => $this->changesEmail($user)),

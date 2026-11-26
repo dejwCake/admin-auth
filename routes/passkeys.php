@@ -29,7 +29,9 @@ Route::middleware(['web', 'auth:' . config('admin-auth.defaults.guard'), 'admin'
         Route::post('/', [PasskeyController::class, 'store'])
             ->name('passkeys/store');
         Route::patch('/{adminPasskey}', [PasskeyController::class, 'update'])
+            ->whereNumber('adminPasskey')
             ->name('passkeys/update');
         Route::delete('/{adminPasskey}', [PasskeyController::class, 'destroy'])
+            ->whereNumber('adminPasskey')
             ->name('passkeys/destroy');
     });

@@ -101,4 +101,16 @@ class DestroyTest extends AdminUserTestCase
 
         self::assertNotNull($other->fresh());
     }
+
+    public function testNonNumericIdIsNotFound(): void
+    {
+        $this->allowAdmin();
+        $user = $this->createAdmin();
+
+        // Not a database error on PostgreSQL, whose id column is an integer.
+        $this->actingAsVerified($user)->deleteJson(
+            '/admin/passkeys/abc',
+            ['current_password' => self::PASSWORD],
+        )->assertNotFound();
+    }
 }

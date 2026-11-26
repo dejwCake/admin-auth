@@ -76,8 +76,12 @@ To require it, set:
 
 The name shown in the authenticator app is `admin-auth.two_factor.issuer`, `app.name` by default.
 
-The feature needs the `two_factor_*` columns on `admin_users` (publish and run the migrations).
-Without them admin pages keep working, every admin counts as not enrolled and the page's
+The feature needs the `admin_two_factors` table (publish and run the migrations): one row per admin
+with an authenticator app — the encrypted secret, the hashed recovery codes and when it was
+confirmed — on the fixed key `admin_user_id`, like passkeys; `admin_users` itself is not changed. Its
+foreign key points at `admin_users`; if your admin guard uses another table, edit the published
+migration. The record is loaded once per request, and an admin whose session passed (or has nothing to
+pass) is not queried again. Without the table admin pages keep working, every admin counts as not enrolled and the page's
 "Authenticator app" section says which migration to run; with two-factor required, admins are held on that notice. The admin model needs
 `Brackets\AdminAuth\TwoFactor\Contracts\TwoFactorAuthenticatable` and its trait
 (`Brackets\AdminAuth\Models\AdminUser` has both).

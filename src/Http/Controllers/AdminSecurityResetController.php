@@ -15,6 +15,7 @@ use Illuminate\Contracts\Notifications\Dispatcher;
 use Illuminate\Database\Eloquent\Model;
 use Psr\Log\LoggerInterface;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
+use Throwable;
 
 use function assert;
 
@@ -23,7 +24,7 @@ use function assert;
  */
 final class AdminSecurityResetController extends Controller
 {
-    private string $guard;
+    private readonly string $guard;
 
     public function __construct(
         private readonly Config $config,
@@ -52,13 +53,23 @@ final class AdminSecurityResetController extends Controller
             return ['message' => trans('brackets/admin-auth::admin.security_reset.nothing_to_reset')];
         }
 
-        $this->dispatcher->send($target, new SecurityResetNotification($this->nameOf($actor), CarbonImmutable::now()));
         $this->logger->info('Second factors of an admin were reset by another admin.', [
             'actor_id' => $this->idOf($actor),
             'target_id' => $target->getAuthIdentifier(),
             'totp' => $removed->totp,
             'passkeys' => count($removed->passkeys),
         ]);
+        try {
+            $this->dispatcher->send(
+                $target,
+                new SecurityResetNotification($this->nameOf($actor), CarbonImmutable::now()),
+            );
+        } catch (Throwable $throwable) {
+            $this->logger->error('The security reset e-mail could not be sent.', [
+                'target_id' => $target->getAuthIdentifier(),
+                'exception' => $throwable,
+            ]);
+        }
 
         return ['message' => trans('brackets/admin-auth::admin.security_reset.done')];
     }

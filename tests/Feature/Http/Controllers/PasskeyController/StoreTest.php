@@ -32,6 +32,18 @@ class StoreTest extends AdminUserTestCase
         $this->get('/admin/passkeys')->assertSee('MacBook');
     }
 
+    public function testAddingAPasskeyDropsAnUnconfirmedAuthenticatorSecret(): void
+    {
+        $this->allowAdmin();
+        $user = $this->createAdmin();
+        // An abandoned authenticator enrolment: secret stored, never confirmed.
+        $this->storeUnconfirmedSecret($user);
+
+        $this->add($user, new VirtualAuthenticator(), 'MacBook')->assertCreated();
+
+        self::assertNull($user->fresh()?->getTwoFactorSecret());
+    }
+
     public function testNameIsRequiredAndAtMost255Characters(): void
     {
         $this->allowAdmin();

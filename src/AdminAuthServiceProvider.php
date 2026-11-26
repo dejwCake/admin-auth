@@ -12,6 +12,7 @@ use Brackets\AdminAuth\Http\Controllers\MissingRoutesController;
 use Brackets\AdminAuth\Passkeys\PasskeySerializer;
 use Brackets\AdminAuth\Providers\EventServiceProvider;
 use Brackets\AdminAuth\Providers\MiddlewareServiceProvider;
+use Brackets\AdminAuth\Services\SchemaCheck;
 use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Debug\ExceptionHandler;
 use Illuminate\Routing\Router;
@@ -73,6 +74,7 @@ class AdminAuthServiceProvider extends ServiceProvider
         $this->app->register(MiddlewareServiceProvider::class);
 
         $this->app->singleton(PasskeySerializer::class);
+        $this->app->scoped(SchemaCheck::class);
 
         $this->app->bind(ExceptionHandler::class, Handler::class);
 
@@ -159,11 +161,11 @@ class AdminAuthServiceProvider extends ServiceProvider
             ], 'migrations');
         }
 
-        if (!glob($this->app->databasePath('migrations/*_add_two_factor_columns_to_admin_users_table.php'))) {
+        if (!glob($this->app->databasePath('migrations/*_create_admin_two_factors_table.php'))) {
             $this->publishes([
-                __DIR__ . '/../database/migrations/add_two_factor_columns_to_admin_users_table.php'
+                __DIR__ . '/../database/migrations/create_admin_two_factors_table.php'
                 => sprintf(
-                    '%s/%s_000001_add_two_factor_columns_to_admin_users_table.php',
+                    '%s/%s_000001_create_admin_two_factors_table.php',
                     $this->app->databasePath('migrations'),
                     date('Y_m_d'),
                 ),

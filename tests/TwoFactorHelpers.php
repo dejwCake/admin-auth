@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\Tests;
 
+use Brackets\AdminAuth\Models\AdminTwoFactor;
 use Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable;
 use Brackets\AdminAuth\Tests\Models\TestAdminUserModel;
 use Brackets\AdminAuth\Tests\Models\TestRoleAdminUserModel;
@@ -14,7 +15,6 @@ use Illuminate\Contracts\Auth\Access\Gate;
 use Illuminate\Contracts\Hashing\Hasher;
 use Illuminate\Database\DatabaseManager;
 use Illuminate\Database\Eloquent\Model;
-use Illuminate\Database\Schema\Blueprint;
 use PragmaRX\Google2FA\Google2FA;
 
 /**
@@ -62,14 +62,11 @@ trait TwoFactorHelpers
         $hasher = $this->app->make(Hasher::class);
         $recoveryCodes = [self::RECOVERY_CODE, 'ccccc-ddddd'];
 
-        $user->forceFill([
-            'two_factor_secret' => $this->app->make(Google2FA::class)->generateSecretKey(),
-            'two_factor_recovery_codes' => array_map(
-                static fn (string $code): string => $hasher->make($code),
-                $recoveryCodes,
-            ),
-            'two_factor_confirmed_at' => CarbonImmutable::now(),
-        ])->save();
+        $this->storeTwoFactor($user, [
+            'secret' => $this->app->make(Google2FA::class)->generateSecretKey(),
+            'recovery_codes' => array_map(static fn (string $code): string => $hasher->make($code), $recoveryCodes),
+            'confirmed_at' => CarbonImmutable::now(),
+        ]);
 
         return $recoveryCodes;
     }
@@ -108,17 +105,36 @@ trait TwoFactorHelpers
     }
 
     /**
-     * The admin users table as before the two-factor migration.
+     * An authenticator enrolment that was started but never confirmed.
      */
-    protected function dropTwoFactorColumns(): void
+    protected function storeUnconfirmedSecret(Model&TwoFactorAuthenticatable $user): void
     {
-        $table = $this->adminAuthGuard === 'web' ? 'test_standard_user_models' : 'test_brackets_user_models';
+        $this->storeTwoFactor($user, [
+            'secret' => 'JBSWY3DPEHPK3PXP',
+            'recovery_codes' => null,
+            'confirmed_at' => null,
+        ]);
+    }
 
-        $this->app->make(DatabaseManager::class)->connection()->getSchemaBuilder()->table(
-            $table,
-            static function (Blueprint $blueprint): void {
-                $blueprint->dropColumn(['two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at']);
-            },
-        );
+    /**
+     * Write the admin's two-factor record as TwoFactorService does, keeping the loaded relation in step.
+     *
+     * @param array<string, string|array<int, string>|CarbonImmutable|null> $attributes
+     */
+    protected function storeTwoFactor(Model&TwoFactorAuthenticatable $user, array $attributes): AdminTwoFactor
+    {
+        $record = $user->getTwoFactorRecord() ?? $user->twoFactor()->make();
+        $record->forceFill($attributes)->save();
+        $user->setRelation('twoFactor', $record);
+
+        return $record;
+    }
+
+    /**
+     * The database as before the two-factor migration.
+     */
+    protected function dropTwoFactorTable(): void
+    {
+        $this->app->make(DatabaseManager::class)->connection()->getSchemaBuilder()->drop('admin_two_factors');
     }
 }

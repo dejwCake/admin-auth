@@ -68,4 +68,13 @@ class UpdateTest extends AdminUserTestCase
 
         self::assertSame('Jane phone', $other->fresh()?->name);
     }
+
+    public function testNonNumericIdIsNotFound(): void
+    {
+        $this->allowAdmin();
+        $user = $this->createAdmin();
+
+        // Not a database error on PostgreSQL, whose id column is an integer.
+        $this->actingAsVerified($user)->patchJson('/admin/passkeys/abc', ['name' => 'Work laptop'])->assertNotFound();
+    }
 }

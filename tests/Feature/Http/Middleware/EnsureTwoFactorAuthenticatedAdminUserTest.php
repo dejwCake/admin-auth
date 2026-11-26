@@ -127,7 +127,7 @@ class EnsureTwoFactorAuthenticatedAdminUserTest extends AdminUserTestCase
 
     public function testMissingColumnsLeaveAdminPagesOpen(): void
     {
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->allowAdmin();
         $this->createAdmin();
 
@@ -138,7 +138,7 @@ class EnsureTwoFactorAuthenticatedAdminUserTest extends AdminUserTestCase
 
     public function testMissingColumnsWithRequiredTwoFactorRedirectToTheNotice(): void
     {
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->allowAdmin();
         $this->requireTwoFactor();
 

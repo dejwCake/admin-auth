@@ -53,19 +53,19 @@ final readonly class PasskeyFactor implements SecondFactor
 
         return new SecondFactorPresentation(
             key: self::KEY,
-            name: trans('brackets/admin-auth::admin.two_factor.factors.passkey.name'),
+            name: $this->translator->get('brackets/admin-auth::admin.two_factor.factors.passkey.name'),
             icon: 'fa fa-fingerprint',
             available: $this->isAvailableFor($user),
             active: $count > 0,
             status: $count > 0
                 ? $this->translator->choice('brackets/admin-auth::admin.two_factor.factors.passkey.count', $count)
-                : trans('brackets/admin-auth::admin.two_factor.factors.passkey.none'),
-            notice: trans('brackets/admin-auth::admin.passkeys.migration_missing'),
+                : $this->translator->get('brackets/admin-auth::admin.two_factor.factors.passkey.none'),
+            notice: $this->translator->get('brackets/admin-auth::admin.passkeys.migration_missing'),
             link: new SecondFactorLink(
                 $this->urlGenerator->route('brackets/admin-auth::admin/passkeys'),
                 $count > 0
-                    ? trans('brackets/admin-auth::admin.two_factor.factors.passkey.manage')
-                    : trans('brackets/admin-auth::admin.two_factor.factors.passkey.add'),
+                    ? $this->translator->get('brackets/admin-auth::admin.two_factor.factors.passkey.manage')
+                    : $this->translator->get('brackets/admin-auth::admin.two_factor.factors.passkey.add'),
             ),
         );
     }

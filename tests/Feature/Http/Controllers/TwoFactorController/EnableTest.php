@@ -58,7 +58,7 @@ class EnableTest extends AdminUserTestCase
 
     public function testMissingColumnsAreRejected(): void
     {
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->allowAdmin();
 
         $this->actingAs($this->createAdmin(), $this->adminAuthGuard)

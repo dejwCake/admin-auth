@@ -42,7 +42,7 @@ class ActiveForTest extends AdminUserTestCase
     {
         $user = $this->createAdmin();
         $this->addPasskey($user, 'MacBook');
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
 
         self::assertSame(['passkey'], $this->activeKeys($user->fresh()));
     }

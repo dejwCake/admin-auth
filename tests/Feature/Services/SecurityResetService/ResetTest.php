@@ -60,7 +60,7 @@ class ResetTest extends AdminUserTestCase
     {
         $user = $this->createAdmin();
         $this->addPasskey($user);
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
 
         $removed = $this->service()->reset($user->fresh());
 
@@ -71,7 +71,7 @@ class ResetTest extends AdminUserTestCase
     public function testNeitherMigrationResetsNothingWithoutAnError(): void
     {
         $user = $this->createAdmin();
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->app->make(DatabaseManager::class)->connection()->getSchemaBuilder()->dropIfExists('admin_passkeys');
 
         self::assertTrue($this->service()->reset($user->fresh())->isEmpty());

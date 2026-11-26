@@ -21,11 +21,11 @@ final readonly class SecurityResetService
 
     /**
      * The admin's second factors now, i.e. what a reset would remove; null when neither the two-factor
-     * columns nor the passkeys table exist.
+     * table nor the passkeys table exists.
      */
     public function factorsOf(Authenticatable $user): ?SecondFactors
     {
-        if (!$this->hasTotpColumns($user) && !$this->passkeyService->isAvailableFor($user)) {
+        if (!$this->hasTotpTable($user) && !$this->passkeyService->isAvailableFor($user)) {
             return null;
         }
 
@@ -51,14 +51,14 @@ final readonly class SecurityResetService
         return $factors;
     }
 
-    private function hasTotpColumns(Authenticatable $user): bool
+    private function hasTotpTable(Authenticatable $user): bool
     {
         return $user instanceof TwoFactorAuthenticatable && $this->twoFactorService->isAvailableFor($user);
     }
 
     private function hasTotpData(Authenticatable $user): bool
     {
-        return $user instanceof TwoFactorAuthenticatable && $this->hasTotpColumns($user) && $user->hasTwoFactorData();
+        return $user instanceof TwoFactorAuthenticatable && $this->hasTotpTable($user) && $user->hasTwoFactorData();
     }
 
     /**

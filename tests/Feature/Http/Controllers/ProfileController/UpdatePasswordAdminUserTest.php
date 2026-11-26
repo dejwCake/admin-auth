@@ -58,6 +58,22 @@ class UpdatePasswordAdminUserTest extends AdminUserTestCase
         self::assertTrue($this->app->make(Hasher::class)->check('testpass123', $user->fresh()->password));
     }
 
+    public function testGuessingTheCurrentPasswordIsThrottled(): void
+    {
+        $user = $this->createTestUser();
+        $data = [
+            'current_password' => 'wrong-password',
+            'password' => self::NEW_PASSWORD,
+            'password_confirmation' => self::NEW_PASSWORD,
+        ];
+
+        for ($i = 0; $i < 6; $i++) {
+            $this->actingAs($user, $this->adminAuthGuard)->postJson('/admin/password', $data)->assertStatus(422);
+        }
+
+        $this->actingAs($user, $this->adminAuthGuard)->postJson('/admin/password', $data)->assertStatus(429);
+    }
+
     public function testMissingCurrentPasswordIsRejected(): void
     {
         $user = $this->createTestUser();

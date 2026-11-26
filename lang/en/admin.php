@@ -101,6 +101,7 @@ return [
         'copied' => 'Copied',
         'download' => 'Download',
         'done' => 'Done',
+        'failed' => 'Something went wrong. Please try again.',
         'current_password' => 'Current password',
         'regenerate' => 'Regenerate recovery codes',
         'disable' => 'Disable two-factor authentication',

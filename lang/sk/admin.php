@@ -99,6 +99,7 @@ return [
         'copied' => 'Skopírované',
         'download' => 'Stiahnuť',
         'done' => 'Hotovo',
+        'failed' => 'Niečo sa pokazilo. Skúste to znova.',
         'current_password' => 'Súčasné heslo',
         'regenerate' => 'Vygenerovať nové záchranné kódy',
         'disable' => 'Vypnúť dvojfaktorové overenie',

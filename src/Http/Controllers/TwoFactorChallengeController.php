@@ -20,9 +20,9 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 
 final class TwoFactorChallengeController extends Controller
 {
-    private string $guard;
+    private readonly string $guard;
 
-    private string $redirectTo;
+    private readonly string $redirectTo;
 
     public function __construct(
         private readonly Config $config,

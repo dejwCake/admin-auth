@@ -42,7 +42,7 @@ class FactorsOfTest extends AdminUserTestCase
     {
         $user = $this->createAdmin();
         $this->addPasskey($user, 'MacBook');
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
 
         $factors = $this->service()->factorsOf($user->fresh());
 
@@ -67,7 +67,7 @@ class FactorsOfTest extends AdminUserTestCase
     public function testNeitherMigrationGivesNull(): void
     {
         $user = $this->createAdmin();
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->dropPasskeysTable();
 
         self::assertNull($this->service()->factorsOf($user->fresh()));

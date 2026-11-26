@@ -126,7 +126,7 @@ class ShowTest extends AdminUserTestCase
 
     public function testMissingColumnsShowTheNoticeInTheAuthenticatorAppSectionOnly(): void
     {
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->allowAdmin();
 
         $response = $this->actingAs($this->createAdmin(), $this->adminAuthGuard)

@@ -34,6 +34,20 @@ final readonly class ProfileService
     }
 
     /**
+     * @return array<int, string>
+     */
+    public function getAllowedLocales(): array
+    {
+        return (new Collection((array) $this->config->get('translatable.locales', [])))
+            ->map(static fn (mixed $value, int|string $key): mixed => is_array($value) ? $key : $value)
+            ->merge($this->getFallbackLocales())
+            ->filter(static fn (mixed $locale): bool => is_string($locale) && $locale !== '')
+            ->unique()
+            ->values()
+            ->all();
+    }
+
+    /**
      * The avatar collection, when the admin model uses craftable-media's collections.
      */
     public function getAvatarCollection(Model $adminUser): ?MediaCollection

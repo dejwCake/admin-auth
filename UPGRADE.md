@@ -1,9 +1,9 @@
 # Upgrading within v2
 
-## 2.2.0 (unreleased)
+## Upgrade to 2.2.0
 
-Update `dejwcake/admin-auth` and `@dejwcake/craftable` together: the new pages mount components
-that ship with the matching `@dejwcake/craftable` version.
+Requires `@dejwcake/craftable` 2.6.0 (`"@dejwcake/craftable": "^2.6.0"` in `package.json`): the new pages
+mount components that ship with it.
 
 ### Profile and password pages
 
@@ -59,8 +59,9 @@ their next request.
 Every admin can now turn on two-factor authentication (TOTP) at `/admin/two-factor`; an enrolled
 admin is asked for a code after the password login. See README → "Two-factor authentication".
 
-1. **Publish and run the migration — required.** It adds `two_factor_secret`,
-   `two_factor_recovery_codes` and `two_factor_confirmed_at` to `admin_users`:
+1. **Publish and run the migration — required.** It adds the `admin_two_factors` table (one row per
+   admin with an authenticator app: the encrypted secret, the hashed recovery codes and when it was
+   confirmed); `admin_users` is not changed:
 
    ```shell
    php artisan vendor:publish --provider="Brackets\AdminAuth\AdminAuthServiceProvider" --tag=migrations
@@ -70,8 +71,7 @@ admin is asked for a code after the password login. See README → "Two-factor a
    Until it runs nothing breaks: admin pages keep working, every admin counts as not enrolled and the
    two-factor page's "Authenticator app" section shows a "run the migration" notice instead of
    enrolment.
-2. **Register the components** in `resources/js/admin/admin.js` (`@dejwcake/craftable` of the same
-   release):
+2. **Register the components** in `resources/js/admin/admin.js` (`@dejwcake/craftable` 2.6.0):
 
    ```js
    import TwoFactorOverview from '@craftable/account/TwoFactorOverview.vue';
@@ -104,8 +104,7 @@ admin is asked for a code after the password login. See README → "Two-factor a
   `Brackets\AdminAuth\TwoFactor\Traits\TwoFactorAuthenticatable` trait; without it the admin counts
   as not enrolled and the page shows the notice.
 - **Impersonal login** from a generated admin-users listing keeps working without regenerating.
-- **Admin-users CRUD.** Regenerating it is optional; admin-generator never puts the two-factor
-  columns into generated code.
+- **Admin-users CRUD.** Nothing to regenerate: the authenticator app lives in its own table.
 - New composer dependencies: `pragmarx/google2fa`, `bacon/bacon-qr-code`.
 
 ### Passkeys
@@ -114,9 +113,8 @@ Every admin can now add passkeys (WebAuthn) at `/admin/passkeys`, sign in with o
 and use one as the second factor; forced two-factor is satisfied by TOTP or a passkey. See README →
 "Passkeys".
 
-Update `dejwcake/admin-auth` and `@dejwcake/craftable` together: the passkeys page mounts
-`PasskeySettings`, and the login and challenge pages pass props the older `LoginForm` and
-`TwoFactorChallengeForm` don't know.
+Requires `@dejwcake/craftable` 2.6.0: the passkeys page mounts `PasskeySettings`, and the login and
+challenge pages pass props that `LoginForm` and `TwoFactorChallengeForm` know from 2.6.0 on.
 
 1. **Publish and run the migration — required.** It adds the `admin_passkeys` table:
 
@@ -188,7 +186,7 @@ passkeys from the admin-users listing. See README → "Resetting another admin's
 2. **Get the button:** regenerate the admin-users CRUD with admin-generator
    (`php artisan admin:generate:admin-user --except=show -f`), or add it to the generated listing by
    hand as admin-generator's UPGRADE.md shows. The generated listing imports `SecurityResetButton`
-   from `@dejwcake/craftable`, so update it together with admin-auth, then rebuild the assets.
+   from `@dejwcake/craftable` 2.6.0 (admin-generator 2.9.0 generates it), then rebuild the assets.
 
 Without regenerating, the endpoint exists but nothing in the admin calls it.
 

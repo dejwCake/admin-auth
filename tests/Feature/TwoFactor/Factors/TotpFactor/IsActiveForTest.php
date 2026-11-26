@@ -28,7 +28,7 @@ class IsActiveForTest extends AdminUserTestCase
     public function testWithoutTheColumns(): void
     {
         $user = $this->createAdmin();
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
 
         self::assertFalse($this->app->make(TotpFactor::class)->isActiveFor($user->fresh()));
     }

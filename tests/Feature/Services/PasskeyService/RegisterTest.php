@@ -30,6 +30,10 @@ class RegisterTest extends AdminUserTestCase
 
         self::assertSame('MacBook', $passkey->name);
         self::assertSame($authenticator->credentialIdBase64Url(), $passkey->credential_id);
+        self::assertSame(
+            hash('sha256', $authenticator->credentialIdBase64Url()),
+            $passkey->credential_id_hash,
+        );
         self::assertSame(['MacBook'], $user->passkeys()->pluck('name')->all());
     }
 

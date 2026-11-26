@@ -35,6 +35,22 @@ class PasskeyAdminUserTest extends AdminUserTestCase
         $this->get('/admin')->assertOk();
     }
 
+    public function testCodeOfAnUnconfirmedSecretIsRejected(): void
+    {
+        $this->allowAdmin();
+        $user = $this->createAdmin();
+        $this->addPasskey($user, 'MacBook', new VirtualAuthenticator());
+        // An abandoned authenticator enrolment: secret stored, never confirmed.
+        $this->storeUnconfirmedSecret($user);
+        $this->post('/admin/login', ['email' => 'john@example.com', 'password' => self::PASSWORD]);
+
+        $this->postJson('/admin/two-factor/challenge', ['code' => $this->currentCode($user)])
+            ->assertStatus(422)
+            ->assertJsonValidationErrors('code');
+
+        $this->get('/admin')->assertRedirect(route('brackets/admin-auth::admin/two-factor/challenge'));
+    }
+
     public function testAnotherAdminsPasskeyIsRejected(): void
     {
         $this->loginAdminWithPasskey(new VirtualAuthenticator());

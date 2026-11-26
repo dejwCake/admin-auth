@@ -89,7 +89,7 @@ class InvokeUserTest extends UserTestCase
         Notification::fake();
         $actor = $this->createActor();
         $target = $this->createAdmin('jane@example.com');
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->app->make(DatabaseManager::class)->connection()->getSchemaBuilder()->dropIfExists('admin_passkeys');
 
         $this->reset($actor, $target)

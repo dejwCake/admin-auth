@@ -15,7 +15,6 @@ use Carbon\CarbonImmutable;
 use Illuminate\Contracts\Auth\Authenticatable;
 use Illuminate\Contracts\Session\Session;
 use Illuminate\Validation\ValidationException;
-use ParagonIE\ConstantTime\Base64UrlSafe;
 use Webauthn\PublicKeyCredentialRequestOptions;
 
 /**
@@ -32,6 +31,7 @@ final readonly class PasskeyService
         private PasskeyVerifier $passkeyVerifier,
         private PasskeyRejection $passkeyRejection,
         private TwoFactorSession $twoFactorSession,
+        private SchemaCheck $schemaCheck,
     ) {
     }
 
@@ -40,9 +40,7 @@ final readonly class PasskeyService
      */
     public function isAvailable(): bool
     {
-        $passkey = new AdminPasskey();
-
-        return $passkey->getConnection()->getSchemaBuilder()->hasTable($passkey->getTable());
+        return $this->schemaCheck->hasTable(new AdminPasskey());
     }
 
     /**
@@ -117,13 +115,13 @@ final readonly class PasskeyService
         $options = $this->passkeyChallengeStore->pullCreation($session);
         $credentialRecord = $this->passkeyVerifier->verifyRegistration($credential, $options);
 
-        $credentialId = Base64UrlSafe::encodeUnpadded($credentialRecord->publicKeyCredentialId);
-        if (AdminPasskey::query()->where('credential_id', $credentialId)->exists()) {
+        $credentialId = AdminPasskey::encodeCredentialId($credentialRecord->publicKeyCredentialId);
+        $passkey = $user->passkeys()->make(['name' => $name]);
+        $passkey->forceFill(['credential_id' => $credentialId, 'credential' => $credentialRecord]);
+        $isStored = AdminPasskey::query()->where('credential_id_hash', $passkey->credential_id_hash)->exists();
+        if ($isStored || !$passkey->saveUnlessDuplicate()) {
             throw $this->passkeyRejection->reject('The credential is already stored.', $credential);
         }
-
-        $passkey = $user->passkeys()->make(['name' => $name]);
-        $passkey->forceFill(['credential_id' => $credentialId, 'credential' => $credentialRecord])->save();
         $this->twoFactorSession->markVerified($session, $user);
 
         return $passkey;
@@ -175,7 +173,9 @@ final readonly class PasskeyService
     {
         $credentialId = is_string($credential['rawId'] ?? null) ? $credential['rawId'] : '';
         $query = $user?->passkeys() ?? AdminPasskey::query();
-        $passkey = $credentialId !== '' ? $query->where('credential_id', $credentialId)->first() : null;
+        $passkey = $credentialId !== ''
+            ? $query->where('credential_id_hash', AdminPasskey::hashCredentialId($credentialId))->first()
+            : null;
         if (!$passkey instanceof AdminPasskey) {
             throw $this->passkeyRejection->reject('Unknown passkey.', $credential);
         }

@@ -43,13 +43,11 @@ final readonly class TwoFactorService
     }
 
     /**
-     * Whether the admin users table has the two-factor columns and the model supports them.
+     * Whether the model supports two-factor and its table exists.
      */
     public function isAvailableFor(Authenticatable $user): bool
     {
-        return $user instanceof TwoFactorAuthenticatable
-            && $user instanceof Model
-            && $user->getConnection()->getSchemaBuilder()->hasColumn($user->getTable(), 'two_factor_confirmed_at');
+        return $user instanceof TwoFactorAuthenticatable && $user instanceof Model && $user->hasTwoFactorTable();
     }
 
     public function isEnabledFor(Authenticatable $user): bool
@@ -96,7 +94,21 @@ final readonly class TwoFactorService
             return true;
         }
 
-        return method_exists($user, 'hasAnyRole') && $user->hasAnyRole($roles);
+        return !method_exists($user, 'hasAnyRole') || $user->hasAnyRole($roles);
+    }
+
+    public function forgetUnconfirmedEnrolment(Authenticatable $user): void
+    {
+        if (!$user instanceof TwoFactorAuthenticatable || !$user instanceof Model) {
+            return;
+        }
+
+        $record = $user->getTwoFactorRecord();
+        if ($record === null || $record->confirmed_at !== null) {
+            return;
+        }
+
+        $this->forget($user);
     }
 
     /**
@@ -108,11 +120,7 @@ final readonly class TwoFactorService
     {
         $secret = $this->google2fa->generateSecretKey();
 
-        $user->forceFill([
-            'two_factor_secret' => $secret,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-        ])->save();
+        $this->store($user, ['secret' => $secret, 'recovery_codes' => null, 'confirmed_at' => null]);
 
         return [
             'secret' => $secret,
@@ -136,10 +144,10 @@ final readonly class TwoFactorService
 
         $recoveryCodes = $this->generateRecoveryCodes();
 
-        $user->forceFill([
-            'two_factor_recovery_codes' => $this->hashRecoveryCodes($recoveryCodes),
-            'two_factor_confirmed_at' => CarbonImmutable::now(),
-        ])->save();
+        $this->store($user, [
+            'recovery_codes' => $this->hashRecoveryCodes($recoveryCodes),
+            'confirmed_at' => CarbonImmutable::now(),
+        ]);
 
         return $recoveryCodes;
     }
@@ -165,6 +173,9 @@ final readonly class TwoFactorService
         if ($timestep === false) {
             return false;
         }
+        if (!$this->cache->add(sprintf('%s:%d', $replayKey, $timestep), true, self::REPLAY_TTL_SECONDS)) {
+            return false;
+        }
 
         $this->cache->put($replayKey, $timestep, self::REPLAY_TTL_SECONDS);
 
@@ -181,17 +192,18 @@ final readonly class TwoFactorService
             return false;
         }
 
-        $hashes = $user->getTwoFactorRecoveryCodes();
-        foreach ($hashes as $index => $hash) {
-            if ($this->hasher->check($code, $hash)) {
-                unset($hashes[$index]);
-                $user->forceFill(['two_factor_recovery_codes' => array_values($hashes)])->save();
-
-                return true;
-            }
+        $record = $user->getTwoFactorRecord();
+        if ($record === null) {
+            return false;
         }
 
-        return false;
+        $consumed = $record->consumeRecoveryCode(fn (string $hash): bool => $this->hasher->check($code, $hash));
+        if ($consumed === null) {
+            return false;
+        }
+        $user->setRelation('twoFactor', $consumed);
+
+        return true;
     }
 
     /**
@@ -203,7 +215,7 @@ final readonly class TwoFactorService
     {
         $recoveryCodes = $this->generateRecoveryCodes();
 
-        $user->forceFill(['two_factor_recovery_codes' => $this->hashRecoveryCodes($recoveryCodes)])->save();
+        $this->store($user, ['recovery_codes' => $this->hashRecoveryCodes($recoveryCodes)]);
 
         return $recoveryCodes;
     }
@@ -213,11 +225,7 @@ final readonly class TwoFactorService
      */
     public function disable(Model&TwoFactorAuthenticatable $user): void
     {
-        $user->forceFill([
-            'two_factor_secret' => null,
-            'two_factor_recovery_codes' => null,
-            'two_factor_confirmed_at' => null,
-        ])->save();
+        $this->forget($user);
 
         $this->cache->forget($this->replayKey($user));
         $this->rateLimiter->clear($this->throttleKey($user));
@@ -229,6 +237,22 @@ final readonly class TwoFactorService
     }
 
     /* ************************ HELPERS ************************ */
+
+    /**
+     * @param array<string, string|array<int, string>|CarbonImmutable|null> $attributes
+     */
+    private function store(Model&TwoFactorAuthenticatable $user, array $attributes): void
+    {
+        $record = $user->getTwoFactorRecord() ?? $user->twoFactor()->make();
+        $record->forceFill($attributes)->save();
+        $user->setRelation('twoFactor', $record);
+    }
+
+    private function forget(Model&TwoFactorAuthenticatable $user): void
+    {
+        $user->twoFactor()->delete();
+        $user->setRelation('twoFactor', null);
+    }
 
     private function otpauthUrl(Model $user, string $secret): string
     {

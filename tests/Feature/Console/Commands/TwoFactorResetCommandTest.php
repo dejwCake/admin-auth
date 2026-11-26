@@ -105,7 +105,7 @@ class TwoFactorResetCommandTest extends AdminUserTestCase
     public function testMissingColumnsAndTableFail(): void
     {
         $this->createAdmin();
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->dropPasskeysTable();
 
         $this->artisan('admin-auth:two-factor-reset', ['email' => 'john@example.com', '--force' => true])
@@ -159,7 +159,7 @@ class TwoFactorResetCommandTest extends AdminUserTestCase
     {
         $user = $this->createAdmin();
         $this->addPasskey($user);
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
 
         $this->artisan('admin-auth:two-factor-reset', ['email' => 'john@example.com', '--force' => true])
             ->assertExitCode(0);

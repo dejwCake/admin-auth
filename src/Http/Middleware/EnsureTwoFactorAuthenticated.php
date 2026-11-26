@@ -20,7 +20,7 @@ use Symfony\Component\HttpFoundation\Response;
  * Holds an admin with a second factor (TOTP or a passkey) on the two-factor challenge until the session is
  * verified, and a forced admin without one on the settings page until they enrol.
  */
-final class EnsureTwoFactorAuthenticated
+final readonly class EnsureTwoFactorAuthenticated
 {
     public const string SETTINGS_ROUTE = 'brackets/admin-auth::admin/two-factor';
     public const string CHALLENGE_ROUTE = 'brackets/admin-auth::admin/two-factor/challenge';
@@ -50,12 +50,12 @@ final class EnsureTwoFactorAuthenticated
     private string $guard;
 
     public function __construct(
-        private readonly Config $config,
-        private readonly AuthFactory $authFactory,
-        private readonly TwoFactorService $twoFactorService,
-        private readonly TwoFactorSession $twoFactorSession,
-        private readonly Redirector $redirector,
-        private readonly UrlGenerator $urlGenerator,
+        private Config $config,
+        private AuthFactory $authFactory,
+        private TwoFactorService $twoFactorService,
+        private TwoFactorSession $twoFactorSession,
+        private Redirector $redirector,
+        private UrlGenerator $urlGenerator,
     ) {
         $this->guard = $this->config->get('admin-auth.defaults.guard', 'admin');
     }

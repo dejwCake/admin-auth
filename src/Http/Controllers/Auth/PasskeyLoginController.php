@@ -23,7 +23,7 @@ use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
  */
 final class PasskeyLoginController extends Controller
 {
-    private string $guard;
+    private readonly string $guard;
 
     public function __construct(
         private readonly Config $config,

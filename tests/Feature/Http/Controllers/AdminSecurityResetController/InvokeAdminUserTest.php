@@ -84,12 +84,21 @@ class InvokeAdminUserTest extends AdminUserTestCase
             ->assertNotFound();
     }
 
+    public function testNonNumericIdIsNotFound(): void
+    {
+        $actor = $this->createActor();
+
+        $this->actingAsVerified($actor)
+            ->postJson('/admin/admin-users/abc/security-reset', ['current_password' => self::PASSWORD])
+            ->assertNotFound();
+    }
+
     public function testMissingMigrationsResetNothingWithoutAnError(): void
     {
         Notification::fake();
         $actor = $this->createActor();
         $target = $this->createAdmin('jane@example.com');
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
         $this->app->make(DatabaseManager::class)->connection()->getSchemaBuilder()->dropIfExists('admin_passkeys');
 
         $this->reset($actor, $target)
@@ -191,6 +200,23 @@ class InvokeAdminUserTest extends AdminUserTestCase
         self::assertSame($actor->getKey(), $context['actor_id']);
         self::assertSame($target->getKey(), $context['target_id']);
         self::assertSame(1, $context['passkeys']);
+    }
+
+    public function testFailingEmailStillReportsTheResetAndLogsIt(): void
+    {
+        $logger = new RecordingLogger();
+        $this->app->instance(LoggerInterface::class, $logger);
+        // An undefined mailer: sending the e-mail throws.
+        $this->app['config']->set('mail.default', 'undefined');
+        $actor = $this->createActor();
+        $target = $this->createAdmin('jane@example.com');
+        $this->addPasskey($target);
+
+        $this->reset($actor, $target)->assertOk();
+
+        self::assertSame(0, $target->passkeys()->count());
+        self::assertNotNull($logger->context('info', 'Second factors of an admin were reset by another admin.'));
+        self::assertNotNull($logger->context('error', 'The security reset e-mail could not be sent.'));
     }
 
     /**

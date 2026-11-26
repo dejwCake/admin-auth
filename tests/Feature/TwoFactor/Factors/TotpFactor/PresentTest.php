@@ -57,7 +57,7 @@ class PresentTest extends AdminUserTestCase
     public function testWithoutTheColumns(): void
     {
         $user = $this->createAdmin();
-        $this->dropTwoFactorColumns();
+        $this->dropTwoFactorTable();
 
         $presentation = $this->app->make(TotpFactor::class)->present($user->fresh());
 

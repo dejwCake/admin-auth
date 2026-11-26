@@ -4,59 +4,70 @@ declare(strict_types=1);
 
 namespace Brackets\AdminAuth\TwoFactor\Traits;
 
+use Brackets\AdminAuth\Models\AdminTwoFactor;
+use Brackets\AdminAuth\Services\SchemaCheck;
 use Illuminate\Container\Container;
 use Illuminate\Contracts\Encryption\DecryptException;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 use Psr\Log\LoggerInterface;
 
 /**
- * Two-factor columns of the admin users table. They are never fillable — write them with forceFill().
+ * The admin's authenticator app (TOTP), stored in admin_two_factors. The record is loaded once per model and
+ * written only by TwoFactorService.
  */
 trait TwoFactorAuthenticatable
 {
     /**
-     * Cast and hide the two-factor columns.
+     * The record is loaded by every two-factor check; it never belongs to the admin's serialised form.
      */
     public function initializeTwoFactorAuthenticatable(): void
     {
-        $this->mergeCasts([
-            'two_factor_secret' => 'encrypted',
-            'two_factor_recovery_codes' => 'array',
-            'two_factor_confirmed_at' => 'datetime',
-        ]);
-
-        $this->makeHidden(['two_factor_secret', 'two_factor_recovery_codes', 'two_factor_confirmed_at']);
+        $this->makeHidden('twoFactor');
     }
 
-    public function hasTwoFactorColumns(): bool
+    /**
+     * @return HasOne<AdminTwoFactor, $this>
+     */
+    public function twoFactor(): HasOne
     {
-        // Read from the loaded attributes: no schema query, and no MissingAttributeException without the migration.
-        return array_key_exists('two_factor_confirmed_at', $this->getAttributes());
+        return $this->hasOne(AdminTwoFactor::class, 'admin_user_id');
+    }
+
+    public function hasTwoFactorTable(): bool
+    {
+        return Container::getInstance()->make(SchemaCheck::class)->hasTable(new AdminTwoFactor());
+    }
+
+    public function getTwoFactorRecord(): ?AdminTwoFactor
+    {
+        if (!$this->hasTwoFactorTable()) {
+            return null;
+        }
+
+        $record = $this->getRelationValue('twoFactor');
+
+        return $record instanceof AdminTwoFactor ? $record : null;
     }
 
     public function hasTwoFactorEnabled(): bool
     {
-        return $this->hasTwoFactorColumns()
-            && $this->getAttributes()['two_factor_confirmed_at'] !== null
-            && $this->getTwoFactorSecret() !== null;
+        return $this->getTwoFactorRecord()?->confirmed_at !== null && $this->getTwoFactorSecret() !== null;
     }
 
     public function hasTwoFactorData(): bool
     {
-        $attributes = $this->getAttributes();
-
-        return ($attributes['two_factor_secret'] ?? null) !== null
-            || ($attributes['two_factor_recovery_codes'] ?? null) !== null
-            || ($attributes['two_factor_confirmed_at'] ?? null) !== null;
+        return $this->getTwoFactorRecord() !== null;
     }
 
     public function getTwoFactorSecret(): ?string
     {
-        if (($this->getAttributes()['two_factor_secret'] ?? null) === null) {
+        $record = $this->getTwoFactorRecord();
+        if ($record === null) {
             return null;
         }
 
         try {
-            return $this->getAttribute('two_factor_secret');
+            return $record->getAttribute('secret');
         } catch (DecryptException $decryptException) {
             // E.g. APP_KEY rotated without APP_PREVIOUS_KEYS: treat as no two-factor rather than a 500.
             Container::getInstance()->make(LoggerInterface::class)->error(
@@ -73,10 +84,6 @@ trait TwoFactorAuthenticatable
      */
     public function getTwoFactorRecoveryCodes(): array
     {
-        if (($this->getAttributes()['two_factor_recovery_codes'] ?? null) === null) {
-            return [];
-        }
-
-        return array_values($this->getAttribute('two_factor_recovery_codes') ?? []);
+        return array_values($this->getTwoFactorRecord()->recovery_codes ?? []);
     }
 }

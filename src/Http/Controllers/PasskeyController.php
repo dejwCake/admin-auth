@@ -24,7 +24,7 @@ use Illuminate\Http\Request;
  */
 final class PasskeyController extends Controller
 {
-    private string $guard;
+    private readonly string $guard;
 
     public function __construct(
         private readonly Config $config,
@@ -83,6 +83,7 @@ final class PasskeyController extends Controller
             $request->credential(),
             (string) $request->validated('name'),
         );
+        $this->twoFactorService->forgetUnconfirmedEnrolment($user);
 
         return new JsonResponse([
             'message' => trans('brackets/admin-auth::admin.passkeys.added'),

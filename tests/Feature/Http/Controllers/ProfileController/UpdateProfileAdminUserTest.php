@@ -7,12 +7,14 @@ namespace Brackets\AdminAuth\Tests\Feature\Http\Controllers\ProfileController;
 use Brackets\AdminAuth\Tests\AdminUserTestCase;
 use Brackets\AdminAuth\Tests\Models\TestAdminUserModel;
 use Illuminate\Contracts\Auth\Access\Gate;
+use Illuminate\Contracts\Config\Repository as Config;
 use Illuminate\Contracts\Hashing\Hasher;
 
 class UpdateProfileAdminUserTest extends AdminUserTestCase
 {
     public function testValidUpdateIsSaved(): void
     {
+        $this->app->make(Config::class)->set('translatable.locales', ['en', 'sk']);
         $user = $this->createTestUser('john@example.com');
 
         $response = $this->actingAs($user, $this->adminAuthGuard)->postJson('/admin/profile', [
@@ -31,6 +33,20 @@ class UpdateProfileAdminUserTest extends AdminUserTestCase
             'last_name' => 'Smith',
             'language' => 'sk',
         ]);
+    }
+
+    public function testLanguageOutsideTheOfferedLocalesIsRejected(): void
+    {
+        $user = $this->createTestUser('john@example.com');
+
+        // setLocale() would throw on it on every admin page.
+        $response = $this->actingAs($user, $this->adminAuthGuard)->postJson('/admin/profile', [
+            'email' => 'john@example.com',
+            'language' => '../x',
+        ]);
+
+        $response->assertStatus(422)->assertJsonValidationErrors('language');
+        $this->assertDatabaseMissing('test_brackets_user_models', ['id' => $user->getKey(), 'language' => '../x']);
     }
 
     public function testEmailTakenByAnotherAdminIsRejected(): void

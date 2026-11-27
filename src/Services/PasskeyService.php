@@ -9,6 +9,7 @@ use Brackets\AdminAuth\Passkeys\Contracts\PasskeyAuthenticatable;
 use Brackets\AdminAuth\Passkeys\PasskeyChallengeStore;
 use Brackets\AdminAuth\Passkeys\PasskeyOptionsFactory;
 use Brackets\AdminAuth\Passkeys\PasskeyRejection;
+use Brackets\AdminAuth\Passkeys\PasskeyTable;
 use Brackets\AdminAuth\Passkeys\PasskeyVerifier;
 use Brackets\AdminAuth\TwoFactor\TwoFactorSession;
 use Carbon\CarbonImmutable;
@@ -31,7 +32,7 @@ final readonly class PasskeyService
         private PasskeyVerifier $passkeyVerifier,
         private PasskeyRejection $passkeyRejection,
         private TwoFactorSession $twoFactorSession,
-        private SchemaCheck $schemaCheck,
+        private PasskeyTable $passkeyTable,
     ) {
     }
 
@@ -40,7 +41,7 @@ final readonly class PasskeyService
      */
     public function isAvailable(): bool
     {
-        return $this->schemaCheck->hasTable(new AdminPasskey());
+        return $this->passkeyTable->exists();
     }
 
     /**
@@ -48,17 +49,25 @@ final readonly class PasskeyService
      */
     public function isAvailableFor(Authenticatable $user): bool
     {
-        return $user instanceof PasskeyAuthenticatable && $this->hasTable($user);
+        return $user instanceof PasskeyAuthenticatable && $this->passkeyTable->exists($user);
     }
 
     public function hasPasskeys(Authenticatable $user): bool
     {
-        return $user instanceof PasskeyAuthenticatable && $this->hasTable($user) && $user->passkeys()->exists();
+        if (!$user instanceof PasskeyAuthenticatable || !$this->passkeyTable->exists($user)) {
+            return false;
+        }
+
+        return $user->passkeys()->exists();
     }
 
     public function countFor(Authenticatable $user): int
     {
-        return $user instanceof PasskeyAuthenticatable && $this->hasTable($user) ? $user->passkeys()->count() : 0;
+        if (!$user instanceof PasskeyAuthenticatable || !$this->passkeyTable->exists($user)) {
+            return 0;
+        }
+
+        return $user->passkeys()->count();
     }
 
     /**
@@ -164,14 +173,6 @@ final readonly class PasskeyService
     /* ************************ HELPERS ************************ */
 
     /**
-     * On the admin's connection, which the passkeys relation carries.
-     */
-    private function hasTable(PasskeyAuthenticatable $user): bool
-    {
-        return $this->schemaCheck->hasTable($user->passkeys()->getRelated());
-    }
-
-    /**
      * The stored passkey the response names: any admin's, or only the given admin's.
      *
      * @param array<string, array|string|int|float|bool|null> $credential
@@ -180,7 +181,7 @@ final readonly class PasskeyService
     private function find(?PasskeyAuthenticatable $user, array $credential): AdminPasskey
     {
         $credentialId = is_string($credential['rawId'] ?? null) ? $credential['rawId'] : '';
-        $query = $user?->passkeys() ?? AdminPasskey::query();
+        $query = $user?->passkeys() ?? $this->passkeyTable->query();
         $passkey = $credentialId !== ''
             ? $query->where('credential_id_hash', AdminPasskey::hashCredentialId($credentialId))->first()
             : null;

@@ -7,7 +7,7 @@ namespace Brackets\AdminAuth\Tests\Models;
 /**
  * Admin on its own connection, not the default one.
  */
-class TestConnectionAdminUserModel extends TestAdminUserModel
+final class TestConnectionAdminUserModel extends TestAdminUserModel
 {
     public const string CONNECTION = 'admins';
 
